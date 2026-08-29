@@ -33,6 +33,9 @@ class SettingsActivity : AppCompatActivity() {
 
         setupPauseSwitch()
 
+        b.switchAuto.isChecked = Prefs.autoPlay(this)
+        b.switchAuto.setOnCheckedChangeListener { _, checked -> Prefs.setAutoPlay(this, checked) }
+
         b.btnBack.setOnClickListener { finish() }
     }
 

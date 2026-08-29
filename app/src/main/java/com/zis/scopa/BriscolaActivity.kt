@@ -12,7 +12,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.doOnPreDraw
 import com.zis.scopa.databinding.ActivityBriscolaBinding
 
 class BriscolaActivity : AppCompatActivity() {
@@ -43,13 +42,36 @@ class BriscolaActivity : AppCompatActivity() {
     private val ui = Handler(Looper.getMainLooper())
     private var ending = false
     private var destroyed = false
+    private var autoPlay = false
+
+    /** Come in Scopa: il watchdog interviene solo se il gioco non si e' mosso da solo. */
+    private var moveSeq = 0
+    private var watchdogSeq = -1
+
     private val watchdog = Runnable {
-        if (destroyed || !busy || ending) return@Runnable
-        if (game.finished) endGame()
-        else if (game.turn == 1) { busy = true; botPlay() }
-        else { busy = false; render(); b.txtStatus.setText(R.string.your_turn) }
+        if (destroyed || ending) return@Runnable
+        if (moveSeq != watchdogSeq) return@Runnable
+        recover()
     }
-    private fun armWatchdog() { ui.removeCallbacks(watchdog); if (busy && !ending && !destroyed) ui.postDelayed(watchdog, 3500) }
+
+    private fun armWatchdog() {
+        ui.removeCallbacks(watchdog)
+        if (destroyed || ending) return
+        if (busy || game.finished || game.turn == 1) {
+            watchdogSeq = moveSeq
+            ui.postDelayed(watchdog, 3000)
+        }
+    }
+
+    private fun recover() {
+        if (destroyed || ending) return
+        when {
+            game.finished -> { busy = true; endGame() }
+            game.turn == 1 -> { busy = true; render(); post(250) { botPlay() } }
+            busy -> { busy = false; render(); b.txtStatus.setText(R.string.your_turn); maybeAutoPlay() }
+            else -> maybeAutoPlay()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +93,38 @@ class BriscolaActivity : AppCompatActivity() {
         (b.deckRow.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
         (b.briscolaBox.layoutParams as LinearLayout.LayoutParams).marginStart = -cardW / 3
         b.deckBox.translationZ = 1f   // il mazzo copre la briscola, non il contrario
+    }
+
+    override fun onResume() {
+        super.onResume()
+        autoPlay = Prefs.autoPlay(this)
+        maybeAutoPlay()
+    }
+
+    /** Modalita' test: il programma gioca anche le carte dell'utente. */
+    private fun maybeAutoPlay() {
+        if (!autoPlay || busy || destroyed || ending) return
+        if (game.finished || game.turn != 0 || game.hands[0].isEmpty()) return
+        busy = true
+        armWatchdog()
+        post(250) {
+            if (game.finished || game.turn != 0 || game.hands[0].isEmpty()) { recover(); return@post }
+            val card = game.botChoose()
+            val view = findHandCardView(card)
+            val start = if (view != null) {
+                view.visibility = View.INVISIBLE
+                topLeftInOverlay(view)
+            } else centerInOverlay(b.youHand)
+            playAnimated(card, start.first, start.second)
+        }
+    }
+
+    private fun findHandCardView(card: Card): View? {
+        for (i in 0 until b.youHand.childCount) {
+            val ch = b.youHand.getChildAt(i)
+            if (ch is CardView && ch.card == card) return ch
+        }
+        return null
     }
 
     override fun onDestroy() {
@@ -110,15 +164,15 @@ class BriscolaActivity : AppCompatActivity() {
         ending = false
         busy = true
         render()
-        b.root.doOnPreDraw {
-            if (destroyed) return@doOnPreDraw
-            if (game.turn == 1) {
-                b.txtStatus.setText(R.string.bot_turn)
-                post(500) { botPlay() }
-            } else {
-                busy = false
-                b.txtStatus.setText(R.string.your_turn)
-            }
+        moveSeq++
+        if (game.turn == 1) {
+            b.txtStatus.setText(R.string.bot_turn)
+            post(500) { botPlay() }
+        } else {
+            busy = false
+            render()
+            b.txtStatus.setText(R.string.your_turn)
+            maybeAutoPlay()
         }
     }
 
@@ -194,7 +248,7 @@ class BriscolaActivity : AppCompatActivity() {
 
     private fun botPlay() {
         if (game.finished) { endGame(); return }
-        if (game.hands[1].isEmpty()) { busy = false; render(); b.txtStatus.setText(R.string.your_turn); return }
+        if (game.hands[1].isEmpty()) { recover(); return }
         val card = game.botChoose()
         val src: View = if (b.botHand.childCount > 0) b.botHand.getChildAt(0) else b.botHand
         val (sx, sy) = topLeftInOverlay(src)
@@ -212,6 +266,7 @@ class BriscolaActivity : AppCompatActivity() {
         post(340) {
             b.overlay.removeView(temp)
             val winner = game.play(card)
+            moveSeq++
             if (winner == -1) afterLead() else afterComplete(leaderCard!!, card, winner)
         }
     }
@@ -221,7 +276,7 @@ class BriscolaActivity : AppCompatActivity() {
         if (game.turn == 1) {
             busy = true; b.txtStatus.setText(R.string.bot_turn); post(500) { botPlay() }
         } else {
-            busy = false; b.txtStatus.setText(R.string.your_turn)
+            busy = false; b.txtStatus.setText(R.string.your_turn); maybeAutoPlay()
         }
     }
 

@@ -10,6 +10,13 @@ package com.zis.scopa
  */
 class ScopaGame {
 
+    /**
+     * SecureRandom invece del Random condiviso di Collections.shuffle(): stessa qualita'
+     * statistica ma seme preso dall'entropia di sistema, quindi nessun dubbio sul fatto
+     * che due partite avviate a distanza ravvicinata partano da stati simili.
+     */
+    private val rng = java.security.SecureRandom()
+
     val deck = ArrayDeque<Card>()
     val table = mutableListOf<Card>()
     val hands = arrayOf(mutableListOf<Card>(), mutableListOf<Card>())
@@ -21,18 +28,33 @@ class ScopaGame {
     var lastDealt = false
 
     fun newGame(youStart: Boolean = true) {
-        deck.clear(); table.clear()
-        hands[0].clear(); hands[1].clear()
         captured[0].clear(); captured[1].clear()
         scope[0] = 0; scope[1] = 0
         lastCapturer = -1
         finished = false
-        val d = fullDeck(); d.shuffle()
-        deck.addAll(d)
-        repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
-        repeat(4) { table.add(deck.removeFirst()) }
+
+        // Rimescola se esce una mano tutta dello stesso valore (capita nello 0,4% dei casi
+        // ma e' fastidiosa perche' toglie ogni scelta) o se in tavola finiscono tre o piu' re,
+        // situazione che la regola tradizionale gia' prevede di rifare.
+        var tries = 0
+        do {
+            deck.clear(); table.clear()
+            hands[0].clear(); hands[1].clear()
+            val d = fullDeck()
+            java.util.Collections.shuffle(d, rng)
+            deck.addAll(d)
+            repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
+            repeat(4) { table.add(deck.removeFirst()) }
+            tries++
+        } while (tries < 20 && (allSameValue(hands[0]) || allSameValue(hands[1]) || tooManyKings(table)))
+
         turn = if (youStart) 0 else 1
     }
+
+    private fun allSameValue(h: List<Card>): Boolean =
+        h.size >= 3 && h.distinctBy { it.value }.size == 1
+
+    private fun tooManyKings(t: List<Card>): Boolean = t.count { it.value == 10 } >= 3
 
     /** All capture options for a card of the given value. Single-card matches take priority; if none,
      *  every combination (size >= 2) of table cards summing to the value. */
@@ -95,9 +117,17 @@ class ScopaGame {
         return scopa
     }
 
-    /** Bot picks a (card, capture). Prefers captures (settebello/denari/sevens/scopa), else a safe low card. */
-    fun botChoose(): Pair<Card, List<Card>> {
-        val hand = hands[1]
+    fun botChoose(): Pair<Card, List<Card>> = choose(1)
+
+    /**
+     * Sceglie carta e presa per il giocatore indicato. Usata dal Banco e, quando e' attivo
+     * il gioco automatico, anche per le carte dell'utente.
+     * Preferisce le prese (settebello, denari, sette, scopa), altrimenti cala la carta che
+     * aiuta meno l'avversario.
+     */
+    fun choose(player: Int): Pair<Card, List<Card>> {
+        val hand = hands[player]
+        require(hand.isNotEmpty()) { "mano vuota per il giocatore $player" }
         var bestCard: Card? = null
         var bestCap: List<Card> = emptyList()
         var bestScore = Int.MIN_VALUE

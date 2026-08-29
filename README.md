@@ -66,6 +66,33 @@ In **Settings → Secrets and variables → Actions** crea:
 
 ---
 
+## "Package conflict" quando installi un aggiornamento
+
+Android accetta un aggiornamento solo se e' firmato con la **stessa chiave** della versione
+gia' installata. Senza i secret configurati, ogni build su GitHub Actions genera una chiave
+di debug nuova, quindi la firma cambia a ogni run e l'installazione viene rifiutata.
+
+La soluzione e' configurare i quattro secret (vedi sopra). Una volta fatto, tutti gli APK
+usciranno firmati con `scopa.keystore` e gli aggiornamenti si installeranno sopra il
+precedente senza disinstallare.
+
+Per convertire il keystore in base64:
+
+```bash
+base64 -w0 app/scopa.keystore          # Linux
+base64 -i app/scopa.keystore | tr -d '\n'   # macOS
+```
+
+Su Windows, in PowerShell:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("app\scopa.keystore")) | Set-Clipboard
+```
+
+Attenzione: l'APK gia' installato ora sul telefono e' firmato con una chiave di debug
+usa-e-getta, quindi **quella disinstallazione la devi fare una volta sola**. Da li' in poi,
+con i secret attivi, non servira' piu'.
+
 ## Migrazione a targetSdk 36 (necessaria per il Play Store)
 
 Dal **31 agosto 2026** Google Play accetta nuove app e aggiornamenti solo con

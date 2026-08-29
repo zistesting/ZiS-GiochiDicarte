@@ -26,6 +26,15 @@ object Prefs {
         p(ctx).edit().putInt("briscola_target", value).apply()
     }
 
+    // ---------------- gioco automatico (test) ----------------
+
+    /** Se attivo il programma gioca da solo entrambe le mani: serve a provare in fretta. */
+    fun autoPlay(ctx: Context): Boolean = p(ctx).getBoolean("auto_play", false)
+
+    fun setAutoPlay(ctx: Context, value: Boolean) {
+        p(ctx).edit().putBoolean("auto_play", value).apply()
+    }
+
     // ---------------- pausa responsabile ----------------
 
     /**

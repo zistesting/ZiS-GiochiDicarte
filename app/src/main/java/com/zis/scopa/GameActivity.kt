@@ -14,7 +14,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
-import androidx.core.view.doOnPreDraw
 import com.zis.scopa.databinding.ActivityGameBinding
 
 class GameActivity : AppCompatActivity() {
@@ -28,41 +27,71 @@ class GameActivity : AppCompatActivity() {
     private var matchYou = 0
     private var matchBot = 0
     private var youStartNext = true
+    private var autoPlay = false
 
-    // Safety net: if no progress happens for a few seconds while input is blocked, resume the game so
-    // it can never stay frozen (resumes the Banco, shows the summary, or gives the turn back).
     private val ui = Handler(Looper.getMainLooper())
     private var roundEnding = false
     private var destroyed = false
+
+    /**
+     * Contatore delle mosse completate. Il watchdog lo confronta con il valore che aveva
+     * quando e' stato armato: se il gioco e' andato avanti da solo non fa nulla, se invece
+     * e' fermo interviene. Senza questo confronto il watchdog rischiava di far giocare il
+     * Banco una seconda volta mentre una mossa era ancora in corso.
+     */
+    private var moveSeq = 0
+    private var watchdogSeq = -1
+
     private val watchdog = Runnable {
-        if (destroyed || !busy || roundEnding) return@Runnable
-        if (game.finished) {
-            endRound()
-        } else if (game.turn == 1) {
-            busy = true
-            botTurn()
-        } else {
-            busy = false
-            render()
-            b.txtStatus.setText(R.string.your_turn)
+        if (destroyed || roundEnding) return@Runnable
+        if (moveSeq != watchdogSeq) return@Runnable   // il gioco si e' mosso: nulla da fare
+        recover()
+    }
+
+    /** Armato solo quando il gioco deve muoversi da solo: durante una giocata,
+     *  quando tocca al Banco o a fine mano. Se tocca all'utente non serve. */
+    private fun armWatchdog() {
+        ui.removeCallbacks(watchdog)
+        if (destroyed || roundEnding) return
+        if (busy || game.finished || game.turn == 1) {
+            watchdogSeq = moveSeq
+            ui.postDelayed(watchdog, 3000)
         }
     }
 
-    private fun armWatchdog() {
-        ui.removeCallbacks(watchdog)
-        if (busy && !roundEnding && !destroyed) ui.postDelayed(watchdog, 3500)
+    /**
+     * Riporta il gioco in moto guardando lo stato reale della partita, qualunque cosa sia
+     * andata storta. Prima il blocco catch metteva busy = false lasciando il turno al Banco
+     * senza che nessuno lo facesse giocare: la partita restava ferma per sempre e i tocchi
+     * dell'utente venivano ignorati perche' game.turn era 1.
+     */
+    private fun recover() {
+        if (destroyed || roundEnding) return
+        when {
+            game.finished -> { busy = true; render(); endRound() }
+            game.turn == 1 -> { busy = true; render(); post(250) { botTurn() } }
+            busy -> {
+                busy = false
+                render()
+                b.txtStatus.setText(R.string.your_turn)
+                maybeAutoPlay()
+            }
+            else -> maybeAutoPlay()
+        }
     }
 
     // Cards scale with screen width so they aren't tiny on tablets (min 76dp on phones).
     private val cardWDp: Float
         get() = ((resources.displayMetrics.widthPixels / resources.displayMetrics.density) * 0.21f).coerceIn(76f, 200f)
     private val cardW get() = (cardWDp * resources.displayMetrics.density).toInt()
-    // Proporzione reale delle immagini (560x1024 = 1.829). Prima era 120/76 = 1.579:
-    // il disegno veniva schiacciato del 14% in altezza, visibile soprattutto sulle figure.
+    // Proporzione reale delle immagini (560x1024 = 1.829).
     private val cardRatio = 1.829f
     private val cardH get() = (cardWDp * cardRatio * resources.displayMetrics.density).toInt()
     private val centerW get() = cardW
     private val centerH get() = cardH
+
+    /** Quanto resta ferma a schermo la carta appena calata, prima che il tavolo si aggiorni. */
+    private val holdMs: Long get() = if (autoPlay) 300L else 500L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,12 +101,16 @@ class GameActivity : AppCompatActivity() {
         startMatch()
     }
 
+    override fun onResume() {
+        super.onResume()
+        autoPlay = Prefs.autoPlay(this)
+        maybeAutoPlay()
+    }
+
     /**
      * Posizioni fisse, calcolate una volta sola perche' dipendono solo dalla larghezza
-     * dello schermo:
-     *  - le carte del Banco escono per meta' dal bordo alto (sono coperte, non serve vederle)
-     *  - il mazzo esce per meta' dal bordo sinistro
-     *  - la griglia del tavolo rientra di mezza carta, cosi' non finisce sopra al mazzo
+     * dello schermo: mano del Banco per meta' fuori dal bordo alto, mazzo per meta' fuori
+     * dal bordo sinistro, griglia del tavolo rientrata cosi' non finisce sopra al mazzo.
      */
     private fun placeCards() {
         (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
@@ -86,9 +119,6 @@ class GameActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        // Tutti i passaggi di turno sono differiti: senza questa pulizia un callback puo' partire
-        // su un'activity gia' distrutta (tipicamente quando l'utente esce mentre gioca il Banco)
-        // e far crashare l'app con BadTokenException al momento di mostrare il dialogo.
         destroyed = true
         ui.removeCallbacksAndMessages(null)
         super.onDestroy()
@@ -121,22 +151,17 @@ class GameActivity : AppCompatActivity() {
         game.newGame(youStart = youStartNext)
         youStartNext = !youStartNext
         roundEnding = false
-        busy = true
-        render()
-        b.txtStatus.setText(R.string.your_turn)
-        b.root.doOnPreDraw {
-            if (destroyed) return@doOnPreDraw
-            animateDeal {
-                render()
-                if (game.turn == 1) {
-                    // the Banco leads this round: keep input blocked and let it play
-                    b.txtStatus.setText(R.string.bot_turn)
-                    post(450) { botTurn() }
-                } else {
-                    busy = false
-                    b.txtStatus.setText(R.string.your_turn)
-                }
-            }
+        moveSeq++
+        if (game.turn == 1) {
+            busy = true
+            render()
+            b.txtStatus.setText(R.string.bot_turn)
+            post(400) { botTurn() }
+        } else {
+            busy = false
+            render()
+            b.txtStatus.setText(R.string.your_turn)
+            maybeAutoPlay()
         }
     }
 
@@ -187,8 +212,8 @@ class GameActivity : AppCompatActivity() {
     private fun render() {
         val yourTurn = game.turn == 0 && !game.finished && !busy
 
-        b.botScore.text = getString(R.string.score_line, game.captured[1].size, game.scope[1], matchBot)
-        b.youScore.text = getString(R.string.score_line, game.captured[0].size, game.scope[0], matchYou)
+        b.botScore.text = getString(R.string.score_line, matchBot, game.scope[1])
+        b.youScore.text = getString(R.string.score_line, matchYou, game.scope[0])
 
         b.botHand.removeAllViews()
         for (c in game.hands[1]) b.botHand.addView(makeCard(null, false, cardW, cardH))
@@ -210,7 +235,7 @@ class GameActivity : AppCompatActivity() {
         armWatchdog()
     }
 
-    // ---------- player move (with capture chooser) ----------
+    // ---------- mossa dell'utente ----------
     private fun onPlayerCard(card: Card, fromView: View) {
         if (busy || game.turn != 0 || game.finished) return
         val caps = game.capturesFor(card.value)
@@ -227,6 +252,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun doPlayerPlay(card: Card, fromView: View, capture: List<Card>) {
+        if (busy || game.turn != 0 || game.finished) return
         busy = true
         armWatchdog()
         fromView.visibility = View.INVISIBLE
@@ -234,73 +260,65 @@ class GameActivity : AppCompatActivity() {
         playAnimated(card, capture, sx, sy, byBot = false)
     }
 
-    private fun botTurn() {
-        if (game.finished) { endRound(); return }
-        if (game.hands[1].isEmpty()) {
-            busy = false
-            render()
-            b.txtStatus.setText(R.string.your_turn)
-            return
+    /** Modalita' test: il programma gioca anche le carte dell'utente. */
+    private fun maybeAutoPlay() {
+        if (!autoPlay || busy || destroyed || roundEnding) return
+        if (game.finished || game.turn != 0 || game.hands[0].isEmpty()) return
+        busy = true
+        armWatchdog()
+        post(250) {
+            if (game.finished || game.turn != 0 || game.hands[0].isEmpty()) { recover(); return@post }
+            val (card, cap) = game.choose(0)
+            val view = findHandCardView(card)
+            val start = if (view != null) {
+                view.visibility = View.INVISIBLE
+                topLeftInOverlay(view)
+            } else centerInOverlay(b.youHand)
+            playAnimated(card, cap, start.first, start.second, byBot = false)
         }
-        val (card, cap) = game.botChoose()
+    }
+
+    private fun findHandCardView(card: Card): View? {
+        for (i in 0 until b.youHand.childCount) {
+            val ch = b.youHand.getChildAt(i)
+            if (ch is CardView && ch.card == card) return ch
+        }
+        return null
+    }
+
+    private fun botTurn() {
+        if (destroyed || roundEnding) return
+        if (game.finished) { busy = true; endRound(); return }
+        if (game.hands[1].isEmpty()) { recover(); return }
+        val (card, cap) = game.choose(1)
         val src: View = if (b.botHand.childCount > 0) b.botHand.getChildAt(0) else b.botHand
         val (sx, sy) = topLeftInOverlay(src)
         playAnimated(card, cap, sx, sy, byBot = true)
     }
 
-    /** Slide the played card onto the table; if it captures, gather the captured cards under it.
-     *  Uses postDelayed (not withEndAction, which can silently fail to fire and freeze the turn). */
+    /**
+     * La carta calata scivola al centro del tavolo e resta ferma mezzo secondo; poi il
+     * tavolo si aggiorna di colpo. Le carte prese spariscono subito, senza animazione:
+     * era proprio quella catena di animazioni annidate a generare i blocchi.
+     */
     private fun playAnimated(card: Card, capture: List<Card>, sx: Float, sy: Float, byBot: Boolean) {
         val (cx, cy) = tableCenter()
-        val tx = cx - cardW / 2f
-        val ty = cy - cardH / 2f
         val played = addTempCard(card, true, sx, sy, cardW, cardH)
-        played.animate().x(tx).y(ty).setDuration(340).start()
-        post(360) {
-            if (capture.isEmpty()) {
-                b.overlay.removeView(played)
-                finishPlay(card, capture, byBot)
-            } else {
-                gatherCaptured(capture, tx, ty, played) {
-                    b.overlay.removeView(played)
-                    finishPlay(card, capture, byBot)
-                }
-            }
-        }
-    }
-
-    private fun gatherCaptured(capture: List<Card>, tx: Float, ty: Float, played: View, onDone: () -> Unit) {
-        val temps = ArrayList<View>()
-        for (c in capture) {
-            val v = findTableCardView(c)
-            val start = if (v != null) {
-                val p = topLeftInOverlay(v); v.visibility = View.INVISIBLE; p
-            } else Pair(tx, ty)
-            temps.add(addTempCard(c, true, start.first, start.second, centerW, centerH))
-        }
-        played.bringToFront() // captured cards slide UNDER the played card
-        var maxEnd = 0L
-        for ((i, t) in temps.withIndex()) {
-            val destX = tx + (cardW - centerW) / 2f
-            val destY = ty + dp(30) + i * dp(3)
-            val delay = (i * 70).toLong()
-            t.animate().x(destX).y(destY).setStartDelay(delay).setDuration(300).start()
-            maxEnd = maxOf(maxEnd, delay + 300)
-        }
-        post(maxEnd + 40) {
-            for (t in temps) b.overlay.removeView(t)
-            onDone()
+        played.animate().x(cx - cardW / 2f).y(cy - cardH / 2f).setDuration(240).start()
+        post(holdMs) {
+            b.overlay.removeView(played)
+            finishPlay(card, capture, byBot)
         }
     }
 
     private fun finishPlay(card: Card, capture: List<Card>, byBot: Boolean) {
         try {
             val scopa = game.play(card, capture)
+            moveSeq++
             afterPlay(scopa, capture, byBot, card)
         } catch (e: Exception) {
-            busy = false
-            render()
-            if (game.finished) endRound() else b.txtStatus.setText(R.string.your_turn)
+            moveSeq++
+            recover()
         }
     }
 
@@ -314,45 +332,25 @@ class GameActivity : AppCompatActivity() {
         val hasBanner = events.isNotEmpty()
         if (hasBanner) showBanner(events.joinToString("   "), byBot)
 
-        render()
         if (game.finished) {
-            // let the banner play before the round-summary dialog covers it
             busy = true
-            if (hasBanner) post(1300) { endRound() } else endRound()
+            render()
+            // lascio finire il cartello prima del riepilogo, ma senza bloccare nulla
+            if (hasBanner) post(1100) { endRound() } else endRound()
             return
         }
-        b.txtStatus.setText(if (byBot) R.string.your_turn else R.string.bot_turn)
 
-        // when new cards were just dealt, keep them hidden until animateDeal flies them in (no pop-in flicker)
-        if (game.lastDealt) hideHandsForDeal()
-
-        // dopo una distribuzione l'attesa e' corta: l'animazione delle carte che volano
-        // dal mazzo fa gia' da pausa visiva (prima erano 500 ms + 740 ms di animazione)
-        post(if (game.lastDealt) 140 else 500) {
-            if (game.lastDealt) {
-                b.root.doOnPreDraw {
-                    if (destroyed) return@doOnPreDraw
-                    animateDeal {
-                        if (byBot) { busy = false; render() } else { botTurn() }
-                    }
-                }
-            } else {
-                if (byBot) { busy = false; render() } else { botTurn() }
-            }
+        if (byBot) {
+            busy = false
+            render()
+            b.txtStatus.setText(R.string.your_turn)
+            maybeAutoPlay()
+        } else {
+            busy = true
+            render()
+            b.txtStatus.setText(R.string.bot_turn)
+            botTurn()
         }
-    }
-
-    /** Rimette visibili le mani: serve quando animateDeal esce senza animare (mazzo finito),
-     *  altrimenti le carte restano trasparenti per via di hideHandsForDeal. */
-    private fun showHands() {
-        for (i in 0 until b.botHand.childCount) b.botHand.getChildAt(i).alpha = 1f
-        for (i in 0 until b.youHand.childCount) b.youHand.getChildAt(i).alpha = 1f
-    }
-
-    /** Hide the cards currently in both hands (used right before a deal animation to avoid a flash). */
-    private fun hideHandsForDeal() {
-        for (i in 0 until b.botHand.childCount) b.botHand.getChildAt(i).alpha = 0f
-        for (i in 0 until b.youHand.childCount) b.youHand.getChildAt(i).alpha = 0f
     }
 
     // ---------- animation helpers ----------
@@ -364,7 +362,9 @@ class GameActivity : AppCompatActivity() {
 
     private fun centerInOverlay(v: View): Pair<Float, Float> {
         val (x, y) = topLeftInOverlay(v)
-        return Pair(x + v.width / 2f, y + v.height / 2f)
+        val w = if (v.width > 0) v.width else cardW
+        val h = if (v.height > 0) v.height else cardH
+        return Pair(x + w / 2f, y + h / 2f)
     }
 
     private fun tableCenter(): Pair<Float, Float> = centerInOverlay(b.centerArea)
@@ -376,37 +376,6 @@ class GameActivity : AppCompatActivity() {
         b.overlay.addView(cv, FrameLayout.LayoutParams(w, h))
         cv.x = x; cv.y = y
         return cv
-    }
-
-    private fun findTableCardView(card: Card): View? {
-        for (i in 0 until b.gridCenter.childCount) {
-            val child = b.gridCenter.getChildAt(i)
-            if (child is CardView && child.card == card) return child
-        }
-        return null
-    }
-
-    private fun animateDeal(onDone: () -> Unit = {}) {
-        val deckView = if (game.deck.isNotEmpty() && b.deckBox.childCount > 0) b.deckBox else null
-        if (deckView == null) { showHands(); onDone(); return }
-        val deck = IntArray(2); deckView.getLocationInWindow(deck)
-        val views = ArrayList<View>()
-        for (i in 0 until b.botHand.childCount) views.add(b.botHand.getChildAt(i))
-        for (i in 0 until b.youHand.childCount) views.add(b.youHand.getChildAt(i))
-        if (views.isEmpty()) { showHands(); onDone(); return }
-        var delay = 0L
-        val step = 45L
-        val dur = 200L
-        for (v in views) {
-            val p = IntArray(2); v.getLocationInWindow(p)
-            v.translationX = (deck[0] - p[0]).toFloat()
-            v.translationY = (deck[1] - p[1]).toFloat()
-            v.alpha = 0f
-            v.animate().translationX(0f).translationY(0f).alpha(1f)
-                .setStartDelay(delay).setDuration(dur).start()
-            delay += step
-        }
-        post(delay + dur) { onDone() }
     }
 
     private fun showBanner(text: String, byBot: Boolean) {
@@ -423,9 +392,9 @@ class GameActivity : AppCompatActivity() {
         lp.gravity = Gravity.CENTER
         b.overlay.addView(tv, lp)
         tv.scaleX = 0.4f; tv.scaleY = 0.4f; tv.alpha = 0f
-        tv.animate().scaleX(1.15f).scaleY(1.15f).alpha(1f).setDuration(240).start()
-        post(1000) { tv.animate().alpha(0f).setDuration(350).start() }
-        post(1400) { b.overlay.removeView(tv) }
+        tv.animate().scaleX(1.15f).scaleY(1.15f).alpha(1f).setDuration(220).start()
+        post(850) { tv.animate().alpha(0f).setDuration(300).start() }
+        post(1200) { b.overlay.removeView(tv) }
     }
 
     // ---------- end of round / match ----------
@@ -434,11 +403,11 @@ class GameActivity : AppCompatActivity() {
         roundEnding = true
         ui.removeCallbacks(watchdog)
         busy = true
-        render()
         val you = game.scoreFor(0)
         val bot = game.scoreFor(1)
         matchYou += you.total
         matchBot += bot.total
+        render()
         // in parita' sul traguardo non si assegna la partita: si gioca un'altra mano
         val over = (matchYou >= target || matchBot >= target) && matchYou != matchBot
         if (over) Prefs.markMatchEnded(this)

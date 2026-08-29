@@ -9,7 +9,7 @@
     <!-- Game -->
     <string name="bot">Banco</string>
     <string name="you">Tu</string>
-    <string name="score_line">prese: %1$d   scope: %2$d   punteggio: %3$d</string>
+    <string name="score_line">Punti: %1$d   Scope: %2$d</string>
     <string name="your_turn">Tocca a te: scegli una carta</string>
     <string name="bot_turn">Gioca il Banco…</string>
     <string name="back_home">Menu</string>
@@ -53,6 +53,9 @@
     <string name="brisc_match_win_bot">Partita persa. %1$d a %2$d mani</string>
 
     <!-- Pausa responsabile -->
+    <string name="test_section">Test</string>
+    <string name="auto_play">Gioco automatico</string>
+    <string name="auto_play_desc">Il programma gioca da solo sia le carte del Banco sia le tue. Serve a provare in fretta il funzionamento.</string>
     <string name="pause_section">Gioco responsabile</string>
     <string name="pause_switch">Pausa di 1 minuto fra le partite</string>
     <string name="pause_switch_desc">Al termine di ogni partita compare un avviso e bisogna attendere un minuto prima di ricominciare. Per disattivarla serve una password.</string>
