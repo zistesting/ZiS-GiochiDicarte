@@ -14,6 +14,14 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp">
 
+        <!-- Mano del Banco: sta per prima cosi' esce dal bordo alto (topMargin negativo da codice) -->
+        <LinearLayout
+            android:id="@+id/botHand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
         <!-- top score row (Banco) -->
         <TextView
             android:id="@+id/botScore"
@@ -25,15 +33,6 @@
             android:textSize="15sp"
             android:textStyle="bold"
             android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
-
-        <!-- Banco hand (face down) -->
-        <LinearLayout
-            android:id="@+id/botHand"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:gravity="center"
-            android:orientation="horizontal" />
 
         <!-- status -->
         <TextView

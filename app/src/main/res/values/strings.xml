@@ -51,4 +51,21 @@
     <string name="hands_11">11 mani</string>
     <string name="brisc_match_win_you">Partita vinta! %1$d a %2$d mani</string>
     <string name="brisc_match_win_bot">Partita persa. %1$d a %2$d mani</string>
+
+    <!-- Pausa responsabile -->
+    <string name="pause_section">Gioco responsabile</string>
+    <string name="pause_switch">Pausa di 1 minuto fra le partite</string>
+    <string name="pause_switch_desc">Al termine di ogni partita compare un avviso e bisogna attendere un minuto prima di ricominciare. Per disattivarla serve una password.</string>
+    <string name="pause_title">Prenditi una pausa</string>
+    <string name="pause_message">Giocare a lungo senza interruzioni può diventare un\'abitudine difficile da controllare. Fermati un minuto: alzati, bevi qualcosa, guarda che ora è.
+
+Se senti il bisogno di ricominciare subito, se stai giocando per rifarti di una sconfitta o se il gioco sta togliendo tempo ad altro, parlane con qualcuno.
+
+Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 558 822 (gratuito e anonimo, dal lunedì al venerdì dalle 10 alle 16).</string>
+    <string name="pause_countdown">Attendi %1$d s</string>
+    <string name="pause_wait">Attendi</string>
+    <string name="pause_pwd_title">Disattiva la pausa</string>
+    <string name="pause_pwd_msg">Inserisci la password per disattivare la pausa fra le partite.</string>
+    <string name="pause_pwd_hint">Password</string>
+    <string name="pause_pwd_wrong">Password errata: la pausa resta attiva.</string>
 </resources>

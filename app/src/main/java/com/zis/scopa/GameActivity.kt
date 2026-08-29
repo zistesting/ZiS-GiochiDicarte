@@ -68,6 +68,9 @@ class GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         b = ActivityGameBinding.inflate(layoutInflater)
         setContentView(b.root)
+        // Le carte del Banco sono coperte: le faccio uscire per meta' dal bordo alto,
+        // cosi' su schermi piccoli resta piu' spazio per il tavolo.
+        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
         startMatch()
     }
 
@@ -86,6 +89,16 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun startMatch() {
+        val wait = Prefs.pauseRemaining(this)
+        if (wait > 0) {
+            busy = true
+            PauseDialog.show(this, wait, onReady = { beginMatch() }, onLeave = { finish() })
+            return
+        }
+        beginMatch()
+    }
+
+    private fun beginMatch() {
         target = Prefs.scoreTarget(this)
         matchYou = 0
         matchBot = 0
@@ -300,7 +313,9 @@ class GameActivity : AppCompatActivity() {
         // when new cards were just dealt, keep them hidden until animateDeal flies them in (no pop-in flicker)
         if (game.lastDealt) hideHandsForDeal()
 
-        post(500) {
+        // dopo una distribuzione l'attesa e' corta: l'animazione delle carte che volano
+        // dal mazzo fa gia' da pausa visiva (prima erano 500 ms + 740 ms di animazione)
+        post(if (game.lastDealt) 140 else 500) {
             if (game.lastDealt) {
                 b.root.doOnPreDraw {
                     if (destroyed) return@doOnPreDraw
@@ -312,6 +327,13 @@ class GameActivity : AppCompatActivity() {
                 if (byBot) { busy = false; render() } else { botTurn() }
             }
         }
+    }
+
+    /** Rimette visibili le mani: serve quando animateDeal esce senza animare (mazzo finito),
+     *  altrimenti le carte restano trasparenti per via di hideHandsForDeal. */
+    private fun showHands() {
+        for (i in 0 until b.botHand.childCount) b.botHand.getChildAt(i).alpha = 1f
+        for (i in 0 until b.youHand.childCount) b.youHand.getChildAt(i).alpha = 1f
     }
 
     /** Hide the cards currently in both hands (used right before a deal animation to avoid a flash). */
@@ -353,15 +375,15 @@ class GameActivity : AppCompatActivity() {
 
     private fun animateDeal(onDone: () -> Unit = {}) {
         val deckView = if (game.deck.isNotEmpty() && b.gridCenter.childCount > 0) b.gridCenter.getChildAt(0) else null
-        if (deckView == null) { onDone(); return }
+        if (deckView == null) { showHands(); onDone(); return }
         val deck = IntArray(2); deckView.getLocationInWindow(deck)
         val views = ArrayList<View>()
         for (i in 0 until b.botHand.childCount) views.add(b.botHand.getChildAt(i))
         for (i in 0 until b.youHand.childCount) views.add(b.youHand.getChildAt(i))
-        if (views.isEmpty()) { onDone(); return }
+        if (views.isEmpty()) { showHands(); onDone(); return }
         var delay = 0L
-        val step = 80L
-        val dur = 260L
+        val step = 45L
+        val dur = 200L
         for (v in views) {
             val p = IntArray(2); v.getLocationInWindow(p)
             v.translationX = (deck[0] - p[0]).toFloat()
@@ -406,6 +428,7 @@ class GameActivity : AppCompatActivity() {
         matchBot += bot.total
         // in parita' sul traguardo non si assegna la partita: si gioca un'altra mano
         val over = (matchYou >= target || matchBot >= target) && matchYou != matchBot
+        if (over) Prefs.markMatchEnded(this)
 
         val msg = buildString {
             append("<b>${getString(R.string.you)} ${you.total} &#8211; ${bot.total} ${getString(R.string.bot)}</b><br/><br/>")

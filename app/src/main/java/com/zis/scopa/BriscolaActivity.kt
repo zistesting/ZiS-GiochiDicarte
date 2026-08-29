@@ -55,7 +55,22 @@ class BriscolaActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         b = ActivityBriscolaBinding.inflate(layoutInflater)
         setContentView(b.root)
+        placeCards()
         startMatch()
+    }
+
+    /**
+     * Sistemazione fissa degli elementi, calcolata una volta sola perche' dipende solo
+     * dalla larghezza dello schermo:
+     *  - le carte del Banco escono per meta' dal bordo alto (sono coperte, non serve vederle)
+     *  - il mazzo esce per meta' dal bordo sinistro
+     *  - la briscola resta nascosta per un terzo sotto al mazzo
+     */
+    private fun placeCards() {
+        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
+        (b.deckRow.layoutParams as LinearLayout.LayoutParams).marginStart = -cardW / 2
+        (b.briscolaBox.layoutParams as LinearLayout.LayoutParams).marginStart = -cardW / 3
+        b.deckBox.translationZ = 1f   // il mazzo copre la briscola, non il contrario
     }
 
     override fun onDestroy() {
@@ -72,6 +87,16 @@ class BriscolaActivity : AppCompatActivity() {
     }
 
     private fun startMatch() {
+        val wait = Prefs.pauseRemaining(this)
+        if (wait > 0) {
+            busy = true
+            PauseDialog.show(this, wait, onReady = { beginMatch() }, onLeave = { finish() })
+            return
+        }
+        beginMatch()
+    }
+
+    private fun beginMatch() {
         matchTarget = Prefs.briscolaTarget(this)
         matchYou = 0
         matchBot = 0
@@ -139,7 +164,8 @@ class BriscolaActivity : AppCompatActivity() {
             tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
             tv.setPadding(dp(5), dp(1), dp(5), dp(1))
             val tp = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
-            tp.gravity = Gravity.CENTER
+            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            tp.marginEnd = dp(6)
             fl.addView(tv, tp)
             b.deckBox.addView(fl)
         }
@@ -231,6 +257,7 @@ class BriscolaActivity : AppCompatActivity() {
             else -> getString(R.string.brisc_draw, you, bot)
         }
         val matchOver = matchYou >= matchTarget || matchBot >= matchTarget
+        if (matchOver) Prefs.markMatchEnded(this)
 
         val builder = AlertDialog.Builder(this)
             .setTitle(R.string.play_briscola)
