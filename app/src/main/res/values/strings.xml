@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">ZiS-GiochiDiCarte</string>
+
+    <!-- Home -->
+    <string name="title">Giochi di Carte</string>
+    <string name="play">Scopa</string>
+    <string name="quit">Esci</string>
+
+    <!-- Game -->
+    <string name="bot">Banco</string>
+    <string name="you">Tu</string>
+    <string name="score_line">prese: %1$d   scope: %2$d   punteggio: %3$d</string>
+    <string name="your_turn">Tocca a te: scegli una carta</string>
+    <string name="bot_turn">Gioca il Banco…</string>
+    <string name="back_home">Menu</string>
+
+    <!-- End of round dialog -->
+    <string name="round_over">Fine mano</string>
+    <string name="pt_carte">Carte</string>
+    <string name="pt_denari">Denari</string>
+    <string name="pt_settebello">Settebello</string>
+    <string name="pt_primiera">Primiera</string>
+    <string name="pt_scope">Scope</string>
+    <string name="choose_capture">Scegli la presa</string>
+    <string name="cd_web">Sito ZiS</string>
+    <string name="cd_settings">Impostazioni</string>
+    <string name="settings_title">Impostazioni</string>
+    <string name="score_target_label">Punteggio partita</string>
+    <string name="target_11">11 punti</string>
+    <string name="target_21">21 punti</string>
+    <string name="match_line">Partita: Tu %1$d - %2$d Banco (a %3$d)</string>
+    <string name="continue_match">Continua</string>
+    <string name="new_match">Nuova partita</string>
+    <string name="match_win_you">Hai vinto la partita!</string>
+    <string name="match_win_bot">Ha vinto il Banco.</string>
+    <string name="play_briscola">Briscola</string>
+    <string name="briscola_is">Briscola: %1$s</string>
+    <string name="suit_denari">Denari</string>
+    <string name="suit_coppe">Coppe</string>
+    <string name="suit_spade">Spade</string>
+    <string name="suit_bastoni">Bastoni</string>
+    <string name="you_points">Tu: %1$d</string>
+    <string name="bot_points">Banco: %1$d</string>
+    <string name="you_take">Presa tua</string>
+    <string name="bot_take">Presa Banco</string>
+    <string name="brisc_win_you">Hai vinto la partita! %1$d a %2$d</string>
+    <string name="brisc_win_bot">Ha vinto il Banco. %1$d a %2$d</string>
+    <string name="brisc_draw">Pareggio! %1$d a %2$d</string>
+    <string name="briscola_hands_label">Mani da vincere</string>
+    <string name="hands_5">5 mani</string>
+    <string name="hands_11">11 mani</string>
+    <string name="brisc_match_win_you">Partita vinta! %1$d a %2$d mani</string>
+    <string name="brisc_match_win_bot">Partita persa. %1$d a %2$d mani</string>
+</resources>

@@ -87,6 +87,14 @@ Quando la affronti:
 
 ## Note tecniche
 
+**Mazzo.** 40 carte + dorso, tutte 320x585 px, palette a 256 colori (l'errore
+rispetto all'originale a 24 bit e' 1.5/255, invisibile su disegni a colori piatti,
+ma il file pesa il 59% in meno). Le sorgenti originali sono 560x1024: se un domani
+servisse piu' nitidezza sui tablet basta rigenerarle a 400 px di larghezza.
+Il **dorso** e' un adattamento dell'immagine vecchia (era 220x339, proporzione
+diversa): cornice e medaglione sono stati mantenuti in scala e sono state stirate
+solo le due fasce di filigrana. Andrebbe ridisegnato a 560x1024 come le altre.
+
 **Immagini delle carte.** Stanno in `res/drawable-nodpi/`, non in `res/drawable/`.
 La cartella senza qualificatore vale mdpi, quindi Android ingrandirebbe ogni carta
 alla densità dello schermo: su un telefono xxhdpi una carta da 220×410 px diventa

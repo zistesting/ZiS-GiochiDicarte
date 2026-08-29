@@ -1,0 +1,21 @@
+<resources>
+    <!-- legacy names still referenced in code/layouts -->
+    <color name="felt_green">#158140</color>
+    <color name="felt_dark">#0C1626</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#111111</color>
+    <color name="gold">#E9C24C</color>
+    <color name="gold_dark">#B8891F</color>
+    <color name="panel">#D40A1220</color>
+    <color name="accent">#E23A2A</color>
+    <!-- dark material palette (blu scuro / nero / argento / celeste) -->
+    <color name="velvet_base">#0A1018</color>
+    <color name="navy_deep">#0C1626</color>
+    <color name="navy">#14294A</color>
+    <color name="navy_mid">#23477E</color>
+    <color name="steel">#3E6BA6</color>
+    <color name="celeste">#A9D0EC</color>
+    <color name="celeste_light">#D7EAF6</color>
+    <color name="silver">#C8D0DC</color>
+    <color name="silver_dark">#AEB9C6</color>
+</resources>
