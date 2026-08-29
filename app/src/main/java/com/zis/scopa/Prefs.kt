@@ -8,6 +8,9 @@ object Prefs {
     /** Durata della pausa obbligatoria fra una partita e l'altra. */
     const val PAUSE_MS = 60_000L
 
+    /** Quanto dura la disattivazione della pausa prima che si riaccenda da sola. */
+    const val PAUSE_OFF_MS = 60L * 60L * 1000L
+
     private fun p(ctx: Context) = ctx.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
     fun scoreTarget(ctx: Context): Int = p(ctx).getInt("score_target", 11)
@@ -25,11 +28,34 @@ object Prefs {
 
     // ---------------- pausa responsabile ----------------
 
-    /** Attiva di serie: si disattiva solo con la password. */
-    fun pauseEnabled(ctx: Context): Boolean = p(ctx).getBoolean("pause_enabled", true)
+    /**
+     * Attiva di serie. Si disattiva solo con la password e, comunque, la disattivazione
+     * scade dopo un'ora: passato quel tempo la pausa torna accesa da sola.
+     */
+    fun pauseEnabled(ctx: Context): Boolean {
+        val pr = p(ctx)
+        if (pr.getBoolean("pause_enabled", true)) return true
+        val offAt = pr.getLong("pause_off_at", 0L)
+        val elapsed = System.currentTimeMillis() - offAt
+        if (offAt <= 0L || elapsed < 0 || elapsed >= PAUSE_OFF_MS) {
+            // scaduta (o orologio spostato indietro): riaccendo e ripulisco
+            pr.edit().putBoolean("pause_enabled", true).remove("pause_off_at").apply()
+            return true
+        }
+        return false
+    }
 
     fun setPauseEnabled(ctx: Context, value: Boolean) {
-        p(ctx).edit().putBoolean("pause_enabled", value).apply()
+        val e = p(ctx).edit().putBoolean("pause_enabled", value)
+        if (value) e.remove("pause_off_at") else e.putLong("pause_off_at", System.currentTimeMillis())
+        e.apply()
+    }
+
+    /** Millisecondi che mancano alla riaccensione automatica; 0 se la pausa e' gia' attiva. */
+    fun pauseOffRemaining(ctx: Context): Long {
+        if (pauseEnabled(ctx)) return 0
+        val offAt = p(ctx).getLong("pause_off_at", 0L)
+        return (PAUSE_OFF_MS - (System.currentTimeMillis() - offAt)).coerceIn(0L, PAUSE_OFF_MS)
     }
 
     fun markMatchEnded(ctx: Context) {

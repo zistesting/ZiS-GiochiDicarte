@@ -46,28 +46,42 @@
             android:textStyle="bold"
             android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
 
-        <!-- center: deck + table cards, grid of 4 per row (scrolls if 3+ rows do not fit) -->
-        <ScrollView
+        <!-- Centro tavolo. Il mazzo non sta piu' dentro la griglia: e' ancorato al bordo
+             sinistro e sporge per meta' fuori schermo, come in Briscola. La griglia scende
+             a 3 colonne cosi' le carte in tavola non ci finiscono sopra. -->
+        <FrameLayout
             android:id="@+id/centerArea"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true"
-            android:scrollbars="none">
+            android:layout_weight="1">
 
-            <LinearLayout
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                android:scrollbars="none">
 
-                <GridLayout
-                    android:id="@+id/gridCenter"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/centerBox"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:columnCount="4" />
-            </LinearLayout>
-        </ScrollView>
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <GridLayout
+                        android:id="@+id/gridCenter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:columnCount="3" />
+                </LinearLayout>
+            </ScrollView>
+
+            <FrameLayout
+                android:id="@+id/deckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical" />
+        </FrameLayout>
 
         <!-- your hand (face up) -->
         <LinearLayout

@@ -2,6 +2,7 @@ package com.zis.scopa
 
 import android.os.Bundle
 import android.text.InputType
+import android.view.View
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -35,15 +36,42 @@ class SettingsActivity : AppCompatActivity() {
         b.btnBack.setOnClickListener { finish() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // se nel frattempo e' scaduta l'ora di disattivazione, l'interruttore torna acceso
+        refreshPauseUi()
+    }
+
+    /** Aggiorna interruttore e riga informativa in base allo stato attuale. */
+    private fun refreshPauseUi() {
+        val on = Prefs.pauseEnabled(this)
+        b.switchPause.setOnCheckedChangeListener(null)
+        b.switchPause.isChecked = on
+        setupPauseListener()
+        if (on) {
+            b.txtPauseInfo.visibility = View.GONE
+        } else {
+            val min = ((Prefs.pauseOffRemaining(this) + 59_999L) / 60_000L).toInt()
+            b.txtPauseInfo.text = getString(R.string.pause_off_info, min)
+            b.txtPauseInfo.visibility = View.VISIBLE
+        }
+    }
+
     /** Attivare la pausa e' libero; disattivarla richiede la password. */
     private fun setupPauseSwitch() {
         b.switchPause.isChecked = Prefs.pauseEnabled(this)
+        setupPauseListener()
+        refreshPauseUi()
+    }
+
+    private fun setupPauseListener() {
         b.switchPause.setOnCheckedChangeListener { _, checked ->
             if (checked) {
                 Prefs.setPauseEnabled(this, true)
+                refreshPauseUi()
             } else {
                 askPassword(
-                    onOk = { Prefs.setPauseEnabled(this, false) },
+                    onOk = { Prefs.setPauseEnabled(this, false); refreshPauseUi() },
                     onFail = {
                         restoreSwitch()
                         Toast.makeText(this, R.string.pause_pwd_wrong, Toast.LENGTH_SHORT).show()
@@ -58,7 +86,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun restoreSwitch() {
         b.switchPause.setOnCheckedChangeListener(null)
         b.switchPause.isChecked = true
-        setupPauseSwitch()
+        refreshPauseUi()
     }
 
     private fun askPassword(onOk: () -> Unit, onFail: () -> Unit, onCancel: () -> Unit) {

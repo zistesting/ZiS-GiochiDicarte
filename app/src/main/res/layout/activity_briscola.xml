@@ -62,24 +62,39 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/deckRow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+            <!-- Riga centrale: mazzo+briscola ancorati a sinistra (meta' fuori schermo),
+                 carta giocata centrata sullo schermo, non sullo spazio rimanente. -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-                <FrameLayout
-                    android:id="@+id/deckBox"
+                <LinearLayout
+                    android:id="@+id/deckRow"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <FrameLayout
-                    android:id="@+id/briscolaBox"
+                    <FrameLayout
+                        android:id="@+id/deckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <FrameLayout
+                        android:id="@+id/briscolaBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/trickRow"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="horizontal" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/txtStatus"
@@ -91,13 +106,6 @@
                 android:textStyle="bold"
                 android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
 
-            <LinearLayout
-                android:id="@+id/trickRow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:orientation="horizontal" />
         </LinearLayout>
 
         <LinearLayout

@@ -68,10 +68,21 @@ class GameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         b = ActivityGameBinding.inflate(layoutInflater)
         setContentView(b.root)
-        // Le carte del Banco sono coperte: le faccio uscire per meta' dal bordo alto,
-        // cosi' su schermi piccoli resta piu' spazio per il tavolo.
-        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
+        placeCards()
         startMatch()
+    }
+
+    /**
+     * Posizioni fisse, calcolate una volta sola perche' dipendono solo dalla larghezza
+     * dello schermo:
+     *  - le carte del Banco escono per meta' dal bordo alto (sono coperte, non serve vederle)
+     *  - il mazzo esce per meta' dal bordo sinistro
+     *  - la griglia del tavolo rientra di mezza carta, cosi' non finisce sopra al mazzo
+     */
+    private fun placeCards() {
+        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
+        (b.deckBox.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
+        b.centerBox.setPaddingRelative(cardW / 2, 0, 0, 0)   // Relative: rispetta supportsRtl
     }
 
     override fun onDestroy() {
@@ -151,10 +162,12 @@ class GameActivity : AppCompatActivity() {
         return lp
     }
 
-    private fun makeDeckCell(): View {
-        val fl = FrameLayout(this)
+    /** Disegna il mazzo nel riquadro ancorato a sinistra, col numero di carte rimaste. */
+    private fun renderDeck() {
+        b.deckBox.removeAllViews()
+        if (game.deck.isEmpty()) return
         val back = CardView(this); back.faceUp = false
-        fl.addView(back, FrameLayout.LayoutParams(centerW, centerH))
+        b.deckBox.addView(back, FrameLayout.LayoutParams(centerW, centerH))
         val tv = TextView(this)
         tv.text = game.deck.size.toString()
         tv.setTextColor(getColor(R.color.silver))
@@ -165,9 +178,10 @@ class GameActivity : AppCompatActivity() {
         val tp = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
         )
-        tp.gravity = Gravity.CENTER
-        fl.addView(tv, tp)
-        return fl
+        // meta' mazzo e' fuori schermo: il contatore sta a destra, dove si vede
+        tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
+        tp.marginEnd = dp(6)
+        b.deckBox.addView(tv, tp)
     }
 
     private fun render() {
@@ -187,9 +201,8 @@ class GameActivity : AppCompatActivity() {
             b.youHand.addView(cv)
         }
 
+        renderDeck()
         b.gridCenter.removeAllViews()
-        b.gridCenter.columnCount = 4
-        if (game.deck.isNotEmpty()) b.gridCenter.addView(makeDeckCell(), gridLp())
         for (c in game.table) {
             val cv = CardView(this); cv.card = c; cv.faceUp = true
             b.gridCenter.addView(cv, gridLp())
@@ -374,7 +387,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun animateDeal(onDone: () -> Unit = {}) {
-        val deckView = if (game.deck.isNotEmpty() && b.gridCenter.childCount > 0) b.gridCenter.getChildAt(0) else null
+        val deckView = if (game.deck.isNotEmpty() && b.deckBox.childCount > 0) b.deckBox else null
         if (deckView == null) { showHands(); onDone(); return }
         val deck = IntArray(2); deckView.getLocationInWindow(deck)
         val views = ArrayList<View>()

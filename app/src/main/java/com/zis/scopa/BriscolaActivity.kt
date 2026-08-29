@@ -68,7 +68,7 @@ class BriscolaActivity : AppCompatActivity() {
      */
     private fun placeCards() {
         (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
-        (b.deckRow.layoutParams as LinearLayout.LayoutParams).marginStart = -cardW / 2
+        (b.deckRow.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
         (b.briscolaBox.layoutParams as LinearLayout.LayoutParams).marginStart = -cardW / 3
         b.deckBox.translationZ = 1f   // il mazzo copre la briscola, non il contrario
     }
@@ -230,13 +230,50 @@ class BriscolaActivity : AppCompatActivity() {
         b.txtStatus.setText(if (winner == 0) R.string.you_take else R.string.bot_take)
         showBanner(if (winner == 0) getString(R.string.you_take) else getString(R.string.bot_take), winner == 1)
         busy = true; armWatchdog()
-        post(1200) {
-            render()   // trick cleared, hands refilled
-            when {
-                game.finished -> endGame()
-                game.turn == 1 -> { b.txtStatus.setText(R.string.bot_turn); post(500) { botPlay() } }
-                else -> { busy = false; b.txtStatus.setText(R.string.your_turn) }
+        post(650) {
+            sweepTrick(winner) {
+                render()   // trick cleared, hands refilled
+                when {
+                    game.finished -> endGame()
+                    game.turn == 1 -> { b.txtStatus.setText(R.string.bot_turn); post(500) { botPlay() } }
+                    else -> { busy = false; b.txtStatus.setText(R.string.your_turn) }
+                }
             }
+        }
+    }
+
+    /**
+     * Le due carte della presa scivolano verso chi ha vinto la mano: in alto se ha preso
+     * il Banco, in basso se hai preso tu. Rimpicciolendosi e sfumando danno l'idea della
+     * carta che finisce nel mazzetto delle prese.
+     */
+    private fun sweepTrick(winner: Int, onDone: () -> Unit) {
+        val temps = ArrayList<CardView>()
+        for (i in 0 until b.trickRow.childCount) {
+            val child = b.trickRow.getChildAt(i) as? CardView ?: continue
+            val (x, y) = topLeftInOverlay(child)
+            val t = CardView(this)
+            t.card = child.card; t.faceUp = true
+            b.overlay.addView(t, FrameLayout.LayoutParams(cardW, cardH))
+            t.x = x; t.y = y
+            child.visibility = View.INVISIBLE
+            temps.add(t)
+        }
+        if (temps.isEmpty()) { onDone(); return }
+
+        val dest = if (winner == 0) b.youHand else b.botHand
+        val (cx, cy) = centerInOverlay(dest)
+        var last = 0L
+        for ((i, t) in temps.withIndex()) {
+            val delay = (i * 70).toLong()
+            t.animate().x(cx - cardW / 2f).y(cy - cardH / 2f)
+                .scaleX(0.5f).scaleY(0.5f).alpha(0f)
+                .setStartDelay(delay).setDuration(320).start()
+            last = maxOf(last, delay + 320)
+        }
+        post(last + 40) {
+            for (t in temps) b.overlay.removeView(t)
+            onDone()
         }
     }
 

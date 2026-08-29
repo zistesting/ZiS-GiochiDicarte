@@ -67,5 +67,6 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <string name="pause_pwd_title">Disattiva la pausa</string>
     <string name="pause_pwd_msg">Inserisci la password per disattivare la pausa fra le partite.</string>
     <string name="pause_pwd_hint">Password</string>
+    <string name="pause_off_info">Pausa disattivata. Si riattiva automaticamente fra %1$d min.</string>
     <string name="pause_pwd_wrong">Password errata: la pausa resta attiva.</string>
 </resources>
