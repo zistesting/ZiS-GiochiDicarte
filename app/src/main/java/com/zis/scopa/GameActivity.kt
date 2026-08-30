@@ -16,7 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnLayout
 import com.zis.scopa.databinding.ActivityGameBinding
-import java.util.Locale
+import com.zis.scopa.databinding.DialogScoreBinding
 
 class GameActivity : AppCompatActivity() {
 
@@ -524,27 +524,23 @@ class GameActivity : AppCompatActivity() {
         val over = (matchYou >= target || matchBot >= target) && matchYou != matchBot
         if (over) Prefs.markMatchEnded(this)
 
-        val msg = buildString {
-            append(String.format(Locale.ITALY, "%-12s%6s%9s%n", "", getString(R.string.you), getString(R.string.bot)))
-            append("-".repeat(27)).append("\n")
-            append(monoRow(R.string.pt_carte, you.carte, bot.carte))
-            append(monoRow(R.string.pt_denari, you.denari, bot.denari))
-            append(monoRow(R.string.pt_settebello, you.settebello, bot.settebello))
-            append(monoRow(R.string.pt_primiera, you.primiera, bot.primiera))
-            append(monoRow(R.string.pt_scope, you.scope, bot.scope))
-            append("-".repeat(27)).append("\n")
-            append(monoRow(R.string.pt_totale, you.total, bot.total))
-            append("\n")
-            append(getString(R.string.match_line, matchYou, matchBot, target))
-            if (over) {
-                append("\n\n")
-                append(if (matchYou > matchBot) getString(R.string.match_win_you) else getString(R.string.match_win_bot))
-            }
+        val v = DialogScoreBinding.inflate(layoutInflater)
+        v.youCarte.text = you.carte.toString();          v.botCarte.text = bot.carte.toString()
+        v.youDenari.text = you.denari.toString();        v.botDenari.text = bot.denari.toString()
+        v.youSette.text = you.settebello.toString();     v.botSette.text = bot.settebello.toString()
+        v.youPrimiera.text = you.primiera.toString();    v.botPrimiera.text = bot.primiera.toString()
+        v.youScope.text = you.scope.toString();          v.botScope.text = bot.scope.toString()
+        v.youTot.text = you.total.toString();            v.botTot.text = bot.total.toString()
+        v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot, target)
+        if (over) {
+            v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
+                               else getString(R.string.match_win_bot)
+            v.txtWinner.visibility = View.VISIBLE
         }
 
         val builder = AlertDialog.Builder(this)
             .setTitle(R.string.round_over)
-            .setMessage(msg)
+            .setView(v.root)
             .setCancelable(false)
             .setNegativeButton(R.string.back_home) { _, _ -> finish() }
         if (over) {
@@ -552,20 +548,6 @@ class GameActivity : AppCompatActivity() {
         } else {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startRound() }
         }
-        val dialog = builder.create()
-        // Il riepilogo e' incolonnato con spazi: serve un carattere a larghezza fissa,
-        // altrimenti le colonne non si allineano.
-        dialog.setOnShowListener {
-            dialog.findViewById<TextView>(android.R.id.message)?.apply {
-                typeface = Typeface.MONOSPACE
-                textSize = 15f
-                setTextColor(getColor(R.color.silver))
-            }
-        }
-        dialog.show()
+        builder.show()
     }
-
-    /** Riga del riepilogo: etichetta a sinistra, i due punteggi incolonnati a destra. */
-    private fun monoRow(labelRes: Int, you: Int, bot: Int): String =
-        String.format(Locale.ITALY, "%-12s%6d%9d%n", getString(labelRes) + ":", you, bot)
 }

@@ -169,6 +169,18 @@ automatico** attivo valgono zero: niente animazioni, niente attese, niente carte
 la partita scorre alla massima velocità. Le mosse passano comunque dall'`Handler` una alla
 volta, quindi non si annidano sullo stack e l'app resta reattiva.
 
+**Riepilogo di fine mano (Scopa).** E' una `TableLayout` (`res/layout/dialog_score.xml`)
+passata al dialogo con `setView`, non un testo. Prima le colonne erano tenute in riga con gli
+spazi e un carattere a larghezza fissa: 27 caratteri che sui telefoni stretti andavano a capo
+e mandavano tutto fuori squadra. Con la tabella le colonne le tiene il layout e si usa il
+carattere normale dell'app.
+
+**Apertura del Banco (Briscola).** Il Banco non ha piu' la regola secca "mai aprire di
+briscola": con una mano tipo briscola 4 + briscola cavallo + un 3 lo obbligava a buttare il
+carico, dieci punti regalati per non calare una briscola che non vale niente. Adesso confronta
+il costo di ogni carta, cioe' i suoi punti piu' quanto varrebbe tenersela, e la briscola bassa
+entra nel conto. Nelle mani normali il liscio resta comunque la scelta piu' economica.
+
 **Callback differiti.** Tutti i passaggi di turno sono `postDelayed` su un unico `Handler`,
 ripuliti in `onDestroy()`. Senza questo, uscire dall'app mentre gioca il Banco faceva partire
 il dialogo di fine mano su un'activity distrutta (`BadTokenException`).

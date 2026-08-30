@@ -17,4 +17,25 @@
         <item name="android:textColorSecondary">@color/silver</item>
         <item name="colorPrimary">@color/silver</item>
     </style>
+    <!-- righe del riepilogo di fine mano (dialog_score.xml) -->
+    <style name="ScoreLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textColor">@color/silver</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="ScoreValue">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minWidth">56dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:gravity">end</item>
+        <item name="android:textColor">@color/silver</item>
+        <item name="android:textSize">15sp</item>
+    </style>
 </resources>

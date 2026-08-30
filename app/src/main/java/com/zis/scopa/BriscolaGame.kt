@@ -96,11 +96,26 @@ class BriscolaGame {
         return if (trick.isEmpty()) botLead(hand) else botFollow(hand, trick[0])
     }
 
-    private fun botLead(hand: List<Card>): Card {
-        val nonBrisc = hand.filter { it.suit != briscolaSuit }
-        val pool = if (nonBrisc.isNotEmpty()) nonBrisc else hand
-        return pool.minByOrNull { points(it) * 100 + strength(it.value) }!!
-    }
+    /**
+     * Quanto vale tenersi una carta invece di giocarla: le briscole servono per le prese
+     * future, e i carichi (Asso e 3) valgono da soli quasi un decimo della partita.
+     */
+    private fun keepValue(card: Card): Double =
+        (if (card.suit == briscolaSuit) 6.0 + strength(card.value) * 0.5 else 0.0) +
+        (if (card.value == 1) 5.0 else if (card.value == 3) 4.0 else 0.0)
+
+    /**
+     * Apertura: si cala la carta che costa meno perderla, cioe' i suoi punti piu' quanto
+     * varrebbe tenersela.
+     *
+     * Prima qui c'era una regola secca, "mai aprire di briscola", che pero' con una mano
+     * tipo briscola 4 + briscola cavallo + un 3 costringeva a buttare il carico: dieci punti
+     * regalati per non calare una briscola che non vale niente. Adesso la briscola bassa
+     * entra nel confronto e in quel caso vince lei, mentre nelle mani normali il liscio resta
+     * comunque la scelta piu' economica e la briscola si tiene.
+     */
+    private fun botLead(hand: List<Card>): Card =
+        hand.minByOrNull { points(it) + keepValue(it) + strength(it.value) * 0.05 }!!
 
     private fun botFollow(hand: List<Card>, lead: Card): Card {
         val pot = points(lead)
@@ -114,8 +129,7 @@ class BriscolaGame {
     private fun evalFollow(card: Card, lead: Card, pot: Int): Double {
         val wins = followWins(lead, card)
         val cardPts = points(card)
-        val keep = (if (card.suit == briscolaSuit) 6.0 + strength(card.value) * 0.5 else 0.0) +
-                (if (card.value == 1) 5.0 else if (card.value == 3) 4.0 else 0.0)
+        val keep = keepValue(card)
         val tie = strength(card.value) * 0.02
         return if (wins) (pot + cardPts) - keep * 0.9 - tie
         else -(pot + cardPts) + keep * 0.2 - tie
