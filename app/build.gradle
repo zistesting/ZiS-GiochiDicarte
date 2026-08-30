@@ -59,10 +59,14 @@ android {
             if (canSign) signingConfig signingConfigs.common
         }
         release {
-            if (canSign) {
-                signingConfig signingConfigs.common
-            } else {
-                logger.lifecycle("ZiS: nessun keystore configurato -> build firmato con la chiave di debug.")
+            // Senza questa riga, quando manca il keystore il release resta SENZA firma e
+            // AGP produce app-release-unsigned.apk, che il telefono si rifiuta di installare.
+            // Con il ripiego sulla chiave di debug l'APK e' sempre provabile; l'AAB firmato
+            // in quel modo pero' il Play Console lo rifiuta, quindi per pubblicare servono
+            // comunque i secret.
+            signingConfig = canSign ? signingConfigs.common : signingConfigs.debug
+            if (!canSign) {
+                logger.lifecycle("ZiS: nessun keystore configurato -> firma di debug, non caricabile sul Play Store.")
             }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

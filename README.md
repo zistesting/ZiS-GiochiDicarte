@@ -9,10 +9,17 @@ Scopa e Briscola contro il Banco. Progetto Android nativo (Kotlin + View Binding
 
 ## Compilare
 
-**Su GitHub:** il workflow `.github/workflows/build-apk.yml` parte a ogni push.
-L'APK di prova si scarica da **Actions → ultimo run → Artifacts → ZiS-GiochiDiCarte-APK**.
-Se i secret della firma sono configurati, viene prodotto anche **ZiS-GiochiDiCarte-AAB**,
-il pacchetto da caricare sul Play Store.
+**Su GitHub:** il workflow `.github/workflows/build-apk.yml` parte a ogni push e produce
+sempre due artefatti, scaricabili da **Actions → ultimo run → Artifacts**:
+
+| Artefatto | Cos'e' | A cosa serve |
+|---|---|---|
+| `ZiS-GiochiDiCarte-APK` | `app-release.apk` | si installa a mano sul telefono, per provare |
+| `ZiS-GiochiDiCarte-AAB` | `app-release.aab` | si carica sul Play Console per pubblicare |
+
+Entrambi escono dalla variante **release**, cioe' esattamente il codice che finisce agli
+utenti. Senza i secret della firma vengono firmati con la chiave di debug: l'APK si installa
+lo stesso, l'AAB invece il Play Console lo rifiuta.
 
 **In locale:**
 
@@ -109,7 +116,7 @@ Cosa è già stato fatto:
    ridimensionabile. Le carte adesso si misurano su larghezza **e** altezza (`CardSize.kt`),
    così in orizzontale non diventano tanto alte da non starci; le due schermate di gioco
    dichiarano `configChanges`, quindi ruotando il tablet la partita in corso non si perde.
-4. Il workflow produce un **AAB** firmato, non solo l'APK.
+4. Il workflow produce **APK e AAB** a ogni push, entrambi in variante release.
 
 Cosa resta da fare prima della pubblicazione:
 
