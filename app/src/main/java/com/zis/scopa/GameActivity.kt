@@ -28,6 +28,7 @@ class GameActivity : AppCompatActivity() {
     private var matchBot = 0
     private var youStartNext = true
     private var autoPlay = false
+    private var showBot = false
 
     private val ui = Handler(Looper.getMainLooper())
     private var roundEnding = false
@@ -55,7 +56,7 @@ class GameActivity : AppCompatActivity() {
         if (destroyed || roundEnding) return
         if (busy || game.finished || game.turn == 1) {
             watchdogSeq = moveSeq
-            ui.postDelayed(watchdog, 3000)
+            ui.postDelayed(watchdog, 4000)
         }
     }
 
@@ -92,6 +93,10 @@ class GameActivity : AppCompatActivity() {
 
     /** Quanto resta ferma a schermo la carta appena calata, prima che il tavolo si aggiorni. */
     private val holdMs: Long get() = if (autoPlay) 300L else 500L
+    /** Attesa dall'inizio del raggruppamento delle carte prese (animazione 260 ms inclusa). */
+    private val gatherHoldMs: Long get() = if (autoPlay) 300L else 500L
+    /** Quanto resta a schermo l'avviso SCOPA / SETTEBELLO prima di proseguire. */
+    private val bannerHoldMs: Long get() = if (autoPlay) 400L else 1000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +109,9 @@ class GameActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         autoPlay = Prefs.autoPlay(this)
+        showBot = Prefs.showBotCards(this)
+        placeCards()
+        render()
         maybeAutoPlay()
     }
 
@@ -113,7 +121,9 @@ class GameActivity : AppCompatActivity() {
      * dal bordo sinistro, griglia del tavolo rientrata cosi' non finisce sopra al mazzo.
      */
     private fun placeCards() {
-        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
+        // se le carte del Banco sono scoperte devono restare tutte visibili
+        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = if (showBot) 0 else -cardH / 2
+        b.botHand.requestLayout()
         (b.deckBox.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
         b.centerBox.setPaddingRelative(cardW / 2, 0, 0, 0)   // Relative: rispetta supportsRtl
     }
@@ -216,7 +226,7 @@ class GameActivity : AppCompatActivity() {
         b.youScore.text = getString(R.string.score_line, matchYou, game.scope[0])
 
         b.botHand.removeAllViews()
-        for (c in game.hands[1]) b.botHand.addView(makeCard(null, false, cardW, cardH))
+        for (c in game.hands[1]) b.botHand.addView(makeCard(if (showBot) c else null, showBot, cardW, cardH))
 
         b.youHand.removeAllViews()
         for (c in game.hands[0]) {
@@ -297,18 +307,58 @@ class GameActivity : AppCompatActivity() {
     }
 
     /**
-     * La carta calata scivola al centro del tavolo e resta ferma mezzo secondo; poi il
-     * tavolo si aggiorna di colpo. Le carte prese spariscono subito, senza animazione:
-     * era proprio quella catena di animazioni annidate a generare i blocchi.
+     * La carta calata scivola al centro del tavolo e resta ferma mezzo secondo. Se c'e' una
+     * presa, le carte prese la raggiungono infilandosi sotto e si aspetta un altro mezzo
+     * secondo. Tutti i tempi passano dallo stesso Handler: niente doOnPreDraw e niente
+     * animazioni annidate, che erano l'origine dei blocchi.
      */
     private fun playAnimated(card: Card, capture: List<Card>, sx: Float, sy: Float, byBot: Boolean) {
         val (cx, cy) = tableCenter()
+        val tx = cx - cardW / 2f
+        val ty = cy - cardH / 2f
         val played = addTempCard(card, true, sx, sy, cardW, cardH)
-        played.animate().x(cx - cardW / 2f).y(cy - cardH / 2f).setDuration(240).start()
+        played.animate().x(tx).y(ty).setDuration(240).start()
         post(holdMs) {
-            b.overlay.removeView(played)
-            finishPlay(card, capture, byBot)
+            if (capture.isEmpty()) {
+                b.overlay.removeView(played)
+                finishPlay(card, capture, byBot)
+            } else {
+                gatherCaptured(capture, tx, ty, played) {
+                    b.overlay.removeView(played)
+                    finishPlay(card, capture, byBot)
+                }
+            }
         }
+    }
+
+    /** Le carte prese raggiungono il centro del tavolo e finiscono sotto la carta calata. */
+    private fun gatherCaptured(capture: List<Card>, tx: Float, ty: Float, played: View, onDone: () -> Unit) {
+        val temps = ArrayList<View>()
+        for (c in capture) {
+            val v = findTableCardView(c)
+            val start = if (v != null) {
+                val p = topLeftInOverlay(v); v.visibility = View.INVISIBLE; p
+            } else Pair(tx, ty)
+            temps.add(addTempCard(c, true, start.first, start.second, centerW, centerH))
+        }
+        // la carta calata torna in cima: le prese devono scivolarle sotto
+        played.bringToFront()
+        for ((i, t) in temps.withIndex()) {
+            t.animate().x(tx + dp(7) + i * dp(5)).y(ty + dp(12) + i * dp(5))
+                .setDuration(260).start()
+        }
+        post(gatherHoldMs) {
+            for (t in temps) b.overlay.removeView(t)
+            onDone()
+        }
+    }
+
+    private fun findTableCardView(card: Card): View? {
+        for (i in 0 until b.gridCenter.childCount) {
+            val ch = b.gridCenter.getChildAt(i)
+            if (ch is CardView && ch.card == card) return ch
+        }
+        return null
     }
 
     private fun finishPlay(card: Card, capture: List<Card>, byBot: Boolean) {
@@ -340,16 +390,27 @@ class GameActivity : AppCompatActivity() {
             return
         }
 
-        if (byBot) {
-            busy = false
-            render()
-            b.txtStatus.setText(R.string.your_turn)
-            maybeAutoPlay()
-        } else {
+        val proceed = {
+            if (byBot) {
+                busy = false
+                render()
+                b.txtStatus.setText(R.string.your_turn)
+                maybeAutoPlay()
+            } else {
+                busy = true
+                render()
+                b.txtStatus.setText(R.string.bot_turn)
+                botTurn()
+            }
+        }
+
+        if (hasBanner) {
+            // il tavolo si aggiorna subito, ma si lascia leggere l'avviso prima di proseguire
             busy = true
             render()
-            b.txtStatus.setText(R.string.bot_turn)
-            botTurn()
+            post(bannerHoldMs) { proceed() }
+        } else {
+            proceed()
         }
     }
 

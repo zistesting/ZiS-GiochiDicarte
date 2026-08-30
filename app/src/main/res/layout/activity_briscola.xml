@@ -34,17 +34,6 @@
             android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
 
         <TextView
-            android:id="@+id/txtBriscola"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:gravity="center"
-            android:textColor="@color/gold"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
-
-        <TextView
             android:id="@+id/botScore"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

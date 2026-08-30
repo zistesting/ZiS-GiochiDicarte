@@ -43,6 +43,9 @@ class BriscolaActivity : AppCompatActivity() {
     private var ending = false
     private var destroyed = false
     private var autoPlay = false
+    private var showBot = false
+    /** Vero mentre scorre l'animazione della presa: le carte appena pescate restano nascoste. */
+    private var hideDrawn = false
 
     /** Come in Scopa: il watchdog interviene solo se il gioco non si e' mosso da solo. */
     private var moveSeq = 0
@@ -59,7 +62,7 @@ class BriscolaActivity : AppCompatActivity() {
         if (destroyed || ending) return
         if (busy || game.finished || game.turn == 1) {
             watchdogSeq = moveSeq
-            ui.postDelayed(watchdog, 3000)
+            ui.postDelayed(watchdog, 4000)
         }
     }
 
@@ -89,7 +92,9 @@ class BriscolaActivity : AppCompatActivity() {
      *  - la briscola resta nascosta per un terzo sotto al mazzo
      */
     private fun placeCards() {
-        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = -cardH / 2
+        // se le carte del Banco sono scoperte devono restare tutte visibili
+        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = if (showBot) 0 else -cardH / 2
+        b.botHand.requestLayout()
         (b.deckRow.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
         (b.briscolaBox.layoutParams as LinearLayout.LayoutParams).marginStart = -cardW / 3
         b.deckBox.translationZ = 1f   // il mazzo copre la briscola, non il contrario
@@ -98,6 +103,9 @@ class BriscolaActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         autoPlay = Prefs.autoPlay(this)
+        showBot = Prefs.showBotCards(this)
+        placeCards()
+        render()
         maybeAutoPlay()
     }
 
@@ -191,23 +199,27 @@ class BriscolaActivity : AppCompatActivity() {
     private fun render(trickOverride: List<Card>? = null) {
         val yourTurn = game.turn == 0 && !game.finished && !busy
 
-        b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot, matchTarget)
-        // il seme di briscola resta sempre leggibile, anche dopo che la carta e' stata pescata
-        b.txtBriscola.text = getString(R.string.briscola_is, suitName(game.briscolaSuit))
+        b.txtMatch.text = getString(R.string.brisc_match_line, matchYou, matchBot, matchTarget)
         b.botScore.text = getString(R.string.bot_points, game.scoreFor(1))
         b.youScore.text = getString(R.string.you_points, game.scoreFor(0))
 
         b.botHand.removeAllViews()
-        for (c in game.hands[1]) b.botHand.addView(makeCard(null, false, cardW, cardH, false))
+        for (c in game.hands[1]) {
+            if (hideDrawn && c == game.lastDrawn[1]) continue
+            b.botHand.addView(makeCard(if (showBot) c else null, showBot, cardW, cardH, false))
+        }
 
         b.youHand.removeAllViews()
         for (c in game.hands[0]) {
+            if (hideDrawn && c == game.lastDrawn[0]) continue
             b.youHand.addView(makeCard(c, true, cardW, cardH, yourTurn) { cv -> onPlayerCard(c, cv) })
         }
 
         // deck pile (cards above the briscola) + the face-up briscola card
         b.deckBox.removeAllViews()
-        val extra = game.deck.size - 1   // cards on top of the briscola
+        // finche' le carte pescate restano nascoste, il contatore non deve calare in anticipo
+        val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
+        val extra = game.deck.size + pending - 1   // cards on top of the briscola
         if (extra > 0) {
             val fl = FrameLayout(this)
             fl.addView(CardView(this).apply { faceUp = false }, FrameLayout.LayoutParams(smallW, smallH))
@@ -224,7 +236,8 @@ class BriscolaActivity : AppCompatActivity() {
             b.deckBox.addView(fl)
         }
         b.briscolaBox.removeAllViews()
-        val bc = game.briscolaCard()
+        val bc = if (hideDrawn && game.lastDrawn.any { it != null && it == game.trumpCard })
+            game.trumpCard else game.briscolaCard()
         if (bc != null) {
             val cv = CardView(this); cv.card = bc; cv.faceUp = true
             b.briscolaBox.addView(cv, FrameLayout.LayoutParams(smallW, smallH))
@@ -281,13 +294,15 @@ class BriscolaActivity : AppCompatActivity() {
     }
 
     private fun afterComplete(lead: Card, follow: Card, winner: Int) {
+        // le carte pescate restano nascoste finche' l'animazione della presa non e' finita
+        hideDrawn = true
         render(listOf(lead, follow))   // keep BOTH cards visible during the pause
         b.txtStatus.setText(if (winner == 0) R.string.you_take else R.string.bot_take)
-        showBanner(if (winner == 0) getString(R.string.you_take) else getString(R.string.bot_take), winner == 1)
         busy = true; armWatchdog()
-        post(650) {
+        post(500) {
             sweepTrick(winner) {
-                render()   // trick cleared, hands refilled
+                hideDrawn = false
+                render()   // ora compaiono le carte pescate
                 when {
                     game.finished -> endGame()
                     game.turn == 1 -> { b.txtStatus.setText(R.string.bot_turn); post(500) { botPlay() } }
@@ -363,7 +378,7 @@ class BriscolaActivity : AppCompatActivity() {
                 .setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
                 .setNegativeButton(R.string.back_home) { _, _ -> finish() }
         } else {
-            val scoreLine = getString(R.string.match_line, matchYou, matchBot, matchTarget)
+            val scoreLine = getString(R.string.brisc_match_line, matchYou, matchBot, matchTarget)
             builder.setMessage("$handMsg\n\n$scoreLine")
                 .setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
                 .setNeutralButton(R.string.new_match) { _, _ -> startMatch() }
@@ -372,13 +387,6 @@ class BriscolaActivity : AppCompatActivity() {
         val dlg = builder.show()
         // win notice for the user in gold
         if (you > bot) dlg.findViewById<TextView>(android.R.id.message)?.setTextColor(getColor(R.color.gold))
-    }
-
-    private fun suitName(suit: Int): String = when (suit) {
-        0 -> getString(R.string.suit_denari)
-        1 -> getString(R.string.suit_coppe)
-        2 -> getString(R.string.suit_spade)
-        else -> getString(R.string.suit_bastoni)
     }
 
     // ---- animation helpers ----
@@ -395,20 +403,4 @@ class BriscolaActivity : AppCompatActivity() {
         return Pair(x + w / 2f, y + h / 2f)
     }
 
-    private fun showBanner(text: String, byBot: Boolean) {
-        val tv = TextView(this)
-        tv.text = text
-        tv.setTextColor(if (byBot) getColor(R.color.silver) else getColor(R.color.gold))
-        tv.textSize = 30f
-        tv.setTypeface(tv.typeface, Typeface.BOLD)
-        tv.setShadowLayer(10f, 0f, 3f, Color.BLACK)
-        tv.gravity = Gravity.CENTER
-        val lp = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
-        lp.gravity = Gravity.CENTER
-        b.overlay.addView(tv, lp)
-        tv.scaleX = 0.5f; tv.scaleY = 0.5f; tv.alpha = 0f
-        tv.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setDuration(200).start()
-        post(800) { tv.animate().alpha(0f).setDuration(300).start() }
-        post(1150) { b.overlay.removeView(tv) }
-    }
 }

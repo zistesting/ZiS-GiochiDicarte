@@ -218,6 +218,25 @@
                     android:text="@string/auto_play_desc"
                     android:textColor="@color/silver_dark"
                     android:textSize="14sp" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchBotCards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/show_bot_cards"
+                    android:textColor="@color/silver"
+                    android:textSize="17sp"
+                    app:thumbTint="@color/celeste"
+                    app:trackTint="@color/steel" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/show_bot_cards_desc"
+                    android:textColor="@color/silver_dark"
+                    android:textSize="14sp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

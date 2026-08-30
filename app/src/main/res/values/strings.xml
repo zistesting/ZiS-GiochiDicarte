@@ -34,11 +34,7 @@
     <string name="match_win_you">Hai vinto la partita!</string>
     <string name="match_win_bot">Ha vinto il Banco.</string>
     <string name="play_briscola">Briscola</string>
-    <string name="briscola_is">Briscola: %1$s</string>
-    <string name="suit_denari">Denari</string>
-    <string name="suit_coppe">Coppe</string>
-    <string name="suit_spade">Spade</string>
-    <string name="suit_bastoni">Bastoni</string>
+    <string name="brisc_match_line">Incontro: Tu %1$d - %2$d Banco (a %3$d partite)</string>
     <string name="you_points">Tu: %1$d</string>
     <string name="bot_points">Banco: %1$d</string>
     <string name="you_take">Presa tua</string>
@@ -46,15 +42,17 @@
     <string name="brisc_win_you">Hai vinto la partita! %1$d a %2$d</string>
     <string name="brisc_win_bot">Ha vinto il Banco. %1$d a %2$d</string>
     <string name="brisc_draw">Pareggio! %1$d a %2$d</string>
-    <string name="briscola_hands_label">Mani da vincere</string>
-    <string name="hands_5">5 mani</string>
-    <string name="hands_11">11 mani</string>
-    <string name="brisc_match_win_you">Partita vinta! %1$d a %2$d mani</string>
-    <string name="brisc_match_win_bot">Partita persa. %1$d a %2$d mani</string>
+    <string name="briscola_hands_label">Partite da vincere</string>
+    <string name="hands_5">5 partite</string>
+    <string name="hands_11">11 partite</string>
+    <string name="brisc_match_win_you">Hai vinto l\'incontro! %1$d a %2$d partite</string>
+    <string name="brisc_match_win_bot">Incontro perso. %1$d a %2$d partite</string>
 
     <!-- Pausa responsabile -->
     <string name="test_section">Test</string>
     <string name="auto_play">Gioco automatico</string>
+    <string name="show_bot_cards">Mostra carte del Banco</string>
+    <string name="show_bot_cards_desc">Le carte del Banco restano scoperte e per intero sullo schermo. Serve a verificare la logica di gioco.</string>
     <string name="auto_play_desc">Il programma gioca da solo sia le carte del Banco sia le tue. Serve a provare in fretta il funzionamento.</string>
     <string name="pause_section">Gioco responsabile</string>
     <string name="pause_switch">Pausa di 1 minuto fra le partite</string>

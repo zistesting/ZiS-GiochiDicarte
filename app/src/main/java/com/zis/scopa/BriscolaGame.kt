@@ -14,6 +14,10 @@ class BriscolaGame {
     val trick = mutableListOf<Card>()        // 0 = leader's card, 1 = follower's card
 
     var briscolaSuit = 0
+    /** La carta di briscola sotto al mazzo: la tengo anche dopo che e' stata pescata. */
+    var trumpCard: Card? = null
+    /** Carte pescate nell'ultima presa: servono per mostrarle solo a animazione finita. */
+    val lastDrawn = arrayOfNulls<Card>(2)
     var leader = 0
     var turn = 0
     var finished = false
@@ -36,7 +40,9 @@ class BriscolaGame {
         finished = false; lastTrickWinner = -1
         val d = fullDeck(); d.shuffle(); deck.addAll(d)
         repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
+        trumpCard = deck.last()
         briscolaSuit = deck.last().suit
+        lastDrawn[0] = null; lastDrawn[1] = null
         leader = if (youStart) 0 else 1
         turn = leader
     }
@@ -44,6 +50,7 @@ class BriscolaGame {
     /** Play a card for the current [turn]. Returns the trick winner (0/1) if the trick is now
      *  complete, or -1 if this was the leading card. */
     fun play(card: Card): Int {
+        lastDrawn[0] = null; lastDrawn[1] = null
         hands[turn].remove(card)
         trick.add(card)
         if (trick.size == 1) {
@@ -72,7 +79,7 @@ class BriscolaGame {
     }
 
     private fun drawFor(p: Int) {
-        if (deck.isNotEmpty()) hands[p].add(deck.removeFirst())
+        lastDrawn[p] = if (deck.isNotEmpty()) deck.removeFirst().also { hands[p].add(it) } else null
     }
 
     fun scoreFor(p: Int): Int = piles[p].sumOf { points(it) }

@@ -36,6 +36,9 @@ class SettingsActivity : AppCompatActivity() {
         b.switchAuto.isChecked = Prefs.autoPlay(this)
         b.switchAuto.setOnCheckedChangeListener { _, checked -> Prefs.setAutoPlay(this, checked) }
 
+        b.switchBotCards.isChecked = Prefs.showBotCards(this)
+        b.switchBotCards.setOnCheckedChangeListener { _, checked -> Prefs.setShowBotCards(this, checked) }
+
         b.btnBack.setOnClickListener { finish() }
     }
 

@@ -35,6 +35,13 @@ object Prefs {
         p(ctx).edit().putBoolean("auto_play", value).apply()
     }
 
+    /** Mostra scoperte le carte del Banco: serve a verificare la logica di gioco. */
+    fun showBotCards(ctx: Context): Boolean = p(ctx).getBoolean("show_bot_cards", false)
+
+    fun setShowBotCards(ctx: Context, value: Boolean) {
+        p(ctx).edit().putBoolean("show_bot_cards", value).apply()
+    }
+
     // ---------------- pausa responsabile ----------------
 
     /**
