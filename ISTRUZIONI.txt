@@ -1,0 +1,15 @@
+PARTE 1 di 2 - codice, configurazione, layout, icone  (47 file)
+
+Carica il CONTENUTO di questa cartella nella radice del repository, non la cartella
+"parte1" stessa: dentro il repository devono comparire app/, gradle/, art/, .github/
+e i file build.gradle, settings.gradle, gradlew ecc.
+
+Su github.com:  Add file -> Upload files  -> trascina tutto il contenuto -> Commit changes
+
+ATTENZIONE ai due elementi che iniziano con un punto: .gitignore e la cartella .github.
+Alcuni browser non li includono nel trascinamento. Dopo il commit controlla che ci siano.
+Se manca il workflow, ricrealo cosi': Add file -> Create new file, scrivi come nome del
+file  .github/workflows/build-apk.yml  (le cartelle si creano da sole) e incolla dentro
+il contenuto del file che trovi in questo pacchetto.
+
+Poi passa alla PARTE 2.

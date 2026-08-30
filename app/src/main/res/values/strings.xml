@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name">ZiS-GiochiDiCarte</string>
+
+    <!-- Home -->
+    <string name="title">Giochi di Carte</string>
+    <string name="play">Scopa</string>
+    <string name="quit">Esci</string>
+
+    <!-- Game -->
+    <string name="bot">Banco</string>
+    <string name="you">Tu</string>
+    <string name="score_line">Punti: %1$d   Scope: %2$d</string>
+    <string name="your_turn">Tocca a te: gioca una carta</string>
+    <string name="bot_turn">Gioca il Banco…</string>
+    <string name="back_home">Menu</string>
+
+    <!-- End of round dialog -->
+    <string name="round_over">Fine mano</string>
+    <string name="pt_carte">Carte</string>
+    <string name="pt_denari">Denari</string>
+    <string name="pt_settebello">Settebello</string>
+    <string name="pt_primiera">Primiera</string>
+    <string name="pt_totale">Totale</string>
+    <string name="pt_scope">Scope</string>
+    <string name="choose_capture">Scegli la presa</string>
+    <string name="cd_web">Sito ZiS</string>
+    <string name="cd_settings">Impostazioni</string>
+    <string name="settings_title">Impostazioni</string>
+    <string name="score_target_label">Punteggio partita</string>
+    <string name="target_11">11 punti</string>
+    <string name="target_21">21 punti</string>
+    <string name="match_line">Partita: Tu %1$d - %2$d Banco (a %3$d)</string>
+    <string name="continue_match">Continua</string>
+    <string name="new_match">Nuova partita</string>
+    <string name="match_win_you">Hai vinto la partita!</string>
+    <string name="match_win_bot">Ha vinto il Banco.</string>
+    <string name="play_briscola">Briscola</string>
+    <string name="brisc_match_line">Incontro: Tu %1$d - %2$d Banco</string>
+    <string name="you_points">Tu: %1$d</string>
+    <string name="bot_points">Banco: %1$d</string>
+    <string name="you_take">Presa tua</string>
+    <string name="bot_take">Presa Banco</string>
+    <string name="brisc_win_you">Hai vinto la partita! %1$d a %2$d</string>
+    <string name="brisc_win_bot">Ha vinto il Banco. %1$d a %2$d</string>
+    <string name="brisc_draw">Pareggio! %1$d a %2$d</string>
+    <string name="briscola_hands_label">Partite da vincere</string>
+    <string name="hands_5">5 partite</string>
+    <string name="hands_11">11 partite</string>
+    <string name="brisc_match_win_you">Hai vinto l\'incontro! %1$d a %2$d partite</string>
+    <string name="brisc_match_win_bot">Incontro perso. %1$d a %2$d partite</string>
+
+    <!-- Pausa responsabile -->
+    <string name="test_section">Test</string>
+    <string name="auto_play">Gioco automatico</string>
+    <string name="show_bot_cards">Mostra carte del Banco</string>
+    <string name="show_bot_cards_desc">Le carte del Banco restano scoperte e per intero sullo schermo. Serve a verificare la logica di gioco.</string>
+    <string name="auto_play_desc">Il programma gioca da solo sia le carte del Banco sia le tue. Serve a provare in fretta il funzionamento.</string>
+    <string name="pause_section">Gioco responsabile</string>
+    <string name="pause_switch">Pausa di 1 minuto fra le partite</string>
+    <string name="pause_switch_desc">Al termine di ogni partita compare un avviso e bisogna attendere un minuto prima di ricominciare. Per disattivarla serve una password.</string>
+    <string name="pause_title">Prenditi una pausa</string>
+    <string name="pause_message">Giocare a lungo senza interruzioni può diventare un\'abitudine difficile da controllare. Fermati un minuto: alzati, bevi qualcosa, guarda che ora è.
+
+Se senti il bisogno di ricominciare subito, se stai giocando per rifarti di una sconfitta o se il gioco sta togliendo tempo ad altro, parlane con qualcuno.
+
+Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 558 822 (gratuito e anonimo, dal lunedì al venerdì dalle 10 alle 16).</string>
+    <string name="pause_countdown">Attendi %1$d s</string>
+    <string name="pause_wait">Attendi</string>
+    <string name="pause_pwd_title">Disattiva la pausa</string>
+    <string name="pause_pwd_msg">Inserisci la password per disattivare la pausa fra le partite.</string>
+    <string name="pause_pwd_hint">Password</string>
+    <string name="pause_off_info">Pausa disattivata. Si riattiva automaticamente fra %1$d min.</string>
+    <string name="pause_pwd_wrong">Password errata: la pausa resta attiva.</string>
+</resources>
