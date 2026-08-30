@@ -81,6 +81,7 @@ class BriscolaActivity : AppCompatActivity() {
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
+        CardView.setDeck(Prefs.deck(this))
         placeCards()
         startMatch()
     }
@@ -106,6 +107,7 @@ class BriscolaActivity : AppCompatActivity() {
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
+        CardView.setDeck(Prefs.deck(this))
         placeCards()
         render()
         maybeAutoPlay()

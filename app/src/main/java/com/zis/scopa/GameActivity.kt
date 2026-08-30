@@ -98,6 +98,7 @@ class GameActivity : AppCompatActivity() {
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
+        CardView.setDeck(Prefs.deck(this))
         placeCards()
         startMatch()
     }
@@ -107,6 +108,7 @@ class GameActivity : AppCompatActivity() {
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
+        CardView.setDeck(Prefs.deck(this))
         placeCards()
         render()
         maybeAutoPlay()

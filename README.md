@@ -132,12 +132,20 @@ Cosa resta da fare prima della pubblicazione:
 
 ## Note tecniche
 
-**Mazzo.** 40 carte + dorso in `res/drawable-nodpi/`, tutti a **448x819**, PNG a 256 colori.
-Le carte vengono dagli originali a 560x1024, il dorso da un'immagine 600x844. Errore massimo
-rispetto agli originali 2,7/255, cioe' l'1%: su disegni a tinte piatte non si vede.
-Il **dorso** e' disegnato in vettoriale: nasce gia' a 448x819, quindi non subisce nessun
-ridimensionamento, e usa i colori di `colors.xml`. Il sorgente sta in `art/`, fuori da `app/`,
-e si rigenera con lo script che trovi li'. La cartella `nodpi` serve perché Android
+**Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
+PNG a 256 colori. Le carte ZiS (`card_*`) vengono da originali a 560x1024, errore massimo
+2,7/255. Le tradizionali (`trad_*`) sono scansioni di stampa: prima di ridurle e' stata tolta
+la retinatura di quadricromia con filtro mediano piu' bilaterale, poi ognuna e' stata
+ritagliata sul disegno e riportata alla proporzione delle carte aggiungendo bianco, non
+stirando; errore massimo 4,3/255, piu' alto perche' il rumore di scansione si comprime peggio
+del disegno a tinte piatte.
+
+**I dorsi** sono disegnati in vettoriale: nascono gia' a 448x819, quindi non subiscono nessun
+ridimensionamento. Un solo disegno con tre palette: blu/argento per il mazzo ZiS, grigi scuri per quello
+tradizionale, piu' una versione chiara di scorta. Il sorgente sta in `art/`, fuori da `app/`, e per
+cambiare colori basta modificare il dizionario `PALETTES` in cima allo script.
+
+La cartella `nodpi` serve perché Android
 non deve riscalare i file in base alla densità dello schermo: alla riduzione ci pensa
 `CardView`, che decodifica ogni immagine **alla larghezza a cui la carta viene davvero
 disegnata**. Su un telefono xxhdpi una carta occupa circa 230 px e la bitmap viene creata a
@@ -151,6 +159,20 @@ da 230 px circa su un telefono comune fino a 450–500 px su un tablet ad alta d
 sorgente da **448×819** copre ogni caso senza ingrandimenti; oltre si guadagna solo peso
 dell'APK. Le immagini vanno salvate in PNG a **256 colori**: su disegni a tinte piatte l'errore
 rispetto ai 24 bit è invisibile e il file pesa circa il 60% in meno.
+
+**Due mazzi.** Le carte si caricano per nome, `<prefisso>_seme_valore`. Il prefisso lo decide
+l'impostazione **Mazzo**: `card` per le illustrazioni ZiS, `trad` per le figure tradizionali.
+Per aggiungere il secondo mazzo bastano 41 file in `res/drawable-nodpi/` chiamati
+`trad_0_1.png` ... `trad_3_10.png` piu' `trad_back.png` (semi: 0 denari, 1 coppe, 2 spade,
+3 bastoni). Nessuna riga di codice da toccare.
+
+Finche' quei file non ci sono, ogni immagine mancante ripiega su quella ZiS corrispondente:
+si puo' quindi pubblicare l'interruttore prima di avere il mazzo, e caricare le carte anche
+poche per volta senza mai lasciare buchi bianchi sul tavolo. Le impostazioni avvisano quando
+il mazzo tradizionale e' selezionato ma non installato.
+
+Cambiando mazzo la cache delle bitmap si svuota, altrimenti resterebbero a schermo le carte
+del mazzo precedente.
 
 **Cache bitmap.** `CardView` usa una `LruCache` limitata a 1/8 della heap. Se la larghezza
 richiesta cambia (rotazione, finestra ridimensionata) la cache si svuota e le carte vengono

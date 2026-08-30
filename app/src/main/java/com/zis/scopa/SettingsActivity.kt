@@ -20,6 +20,8 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(b.root)
         applySystemBars(b.root)
 
+        setupDeck()
+
         if (Prefs.scoreTarget(this) == 21) b.radio21.isChecked = true else b.radio11.isChecked = true
 
         b.groupTarget.setOnCheckedChangeListener { _, checkedId ->
@@ -41,6 +43,27 @@ class SettingsActivity : AppCompatActivity() {
         b.switchBotCards.setOnCheckedChangeListener { _, checked -> Prefs.setShowBotCards(this, checked) }
 
         b.btnBack.setOnClickListener { finish() }
+    }
+
+    /**
+     * Scelta del mazzo. Se le immagini tradizionali non sono ancora nel progetto la voce
+     * resta selezionabile ma compare l'avviso: senza, l'utente la sceglierebbe e non
+     * vedrebbe cambiare niente, credendo a un difetto.
+     */
+    private fun setupDeck() {
+        val trad = Prefs.deck(this) == Prefs.DECK_TRAD
+        if (trad) b.radioDeckTrad.isChecked = true else b.radioDeckZis.isChecked = true
+        b.groupDeck.setOnCheckedChangeListener { _, id ->
+            Prefs.setDeck(this, if (id == R.id.radioDeckTrad) Prefs.DECK_TRAD else Prefs.DECK_ZIS)
+            refreshDeckInfo()
+        }
+        refreshDeckInfo()
+    }
+
+    private fun refreshDeckInfo() {
+        val installato = resources.getIdentifier("${Prefs.DECK_TRAD}_0_1", "drawable", packageName) != 0
+        b.txtDeckInfo.visibility =
+            if (!installato && Prefs.deck(this) == Prefs.DECK_TRAD) View.VISIBLE else View.GONE
     }
 
     override fun onResume() {

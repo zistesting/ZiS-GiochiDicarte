@@ -71,4 +71,10 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <string name="pause_pwd_hint">Password</string>
     <string name="pause_off_info">Pausa disattivata. Si riattiva automaticamente fra %1$d min.</string>
     <string name="pause_pwd_wrong">Password errata: la pausa resta attiva.</string>
+    <!-- Mazzo -->
+    <string name="deck_section">Mazzo</string>
+    <string name="deck_label">Aspetto delle carte</string>
+    <string name="deck_zis">Illustrazioni ZiS</string>
+    <string name="deck_trad">Figure tradizionali</string>
+    <string name="deck_missing">Il mazzo tradizionale non è ancora installato: le carte restano quelle ZiS.</string>
 </resources>

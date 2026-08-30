@@ -45,6 +45,24 @@ class CardView(context: Context) : View(context) {
         /** Larghezza a cui sono decodificate le bitmap attualmente in cache. */
         private var cachedWidth = 0
 
+        /**
+         * Mazzo in uso: e' il prefisso dei nomi dei file. Lo impostano le schermate di gioco
+         * in onResume leggendo le impostazioni. Cambiandolo la cache si svuota, altrimenti
+         * resterebbero a schermo le carte del mazzo precedente.
+         */
+        private var deckPrefix = Prefs.DECK_ZIS
+
+        fun setDeck(prefix: String) {
+            if (prefix != deckPrefix) {
+                deckPrefix = prefix
+                cache.evictAll()
+            }
+        }
+
+        /** Nome del file per una carta, o per il dorso se [card] e' null. */
+        fun nameFor(card: Card?): String =
+            if (card == null) "${deckPrefix}_back" else "${deckPrefix}_${card.suit}_${card.value}"
+
         /** Le larghezze si arrotondano a multipli di 32 px: piccole differenze fra una schermata
          *  e l'altra non devono far ridecodificare tutto il mazzo. */
         private fun bucket(px: Int): Int = ((px.coerceAtLeast(64) + 31) / 32) * 32
@@ -56,7 +74,13 @@ class CardView(context: Context) : View(context) {
                 cachedWidth = w
             }
             cache.get(name)?.let { return it }
-            val id = ctx.resources.getIdentifier(name, "drawable", ctx.packageName)
+            var id = ctx.resources.getIdentifier(name, "drawable", ctx.packageName)
+            if (id == 0 && !name.startsWith(Prefs.DECK_ZIS)) {
+                // immagine del mazzo alternativo non ancora installata: ripiego su quella ZiS,
+                // cosi' un mazzo incompleto non lascia buchi bianchi sul tavolo
+                val ripiego = Prefs.DECK_ZIS + name.substring(name.indexOf('_'))
+                id = ctx.resources.getIdentifier(ripiego, "drawable", ctx.packageName)
+            }
             if (id == 0) return null
             var bm = decode(ctx, id, w)
             if (bm == null) {                // memoria finita: libero e riprovo una volta sola
@@ -113,8 +137,7 @@ class CardView(context: Context) : View(context) {
         canvas.save()
         canvas.clipPath(clip)
 
-        val name = if (!faceUp || card == null) "card_back" else "card_${card!!.suit}_${card!!.value}"
-        val bm = bitmapFor(context, name, width)
+        val bm = bitmapFor(context, nameFor(if (faceUp) card else null), width)
         if (bm != null) {
             canvas.drawBitmap(bm, null, RectF(0f, 0f, w, h), paint)
         } else {

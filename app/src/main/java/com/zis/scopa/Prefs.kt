@@ -26,6 +26,21 @@ object Prefs {
         p(ctx).edit().putInt("briscola_target", value).apply()
     }
 
+    // ---------------- mazzo ----------------
+
+    /**
+     * Prefisso dei file delle carte. Le immagini si chiamano <prefisso>_seme_valore, quindi
+     * cambiare mazzo vuol dire cambiare prefisso: card_0_1 oppure trad_0_1.
+     */
+    const val DECK_ZIS = "card"
+    const val DECK_TRAD = "trad"
+
+    fun deck(ctx: Context): String = p(ctx).getString("deck", DECK_ZIS) ?: DECK_ZIS
+
+    fun setDeck(ctx: Context, value: String) {
+        p(ctx).edit().putString("deck", value).apply()
+    }
+
     // ---------------- gioco automatico (test) ----------------
 
     /** Se attivo il programma gioca da solo entrambe le mani: serve a provare in fretta. */

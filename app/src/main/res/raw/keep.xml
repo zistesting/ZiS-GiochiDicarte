@@ -3,4 +3,4 @@
      quindi lo shrinker delle risorse non le "vede" usate e le eliminerebbe.
      Questo file le protegge se un domani attivi shrinkResources. -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/card_*" />
+    tools:keep="@drawable/card_*,@drawable/trad_*" />
