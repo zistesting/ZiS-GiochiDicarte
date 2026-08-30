@@ -1,20 +1,15 @@
-Aggiornamento: APK+AAB, riepilogo a tabella, apertura del Banco corretta.
+PARTE 1 di 2 - codice, configurazione, layout, icone  (47 file)
 
-File cambiati o nuovi rispetto a quelli gia' caricati. Le posizioni sono quelle
-della cartella qui dentro:
+Carica il CONTENUTO di questa cartella nella radice del repository, non la cartella
+"parte1" stessa: dentro il repository devono comparire app/, gradle/, art/, .github/
+e i file build.gradle, settings.gradle, gradlew ecc.
 
-  app/build.gradle                                  firma del release (correzione)
-  .github/workflows/build-apk.yml                   produce APK e AAB a ogni push
-  app/src/main/java/com/zis/scopa/GameActivity.kt   riepilogo di fine mano a tabella
-  app/src/main/java/com/zis/scopa/BriscolaGame.kt   apertura del Banco corretta
-  app/src/main/res/layout/dialog_score.xml          NUOVO, la tabella del riepilogo
-  app/src/main/res/values/themes.xml                stili delle righe della tabella
-  README.md                                         documentazione allineata
+Su github.com:  Add file -> Upload files  -> trascina tutto il contenuto -> Commit changes
 
-Su github.com, per i file gia' esistenti: aprili, matita "Edit this file",
-seleziona tutto, incolla il nuovo contenuto, Commit changes.
-Per dialog_score.xml, che e' nuovo: entra in app/src/main/res/layout/ e usa
-Add file -> Upload files.
+ATTENZIONE ai due elementi che iniziano con un punto: .gitignore e la cartella .github.
+Alcuni browser non li includono nel trascinamento. Dopo il commit controlla che ci siano.
+Se manca il workflow, ricrealo cosi': Add file -> Create new file, scrivi come nome del
+file  .github/workflows/build-apk.yml  (le cartelle si creano da sole) e incolla dentro
+il contenuto del file che trovi in questo pacchetto.
 
-In alternativa carica il contenuto di questa cartella nella radice del repository:
-i file con lo stesso percorso vengono sostituiti e quello nuovo viene aggiunto.
+Poi passa alla PARTE 2.
