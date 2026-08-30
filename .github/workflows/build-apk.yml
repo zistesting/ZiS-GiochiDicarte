@@ -1,4 +1,4 @@
-name: Build APK
+name: Build
 
 on:
   push:
@@ -15,13 +15,14 @@ jobs:
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      VERSION_CODE: ${{ github.run_number }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
@@ -31,27 +32,40 @@ jobs:
         uses: android-actions/setup-android@v3
 
       # Ripristina il keystore dai GitHub Secrets, se configurati.
-      # Se il secret non c'e' lo step viene saltato e si firma con la chiave di debug.
       - name: Restore keystore
         if: env.KEYSTORE_BASE64 != ''
         run: echo "$KEYSTORE_BASE64" | base64 -d > app/scopa.keystore
 
+      - name: Avviso firma
+        if: env.KEYSTORE_BASE64 == ''
+        run: |
+          echo "::warning title=Nessun keystore configurato::APK e AAB saranno firmati con una chiave di debug diversa a ogni build. L'APK si installa lo stesso per le prove, l'AAB invece il Play Console lo rifiuta. Configura i secret KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD."
+
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build debug APK
-        env:
-          VERSION_CODE: ${{ github.run_number }}
-        run: ./gradlew assembleDebug --stacktrace
+      # Un'unica invocazione: le due varianti condividono compilazione e risorse,
+      # quindi il bundle costa pochi secondi in piu' rispetto al solo APK.
+      - name: Build APK and AAB
+        run: ./gradlew assembleRelease bundleRelease --stacktrace
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/ZiS-GiochiDiCarte.apk
+        run: cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
 
+      # APK: da installare a mano sul telefono per le prove
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ZiS-GiochiDiCarte
-          path: app/build/outputs/apk/debug/ZiS-GiochiDiCarte.apk
+          name: ZiS-GiochiDiCarte-APK
+          path: app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
+          if-no-files-found: error
+
+      # AAB: il formato che il Play Console richiede per pubblicare
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZiS-GiochiDiCarte-AAB
+          path: app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
 
       # Il keystore non deve restare sul runner
