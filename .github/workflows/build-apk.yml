@@ -17,19 +17,29 @@ jobs:
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       VERSION_CODE: ${{ github.run_number }}
 
+    # Versioni delle action: tutte quelle qui sotto girano su Node 24.
+    # GitHub ha smesso di supportare il runtime Node 20 e da giugno 2026 forza comunque le
+    # action a Node 24, quindi la build funzionava lo stesso ma con due avvisi a ogni run.
+    # Attenzione a upload-artifact: la v5 NON basta. Dichiara ancora runs.using node20 e ha
+    # solo un supporto preliminare a Node 24; la prima versione che gira su Node 24 per
+    # impostazione predefinita e' la v6. Le altre tre invece passano a Node 24 gia' al primo
+    # major successivo.
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
 
+      # La v4 porta anche i cmdline-tools 20.0 al posto dei precedenti: e' l'unica modifica
+      # di comportamento del gruppo, e va nella direzione giusta perche' servono a scaricare
+      # la piattaforma API 36.
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       # Ripristina il keystore dai GitHub Secrets, se configurati, e lo verifica subito.
       #
@@ -76,7 +86,7 @@ jobs:
 
       # APK: da installare a mano sul telefono per le prove
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ZiS-GiochiDiCarte-APK
           path: app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
@@ -84,7 +94,7 @@ jobs:
 
       # AAB: il formato che il Play Console richiede per pubblicare
       - name: Upload AAB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ZiS-GiochiDiCarte-AAB
           path: app/build/outputs/bundle/release/app-release.aab
