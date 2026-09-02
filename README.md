@@ -149,7 +149,17 @@ fatto che la carta e' color crema mentre lo sfondo della scansione e' grigio neu
 sopra 10). Dentro ogni cella si cerca poi la cornice nera facendo scorrere un rettangolo di
 misura fissa, 439x934 px, e tenendo la posizione in cui il suo perimetro raccoglie piu' pixel
 neri: prendere semplicemente la riga piu' scura sbagliava sulle carte con disegni lunghi, per
-esempio il 7 di bastoni. Ogni carta viene poi ritagliata sulla cornice, filtrata con un
+esempio il 7 di bastoni.
+
+Il rettangolo scorrevole pero' puo' agganciarsi alla giuntura fra due carte invece che alla
+cornice, e su due carte su quaranta era successo (il Re di denari, fuori di 82 px, e il 6 di
+spade, di 34). L'ultimo passaggio rimette quindi tutto in griglia: le dieci carte sono
+incollate a contatto, quindi gli angoli in alto a sinistra hanno passo costante e una leggera
+deriva, perche' il foglio e' scansionato appena storto. Il passo si stima con la mediana degli
+otto scarti fra colonne vicine prese da **entrambe** le righe: e' la stessa larghezza fisica,
+e stimarla su otto valori invece che su quattro la rende insensibile a una carta sbagliata.
+Con una retta stimata per riga, invece, l'inclinazione assorbiva lo scarto del 6 di spade e
+non lo segnalava. Chi resta fuori di piu' di 20 px viene riportato dove dice la griglia. Ogni carta viene poi ritagliata sulla cornice, filtrata con un
 mediano 3x3 per togliere la retinatura di quadricromia, riportata alla proporzione delle carte
 aggiungendo carta del colore giusto (non stirando) e ridotta a 448x819.
 
