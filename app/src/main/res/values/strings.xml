@@ -28,7 +28,7 @@
     <string name="match_win_bot">Ha vinto il Banco.</string>
     <string name="you_points">Tu: %1$s</string>
     <string name="bot_points">Banco: %1$s</string>
-    <string name="briscola_hands_label">Mani da vincere per la partita</string>
+    <string name="briscola_hands_label">Mani per vincere la partita</string>
     <string name="hands_5">5 mani</string>
     <string name="hands_11">11 mani</string>
     <string name="pt_carte">Carte</string>
@@ -41,7 +41,7 @@
     <string name="cd_web">Sito ZiS</string>
     <string name="cd_settings">Impostazioni</string>
     <string name="settings_title">Impostazioni</string>
-    <string name="score_target_label">Punteggio partita</string>
+    <string name="score_target_label">Punteggio per vincere la partita</string>
     <string name="target_11">11 punti</string>
     <string name="target_21">21 punti</string>
     <string name="continue_match">Continua</string>
@@ -54,7 +54,7 @@
     <string name="play_tresette">Tresette</string>
     <string name="tre_points_third">%1$d e ⅓</string>
     <string name="tre_points_twothirds">%1$d e ⅔</string>
-    <string name="tresette_target_label">Punti per vincere l\'incontro</string>
+    <string name="tresette_target_label">Punti per vincere la partita</string>
     <string name="tre_target_21">21 punti</string>
     <string name="tre_target_31">31 punti</string>
     <string name="draw_seconds_label">Per quanto resta scoperta la carta pescata</string>
@@ -93,7 +93,7 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <!-- Mazzo -->
     <string name="deck_section">Mazzo</string>
     <string name="deck_label">Aspetto delle carte</string>
-    <string name="deck_zis">Illustrazioni ZiS</string>
-    <string name="deck_trad">Figure tradizionali</string>
+    <string name="deck_zis">ZiS theme</string>
+    <string name="deck_trad">Tradizionale</string>
     <string name="deck_missing">Il mazzo tradizionale non è ancora installato: le carte restano quelle ZiS.</string>
 </resources>

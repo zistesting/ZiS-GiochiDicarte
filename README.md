@@ -135,8 +135,12 @@ Cosa resta da fare prima della pubblicazione:
 ## Note tecniche
 
 **Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
-in **WebP**. Le carte ZiS (`card_*`) vengono da originali a 560x1024, errore massimo
-2,7/255.
+in **WebP**. Le carte ZiS (`card_*`) vengono da originali a 560x1024. Le venti di bastoni e spade sono
+state ridisegnate: arrivano gia' nella proporzione giusta, quindi si riducono e basta. Due
+facevano eccezione (il 2 di bastoni largo 584 px, il Cavallo di spade largo 550) e per quelle
+la proporzione si sistema **ritagliando o allargando il bordo**, mai stirando: il taglio e
+l'aggiunta restano centrati sul telaio del disegno, non sul rettangolo dell'immagine, cosi'
+la cornice non finisce fuori asse.
 
 **Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
 uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
