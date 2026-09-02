@@ -6,11 +6,15 @@ PARTE 2 di 2 - tutte le immagini  (87 file, sotto il limite di 100 di GitHub)
 
 >>> ATTENZIONE, LEGGI PRIMA DI CARICARE <<<
 
-Le immagini adesso sono in WebP, non piu' in PNG (e velvet non e' piu' un JPG).
-I nomi delle risorse non cambiano, cambia solo l'estensione del file.
+Le immagini sono in WebP, non in PNG (e velvet non e' piu' un JPG). I nomi delle
+risorse non cambiano, cambia solo l'estensione del file.
 
-Se nel repository c'e' gia' la vecchia cartella  app/src/main/res/drawable-nodpi
-con i PNG, quei file VANNO CANCELLATI PRIMA. Se restano, il repository si ritrova
+Le 40 carte trad_* sono NUOVE: vengono dai fogli d'epoca, non piu' dalle scansioni
+coperte da copyright, e hanno il fondo bianco. Il dorso trad_back e' rimasto quello
+di prima.
+
+Se nel repository c'e' gia' la cartella  app/src/main/res/drawable-nodpi ,
+VA CANCELLATA PRIMA. Se restano i vecchi file, il repository si ritrova
 card_0_1.png e card_0_1.webp insieme e la build si ferma con
 "duplicate resource" / "Duplicate resources".
 
