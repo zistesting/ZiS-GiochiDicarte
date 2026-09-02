@@ -57,9 +57,6 @@ class CardView(context: Context) : View(context) {
             }
         }
 
-        /** Larghezza a cui sono decodificate le bitmap attualmente in cache. */
-        private var cachedWidth = 0
-
         /**
          * Mazzo in uso: e' il prefisso dei nomi dei file. Lo impostano le schermate di gioco
          * in onResume leggendo le impostazioni. Cambiandolo la cache si svuota, altrimenti
@@ -82,13 +79,20 @@ class CardView(context: Context) : View(context) {
          *  e l'altra non devono far ridecodificare tutto il mazzo. */
         private fun bucket(px: Int): Int = ((px.coerceAtLeast(64) + 31) / 32) * 32
 
+        /**
+         * La larghezza fa parte della chiave, non e' piu' uno stato a parte.
+         *
+         * Prima la cache teneva una sola larghezza e si svuotava tutta appena ne arrivava
+         * un'altra. Andava bene finche' a schermo c'era una misura sola, ma il Tresette tiene
+         * dieci carte piccole in mano e le carte grandi in tavola: con la vecchia logica le
+         * due misure si sarebbero buttate a vicenda a ogni disegno, ridecodificando l'intero
+         * mazzo a ogni fotogramma. Con la larghezza nella chiave convivono, e la LruCache
+         * butta da sola quello che non serve piu'.
+         */
         fun bitmapFor(ctx: Context, name: String, targetW: Int): Bitmap? {
             val w = bucket(targetW)
-            if (w != cachedWidth) {          // schermo ruotato o finestra ridimensionata
-                cache.evictAll()
-                cachedWidth = w
-            }
-            cache.get(name)?.let { return it }
+            val key = "$name@$w"
+            cache.get(key)?.let { return it }
             var id = ctx.resources.getIdentifier(name, "drawable", ctx.packageName)
             if (id == 0 && !name.startsWith(Prefs.DECK_ZIS)) {
                 // immagine del mazzo alternativo non ancora installata: ripiego su quella ZiS,
@@ -102,7 +106,7 @@ class CardView(context: Context) : View(context) {
                 cache.evictAll()
                 bm = decode(ctx, id, w)
             }
-            if (bm != null) cache.put(name, bm)
+            if (bm != null) cache.put(key, bm)
             return bm
         }
 
@@ -137,14 +141,12 @@ class CardView(context: Context) : View(context) {
         /** Svuota la cache: l'app e' finita in background (vedi ZisApp.onTrimMemory). */
         fun clearCache() {
             cache.evictAll()
-            cachedWidth = 0
         }
 
         /**
          * Dimezza la cache invece di svuotarla: l'app e' ancora in primo piano e la memoria
          * stringe, quindi conviene tenere le carte usate di recente ed evitare di ridecodificare
-         * l'intero tavolo al fotogramma successivo. cachedWidth resta com'e', perche' la
-         * larghezza di decodifica non e' cambiata.
+         * l'intero tavolo al fotogramma successivo.
          */
         fun trimCache() {
             cache.trimToSize(cache.maxSize() / 2)

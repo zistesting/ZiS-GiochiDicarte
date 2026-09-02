@@ -86,6 +86,21 @@
             android:shadowRadius="4" />
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnTresette"
+            android:layout_width="240dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/btn_cartiglio"
+            android:text="@string/play_tresette"
+            android:textColor="@color/silver"
+            android:textSize="17sp"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDy="2"
+            android:shadowRadius="4" />
+
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnQuit"
             android:layout_width="240dp"
             android:layout_height="56dp"

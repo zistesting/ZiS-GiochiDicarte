@@ -40,4 +40,16 @@ object CardSize {
     fun width(res: Resources): Int = (widthDp(res) * res.displayMetrics.density).toInt()
 
     fun height(res: Resources): Int = (widthDp(res) * RATIO * res.displayMetrics.density).toInt()
+
+    /**
+     * Misura ridotta per le mani del Tresette, che sono da dieci carte invece che da tre.
+     *
+     * A misura piena, dieci carte sovrapposte lascerebbero scoperto il 39% di ciascuna: una
+     * striscia verticale in cui un 3 e un 7 di denari si somigliano troppo. Rimpicciolendole
+     * di un terzo la parte visibile sale al 57%, e con la mano ordinata per seme si
+     * riconoscono. Le carte in tavola restano invece a misura piena.
+     */
+    fun handWidth(res: Resources): Int = (width(res) * 0.74f).toInt()
+
+    fun handHeight(res: Resources): Int = (handWidth(res) * RATIO).toInt()
 }

@@ -49,6 +49,21 @@
     <string name="brisc_match_win_you">Hai vinto l\'incontro! %1$d a %2$d partite</string>
     <string name="brisc_match_win_bot">Incontro perso. %1$d a %2$d partite</string>
 
+    <!-- Tresette -->
+    <string name="play_tresette">Tresette</string>
+    <string name="tre_match_line">Incontro: Tu %1$d - %2$d Banco</string>
+    <string name="tre_you_points">Tu: %1$s</string>
+    <string name="tre_bot_points">Banco: %1$s</string>
+    <string name="tre_points_third">%1$d e ⅓</string>
+    <string name="tre_points_twothirds">%1$d e ⅔</string>
+    <string name="tre_hand_you">Mano tua: %1$d a %2$d</string>
+    <string name="tre_hand_bot">Mano al Banco: %1$d a %2$d</string>
+    <string name="tre_match_win_you">Hai vinto l\'incontro! %1$d a %2$d</string>
+    <string name="tre_match_win_bot">Incontro perso. %1$d a %2$d</string>
+    <string name="tresette_target_label">Punti per vincere l\'incontro</string>
+    <string name="tre_target_21">21 punti</string>
+    <string name="tre_target_31">31 punti</string>
+
     <!-- Pausa responsabile -->
     <string name="test_section">Test</string>
     <string name="auto_play">Gioco automatico</string>

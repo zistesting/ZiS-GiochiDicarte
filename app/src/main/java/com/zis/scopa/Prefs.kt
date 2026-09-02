@@ -32,6 +32,13 @@ object Prefs {
      * Prefisso dei file delle carte. Le immagini si chiamano <prefisso>_seme_valore, quindi
      * cambiare mazzo vuol dire cambiare prefisso: card_0_1 oppure trad_0_1.
      */
+    /** Punti a cui si vince l'incontro di Tresette: 21 (breve) o 31 (classico). */
+    fun tresetteTarget(ctx: Context): Int = p(ctx).getInt("tresette_target", 21)
+
+    fun setTresetteTarget(ctx: Context, value: Int) {
+        p(ctx).edit().putInt("tresette_target", value).apply()
+    }
+
     const val DECK_ZIS = "card"
     const val DECK_TRAD = "trad"
 

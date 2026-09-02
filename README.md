@@ -255,6 +255,66 @@ spazi e un carattere a larghezza fissa: 27 caratteri che sui telefoni stretti an
 e mandavano tutto fuori squadra. Con la tabella le colonne le tiene il layout e si usa il
 carattere normale dell'app.
 
+## Tresette
+
+Terzo gioco: **tresette in due con il tallone**. Dieci carte a testa, venti nel tallone. Chi
+risponde **deve** rispondere al seme, e puo' calare un altro seme solo se quel seme non ce
+l'ha, ma in quel caso non prende. Prende chi ha calato la carta piu' alta del seme di
+apertura. Poi si pesca, prima chi ha preso, e **la carta pescata si mostra all'avversario**.
+Finito il tallone si giocano le ultime dieci prese senza pescare. Incontro a 21 o 31 punti,
+scelta nelle impostazioni.
+
+Ordine di presa: 3, 2, Asso, Re, Cavallo, Fante, 7, 6, 5, 4.
+
+**I punti si contano in terzi**, non con i decimali: Asso 3 terzi, il 2, il 3, Fante, Cavallo
+e Re un terzo, dal 4 al 7 niente, ultima presa 3 terzi. In tutto 35. A fine mano ciascuno
+scarta il proprio resto. Da qui viene un fatto che semplifica il riepilogo: i due resti
+sommano **sempre** a 2 terzi, perche' le carte da un terzo sono venti e i due conteggi sono
+complementari modulo 3. Quindi **una mano vale sempre esattamente 11 punti**, mai 10, e il
+pareggio a fine mano non esiste. Verificato su 30.000 mani: 11 punti tutte le volte.
+
+**La mano da dieci carte** e' il problema vero su un telefono. A misura piena, dieci carte
+sovrapposte lascerebbero scoperto il 39% di ciascuna: una striscia verticale in cui un 3 e un
+7 di denari si somigliano troppo. Le carte in mano sono quindi ridotte del 26% (vedi
+`CardSize.handWidth`), e la parte scoperta sale al 57%. Sopra ci sono altri due aiuti: la mano
+si tiene **ordinata per seme** e, dentro il seme, dalla carta piu' forte; e le carte non
+giocabili sono spente al 35% e non rispondono al tocco, cosi' l'obbligo di rispondere al seme
+diventa anche una guida per trovare la carta. La sovrapposizione e' calcolata sulla larghezza
+disponibile: su uno schermo largo il passo arriva alla misura piena e le carte si separano.
+
+**Le due misure insieme hanno costretto a rifare la cache di `CardView`.** Teneva una sola
+larghezza in uno stato a parte e si svuotava tutta appena ne arrivava un'altra: andava bene
+finche' a schermo c'era una misura sola, ma con le carte piccole in mano e quelle grandi in
+tavola le due si sarebbero buttate a vicenda a ogni disegno, ridecodificando l'intero mazzo a
+ogni fotogramma. Ora la larghezza fa parte della chiave.
+
+**Finale a carte note.** Come negli altri due giochi, a tallone finito le carte mai viste
+sono esattamente la mano dell'avversario (verificato 20.000 volte), quindi si calcola invece
+di stimare. Qui pero' l'albero e' molto piu' grande che a Briscola, percio' la ricerca parte
+solo da sette carte in giu'. La soglia e' misurata, non scelta a occhio:
+
+| carte in mano | mediana | massimo |
+|---|---|---|
+| 6 | 0,45 ms | 12 ms |
+| 7 | 3,1 ms | 52 ms |
+| 8 | 18 ms | 125 ms |
+
+A otto carte diventa troppo. A sette il costo cade comunque nella pausa di riflessione del
+Banco, quando a schermo non si muove niente, quindi non produce scatti. Quanto rende, con i
+due Banchi che si affrontano su 6.000 mani:
+
+| | vince | saldo |
+|---|---|---|
+| euristica contro gioco casuale | 83,0% | +3,84 punti/mano |
+| ricerca a 6 carte contro sola euristica | 63,4% | +0,99 |
+| ricerca a 7 carte contro sola euristica | 65,8% | +1,20 |
+| ricerca a 7 contro ricerca a 6 | 51,8% | +0,16 |
+
+Sulla taratura dell'euristica va detta una cosa: ho provato cinque varianti dei parametri e
+davano tutte lo stesso risultato. Il controllo base-contro-base fa 49%, cioe' erano
+equivalenti, perche' due dei parametri non cambiavano mai la carta scelta. Restano quelli di
+partenza, che risultano gia' vicini a un ottimo locale.
+
 **Conteggio delle carte.** Il Banco tiene conto di quello che e' uscito. `unseenBy(p)` e'
 la lista delle carte che il giocatore `p` non ha ancora visto: non in mano sua, non in tavola,
 non nei mucchi delle prese. Finche' il mazzo non e' finito sono le carte del mazzo piu' quelle
@@ -264,6 +324,10 @@ li' l'ultima mano si puo' giocare a carte note.
 In **Briscola**, finito il mazzo restano al massimo tre prese: l'albero ha 36 foglie e si
 esplora tutto (`solve` in `BriscolaGame.kt`), quindi il finale e' giocato alla perfezione. E'
 li' che si decide la partita, perche' i carichi rimasti valgono da soli decine di punti.
+
+Nel **Tresette** la carta pescata si mostra, quindi `seenInHandOf` tiene anche traccia di
+quali carte il Banco ha visto entrare nella mano avversaria: informazione utile prima che il
+tallone finisca, mentre dopo la mano avversaria si ricava comunque per differenza.
 
 In **Scopa**, a mazzo finito restano al massimo sei giocate e si cerca la migliore con un
 minimax e taglio alfa-beta (`solve` in `ScopaGame.kt`). Cosi' il Banco sa se sta regalando una

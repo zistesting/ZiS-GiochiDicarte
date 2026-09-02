@@ -198,6 +198,59 @@
                 </RadioGroup>
             </LinearLayout>
 
+            <!-- Tresette -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/panel_bg"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/play_tresette"
+                    android:textColor="@color/silver"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/tresette_target_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <RadioGroup
+                    android:id="@+id/groupTresette"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/radioT21"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/tre_target_21"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <RadioButton
+                        android:id="@+id/radioT31"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/tre_target_31"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+                </RadioGroup>
+            </LinearLayout>
+
             <!-- Gioco responsabile -->
             <LinearLayout
                 android:layout_width="match_parent"

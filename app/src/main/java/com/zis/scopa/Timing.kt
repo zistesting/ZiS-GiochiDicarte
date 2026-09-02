@@ -38,6 +38,14 @@ class Timing {
     /** Quanto resta a schermo l'avviso SCOPA / SETTEBELLO. */
     val banner get() = ms(1000)
 
+    // ---- Tresette: pescata ----
+    /**
+     * Quanto restano ferme e scoperte le due carte pescate prima di entrare nelle mani.
+     * Non e' un abbellimento: la regola vuole che la carta pescata la veda anche
+     * l'avversario, quindi deve esserci il tempo materiale di leggerla.
+     */
+    val drawShow get() = ms(600)
+
     // ---- Briscola: presa ----
     /** Pausa a carte scoperte, per far vedere chi ha vinto la presa. */
     val trickPause get() = ms(500)

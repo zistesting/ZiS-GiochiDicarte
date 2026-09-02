@@ -37,6 +37,12 @@ class SettingsActivity : AppCompatActivity() {
             Prefs.setBriscolaTarget(this, if (checkedId == R.id.radioB11) 11 else 5)
         }
 
+        if (Prefs.tresetteTarget(this) == 31) b.radioT31.isChecked = true else b.radioT21.isChecked = true
+
+        b.groupTresette.setOnCheckedChangeListener { _, checkedId ->
+            Prefs.setTresetteTarget(this, if (checkedId == R.id.radioT31) 31 else 21)
+        }
+
         setupPauseSwitch()
 
         b.switchAuto.isChecked = Prefs.autoPlay(this)

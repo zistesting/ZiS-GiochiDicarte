@@ -45,5 +45,11 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|fontScale|uiMode|locale|layoutDirection" />
+
+        <activity
+            android:name=".TresetteActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|fontScale|uiMode|locale|layoutDirection" />
     </application>
 </manifest>

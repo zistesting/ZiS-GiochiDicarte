@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         b.version.text = "v." + appVersion()
         b.btnScopa.setOnClickListener { startActivity(Intent(this, GameActivity::class.java)) }
         b.btnBriscola.setOnClickListener { startActivity(Intent(this, BriscolaActivity::class.java)) }
+        b.btnTresette.setOnClickListener { startActivity(Intent(this, TresetteActivity::class.java)) }
         b.btnQuit.setOnClickListener { finishAffinity() }
         b.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         b.btnZis.setOnClickListener {
