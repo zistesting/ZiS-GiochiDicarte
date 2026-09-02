@@ -1,35 +1,38 @@
-PARTE 2 di 2 - tutte le immagini  (87 file, sotto il limite di 100 di GitHub)
+PARTE 2 di 2 - tutte le immagini  (88 file, sotto il limite di 100 di GitHub)
 
   41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
   41  mazzo tradizionale   trad_0_1 ... trad_3_10 + trad_back
-   5  loghi e sfondo       app_logo, btn_settings, title_logo, zis_logo, velvet
-
->>> ATTENZIONE, LEGGI PRIMA DI CARICARE <<<
-
-Le immagini sono in WebP, non in PNG (e velvet non e' piu' un JPG). I nomi delle
-risorse non cambiano, cambia solo l'estensione del file.
-
-Le 40 carte trad_* sono NUOVE: vengono dai fogli d'epoca, non piu' dalle scansioni
-coperte da copyright, e hanno il fondo bianco. Il dorso trad_back e' rimasto quello
-di prima.
-
-Se nel repository c'e' gia' la cartella  app/src/main/res/drawable-nodpi  con i PNG,
-VA CANCELLATA PRIMA. Se restano i vecchi file, il repository si ritrova
-card_0_1.png e card_0_1.webp insieme e la build si ferma con
-"duplicate resource" / "Duplicate resources".
-
-Il modo piu' rapido su GitHub: apri  app/src/main/res/  , entra in drawable-nodpi,
-poi dal menu "..." in alto a destra della cartella scegli Delete directory e conferma
-con un commit. Dopo, carica gli 87 file nuovi.
+   6  loghi e sfondo       app_logo, btn_info, btn_settings, title_logo, zis_logo, velvet
 
 --- caricamento ---
 
-Carica il CONTENUTO di questa cartella nella radice del repository, non la cartella
-"parte2" stessa: la app/ che trovi qui si fonde con quella della parte 1 e le immagini
-finiscono in  app/src/main/res/drawable-nodpi/
+QUESTA VOLTA NON SERVE CANCELLARE NIENTE.
 
-In alternativa, se quella cartella esiste gia' nel repository (ed e' vuota), entraci e
-carica direttamente gli 87 file con Add file -> Upload files.
+La prima volta bisognava cancellare la cartella perche' si passava da .png a .webp e i
+due gruppi di file sarebbero convissuti. Adesso i nomi sono gli stessi che ci sono gia'
+nel repository, quindi caricandoli si sovrascrivono e basta. L'unico file nuovo e'
+btn_info.webp, che si aggiunge.
+
+Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
+dentro tutti gli 88 file di questa cartella (non la cartella: il suo contenuto).
+
+In alternativa puoi caricare il CONTENUTO della cartella "parte2" nella radice del
+repository: la app/ che trovi qui si fonde con quella gia' presente e le immagini
+finiscono al posto giusto da sole.
+
+--- cosa e' cambiato rispetto alla versione precedente ---
+
+  card_2_1 ... card_2_10    spade, ridisegnate
+  card_3_1 ... card_3_10    bastoni, ridisegnate
+  btn_settings              icona nuova
+  btn_info                  icona nuova (file aggiunto)
+  title_logo                senza la fascia dei semi sotto la scritta
+
+Denari e coppe del mazzo ZiS sono ancora quelle di prima: finche' non arrivano anche
+quelle ridisegnate, il mazzo resta misto (bastoni e spade su fondo bianco, denari e
+coppe su fondo azzurrino).
+
+--- avvertenza di sempre ---
 
 Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi,
 altrimenti Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
