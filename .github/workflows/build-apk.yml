@@ -31,10 +31,32 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # Ripristina il keystore dai GitHub Secrets, se configurati.
+      # Ripristina il keystore dai GitHub Secrets, se configurati, e lo verifica subito.
+      #
+      # La verifica non e' pignoleria: senza, un secret incollato a meta' produce un file
+      # troncato, base64 -d non se ne accorge (i byte che ha sono validi) e l'errore salta
+      # fuori solo un minuto dopo, dentro packageRelease, come "KeytoolException ... null"
+      # con sotto un java.io.EOFException. Illeggibile, e sembra un problema di password
+      # mentre invece il file e' semplicemente corto. Meglio fermarsi qui in due secondi
+      # dicendo cosa non va.
       - name: Restore keystore
         if: env.KEYSTORE_BASE64 != ''
-        run: echo "$KEYSTORE_BASE64" | base64 -d > app/scopa.keystore
+        run: |
+          set -euo pipefail
+          # tr toglie spazi e a capo che possono essersi infilati nel copia-incolla
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > app/scopa.keystore
+          size=$(stat -c%s app/scopa.keystore)
+          echo "keystore ricostruito: $size byte"
+          if [ "$size" -lt 1000 ]; then
+            echo "::error title=Keystore incompleto::Il file ricostruito e' di soli $size byte, quindi il secret KEYSTORE_BASE64 e' stato incollato a meta'. Cancellalo e riscrivilo per intero: deve essere una riga sola."
+            exit 1
+          fi
+          if ! keytool -list -keystore app/scopa.keystore \
+                       -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error title=Keystore non apribile::Il file e' completo ma non si apre. Controlla KEYSTORE_PASSWORD e KEY_ALIAS: l'alias deve essere scritto esattamente come sta nel keystore."
+            exit 1
+          fi
+          echo "keystore verificato: file integro, alias e password corretti"
 
       - name: Avviso firma
         if: env.KEYSTORE_BASE64 == ''
