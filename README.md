@@ -273,14 +273,27 @@ sommano **sempre** a 2 terzi, perche' le carte da un terzo sono venti e i due co
 complementari modulo 3. Quindi **una mano vale sempre esattamente 11 punti**, mai 10, e il
 pareggio a fine mano non esiste. Verificato su 30.000 mani: 11 punti tutte le volte.
 
-**La mano da dieci carte** e' il problema vero su un telefono. A misura piena, dieci carte
-sovrapposte lascerebbero scoperto il 39% di ciascuna: una striscia verticale in cui un 3 e un
-7 di denari si somigliano troppo. Le carte in mano sono quindi ridotte del 26% (vedi
-`CardSize.handWidth`), e la parte scoperta sale al 57%. Sopra ci sono altri due aiuti: la mano
-si tiene **ordinata per seme** e, dentro il seme, dalla carta piu' forte; e le carte non
-giocabili sono spente al 35% e non rispondono al tocco, cosi' l'obbligo di rispondere al seme
-diventa anche una guida per trovare la carta. La sovrapposizione e' calcolata sulla larghezza
-disponibile: su uno schermo largo il passo arriva alla misura piena e le carte si separano.
+**La mano da dieci carte** e' il problema vero su un telefono, e la soluzione e' arrivata al
+secondo tentativo. Il primo era una fila sola di dieci carte sovrapposte: a misura piena
+restava scoperto il 39% di ciascuna, rimpicciolendole il 57%, e in quella striscia verticale
+un 3 e un 7 di denari si distinguevano a fatica.
+
+La disposizione buona e' **due file da cinque**. Le carte non si sovrappongono affatto, quindi
+si vedono intere, e per giunta vengono piu' grandi di prima: su un telefono tipico si passa da
+57 a 66 dp. La misura (`CardSize.handWidth`) e' il piu' stretto fra tre limiti: cinque carte
+affiancate devono stare nella riga tolti i bordi e gli spazi; due file non devono mangiarsi
+piu' del 38% dell'altezza, altrimenti al tavolo non resta posto per le carte della presa; e
+una carta in mano non ha senso che sia piu' grande di una in tavola. Verificato dal telefono
+piccolo (360x560dp) al tablet, anche con le carte del Banco scoperte: il tavolo resta sempre
+piu' capiente di quanto gli serve. Le file si tengono pari (dieci carte fanno 5 e 5, nove
+fanno 5 e 4) e da cinque in giu' si passa a una fila sola, per non lasciare una riga vuota.
+
+Il **ventaglio del Banco** resta invece una fila sola sovrapposta: sono dorsi tutti uguali,
+sovrapporli non costa niente e lo spazio verticale risparmiato va al tavolo.
+
+Restano gli altri due aiuti alla lettura: la mano si tiene **ordinata per seme** e, dentro il
+seme, dalla carta piu' forte; e le carte non giocabili sono spente al 35% e non rispondono al
+tocco, cosi' l'obbligo di rispondere al seme diventa anche una guida per trovare la carta.
 
 **Le due misure insieme hanno costretto a rifare la cache di `CardView`.** Teneva una sola
 larghezza in uno stato a parte e si svuotava tutta appena ne arrivava un'altra: andava bene

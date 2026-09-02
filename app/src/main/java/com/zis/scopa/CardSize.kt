@@ -42,14 +42,34 @@ object CardSize {
     fun height(res: Resources): Int = (widthDp(res) * RATIO * res.displayMetrics.density).toInt()
 
     /**
-     * Misura ridotta per le mani del Tresette, che sono da dieci carte invece che da tre.
+     * Misura delle carte in mano al Tresette, disposte su **due file da cinque**.
      *
-     * A misura piena, dieci carte sovrapposte lascerebbero scoperto il 39% di ciascuna: una
-     * striscia verticale in cui un 3 e un 7 di denari si somigliano troppo. Rimpicciolendole
-     * di un terzo la parte visibile sale al 57%, e con la mano ordinata per seme si
-     * riconoscono. Le carte in tavola restano invece a misura piena.
+     * Il primo tentativo era una fila sola di dieci carte sovrapposte: restava scoperto il
+     * 57% di ciascuna e un 3 e un 7 di denari si distinguevano a fatica. Su due file le
+     * carte non si sovrappongono affatto, quindi si vedono intere, e per giunta vengono
+     * piu' grandi di prima: su un telefono tipico si passa da 57 a 66 dp.
+     *
+     * Due vincoli, si prende il piu' stretto:
+     *  - in larghezza cinque carte affiancate devono stare nella riga, tolti i bordi della
+     *    schermata (16dp) e i quattro spazi fra le carte (4dp ciascuno);
+     *  - in altezza le due file non devono mangiarsi piu' del 38% dello schermo, altrimenti
+     *    al tavolo non resta lo spazio per le carte della presa.
+     *
+     * Non ha senso che una carta in mano sia piu' grande di una in tavola, da cui il terzo
+     * limite. Verificato dal telefono piccolo (360x560dp) al tablet, anche con le carte del
+     * Banco scoperte: il tavolo resta sempre piu' capiente di quanto gli serve.
      */
-    fun handWidth(res: Resources): Int = (width(res) * 0.74f).toInt()
+    private fun handWidthDp(res: Resources): Float {
+        val cfg = res.configuration
+        val dm = res.displayMetrics
+        val wDp = if (cfg.screenWidthDp > 0) cfg.screenWidthDp.toFloat() else dm.widthPixels / dm.density
+        val hDp = if (cfg.screenHeightDp > 0) cfg.screenHeightDp.toFloat() else dm.heightPixels / dm.density
+        val byWidth = (wDp - 16f - 4 * 4f) / 5f
+        val byHeight = hDp * 0.19f / RATIO
+        return minOf(byWidth, byHeight, widthDp(res))
+    }
 
-    fun handHeight(res: Resources): Int = (handWidth(res) * RATIO).toInt()
+    fun handWidth(res: Resources): Int = (handWidthDp(res) * res.displayMetrics.density).toInt()
+
+    fun handHeight(res: Resources): Int = (handWidthDp(res) * RATIO * res.displayMetrics.density).toInt()
 }

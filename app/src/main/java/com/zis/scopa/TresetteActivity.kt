@@ -60,6 +60,15 @@ class TresetteActivity : AppCompatActivity() {
     /** Vero mentre scorre l'animazione della presa e della pescata: le carte nuove restano fuori. */
     private var hideDrawn = false
 
+    /**
+     * Le viste delle due mani, nello stesso ordine in cui sono disegnate. La mano del
+     * giocatore sta su due file, quindi ricavare la vista da un indice richiederebbe conti
+     * su riga e colonna che si disallineano al primo cambiamento: tenere l'elenco costa
+     * niente e non puo' sbagliare.
+     */
+    private val youViews = ArrayList<CardView>()
+    private val botViews = ArrayList<CardView>()
+
     private var moveSeq = 0
     private var watchdogSeq = -1
 
@@ -240,14 +249,12 @@ class TresetteActivity : AppCompatActivity() {
         get() = (resources.configuration.screenWidthDp * resources.displayMetrics.density).toInt() - dp(24)
 
     /**
-     * Quanto avanza da una carta all'altra nella mano.
+     * Quanto avanza da una carta all'altra nel ventaglio del Banco.
      *
-     * Dieci carte affiancate non ci starebbero mai su un telefono, quindi si sovrappongono,
-     * ma solo quanto serve: su uno schermo largo il passo arriva alla larghezza piena e le
-     * carte tornano separate. Con il passo tipico resta scoperto poco piu' di meta' di
-     * ciascuna, abbastanza per riconoscerla avendo la mano ordinata per seme.
+     * Sono dorsi tutti uguali, quindi possono sovrapporsi quanto serve senza perdere niente.
+     * Su uno schermo largo il passo arriva alla larghezza piena e le carte si separano.
      */
-    private fun handStep(n: Int): Int {
+    private fun fanStep(n: Int): Int {
         if (n <= 1) return handW + dp(3)
         return minOf(handW + dp(3), (usableW - handW) / (n - 1))
     }
@@ -268,17 +275,51 @@ class TresetteActivity : AppCompatActivity() {
         return cv
     }
 
-    private fun addHand(row: LinearLayout, p: Int, faceUp: Boolean, legal: Set<Card>?) {
-        row.removeAllViews()
-        val cards = visibleHand(p)
-        val step = handStep(cards.size)
+    /** Ventaglio del Banco: una fila sola di dorsi sovrapposti. */
+    private fun addBotFan() {
+        b.botHand.removeAllViews()
+        botViews.clear()
+        val cards = visibleHand(1)
+        val step = fanStep(cards.size)
         for ((i, c) in cards.withIndex()) {
-            val cv = makeCard(if (faceUp) c else null, faceUp, handW, handH)
+            val cv = makeCard(if (showBot) c else null, showBot, handW, handH)
             val lp = cv.layoutParams as LinearLayout.LayoutParams
             // le carte si accavallano portando indietro il margine iniziale di ognuna
             if (i > 0) lp.marginStart = step - handW
-            row.addView(cv, lp)
-            if (legal != null) {
+            b.botHand.addView(cv, lp)
+            botViews.add(cv)
+        }
+    }
+
+    /**
+     * Mano del giocatore su due file da cinque, senza sovrapposizioni: ogni carta si vede
+     * per intero. Le file si tengono pari (dieci carte fanno 5 e 5, nove fanno 5 e 4) e da
+     * cinque carte in giu' si passa a una fila sola, cosi' non resta una riga vuota a
+     * mangiarsi lo spazio del tavolo.
+     */
+    private fun addYouHand(legal: Set<Card>) {
+        b.youHand.removeAllViews()
+        youViews.clear()
+        val cards = visibleHand(0)
+        val perRow = if (cards.size > 5) (cards.size + 1) / 2 else cards.size
+        var i = 0
+        while (i < cards.size) {
+            val row = LinearLayout(this)
+            row.orientation = LinearLayout.HORIZONTAL
+            row.gravity = Gravity.CENTER_HORIZONTAL
+            val rowLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            rowLp.gravity = Gravity.CENTER_HORIZONTAL
+            b.youHand.addView(row, rowLp)
+            var k = 0
+            while (k < perRow && i < cards.size) {
+                val c = cards[i]
+                val cv = makeCard(c, true, handW, handH)
+                val lp = cv.layoutParams as LinearLayout.LayoutParams
+                lp.marginStart = dp(2); lp.marginEnd = dp(2); lp.topMargin = dp(2)
+                row.addView(cv, lp)
+                youViews.add(cv)
                 if (c in legal) {
                     cv.alpha = 1f
                     cv.setOnClickListener { onPlayerCard(c, cv) }
@@ -286,6 +327,7 @@ class TresetteActivity : AppCompatActivity() {
                     // obbligo di rispondere al seme: la carta si vede ma non si puo' giocare
                     cv.alpha = 0.35f
                 }
+                i++; k++
             }
         }
     }
@@ -295,13 +337,13 @@ class TresetteActivity : AppCompatActivity() {
         b.botScore.text = getString(R.string.tre_bot_points, formatThirds(game.thirdsFor(1)))
         b.youScore.text = getString(R.string.tre_you_points, formatThirds(game.thirdsFor(0)))
 
-        addHand(b.botHand, 1, showBot, null)
+        addBotFan()
 
         // Le carte si spengono solo quando tocca davvero a te rispondere: mentre gioca il
         // Banco la mano resta com'e', altrimenti lampeggerebbe a ogni presa.
-        val legal: Set<Card>? =
+        val legal: Set<Card> =
             if (!busy && !game.finished && game.turn == 0) game.legalMoves(0).toSet() else game.hands[0].toSet()
-        addHand(b.youHand, 0, true, legal)
+        addYouHand(legal)
 
         // tallone
         b.deckBox.removeAllViews()
@@ -349,9 +391,8 @@ class TresetteActivity : AppCompatActivity() {
         b.root.doOnLayout {
             if (destroyed) return@doOnLayout
             if (b.deckBox.width == 0) return@doOnLayout
-            val views = ArrayList<View>()
-            for (i in 0 until b.botHand.childCount) views.add(b.botHand.getChildAt(i))
-            for (i in 0 until b.youHand.childCount) views.add(b.youHand.getChildAt(i))
+            // dagli elenchi e non dai figli: la mano del giocatore e' annidata in due file
+            val views = ArrayList<View>(botViews + youViews)
             val (dx, dy) = topLeftInOverlay(b.deckBox)
             var delay = 0L
             for (v in views) {
@@ -389,15 +430,10 @@ class TresetteActivity : AppCompatActivity() {
         playAnimated(card, sx, sy)
     }
 
-    /** Vista da cui parte la carta del Banco: l'indice segue l'ordine in cui e' disegnata la mano. */
-    private fun botHandView(card: Card): View? = handViewOf(b.botHand, 1, card)
+    /** Vista da cui parte la carta calata: l'elenco segue l'ordine in cui e' disegnata la mano. */
+    private fun botHandView(card: Card): View? = botViews.getOrNull(visibleHand(1).indexOf(card))
 
-    private fun youHandView(card: Card): View? = handViewOf(b.youHand, 0, card)
-
-    private fun handViewOf(row: LinearLayout, p: Int, card: Card): View? {
-        val i = visibleHand(p).indexOf(card)
-        return if (i in 0 until row.childCount) row.getChildAt(i) else null
-    }
+    private fun youHandView(card: Card): View? = youViews.getOrNull(visibleHand(0).indexOf(card))
 
     private fun playAnimated(card: Card, sx: Float, sy: Float) {
         val completing = game.trick.size == 1

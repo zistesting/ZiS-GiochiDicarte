@@ -95,12 +95,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <!-- Contenitore verticale: le file di carte le crea il codice, perche' quante
+                 sono dipende da quante carte restano in mano -->
             <LinearLayout
                 android:id="@+id/youHand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:orientation="horizontal" />
+                android:orientation="vertical" />
         </FrameLayout>
 
         <TextView
