@@ -13,7 +13,7 @@ Le 40 carte trad_* sono NUOVE: vengono dai fogli d'epoca, non piu' dalle scansio
 coperte da copyright, e hanno il fondo bianco. Il dorso trad_back e' rimasto quello
 di prima.
 
-Se nel repository c'e' gia' la cartella  app/src/main/res/drawable-nodpi ,
+Se nel repository c'e' gia' la cartella  app/src/main/res/drawable-nodpi  con i PNG,
 VA CANCELLATA PRIMA. Se restano i vecchi file, il repository si ritrova
 card_0_1.png e card_0_1.webp insieme e la build si ferma con
 "duplicate resource" / "Duplicate resources".
