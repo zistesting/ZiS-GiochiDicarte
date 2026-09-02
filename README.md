@@ -231,6 +231,48 @@ del mazzo precedente.
 richiesta cambia (rotazione, finestra ridimensionata) la cache si svuota e le carte vengono
 ridecodificate alla nuova misura. `ZisApp` la svuota quando il sistema segnala poca memoria.
 
+**Riepiloghi uniformi.** I tre giochi dicono le stesse cose con le stesse parole. La
+terminologia e' una sola: una distribuzione e' una **mano**, la serie fino al bersaglio e' la
+**partita**. Prima ognuno diceva la sua, e in Briscola "partita" indicava addirittura la
+singola mano mentre la serie si chiamava "incontro": l'opposto della Scopa. Anche
+l'impostazione di Briscola diceva "Partite da vincere" intendendo mani.
+
+L'impaginazione del riepilogo e' la stessa per tutti: esito della mano, riga della partita, e
+la riga del vincitore solo quando la partita e' finita. La Scopa la usa gia' cosi', con in
+piu' la tabella dei quattro punti (che resta com'era); Briscola e Tresette la adottano tramite
+`dialog_result.xml`, che e' la stessa struttura senza tabella. Prima quei due mettevano tutto
+nel messaggio dell'`AlertDialog`, quindi le singole righe non si potevano colorare.
+
+Anche la schermata di gioco ora si legge allo stesso modo nei tre: riga della partita in alto,
+poi la situazione della mano per ciascuno. La Scopa ha guadagnato la riga della partita, che
+prima era mescolata dentro il punteggio di ciascun giocatore.
+
+**Colore per esito.** Le righe di esito sono **oro quando sei in vantaggio tu**, celeste negli
+altri casi: vale per la riga della mano, per quella della partita e per quella del vincitore,
+in tutti e tre i giochi. La regola sta in `Outcome.kt` e non dentro le activity apposta,
+perche' deve restare identica: e' quella che fa capire come sta andando prima ancora di
+leggere i numeri, e basta che due schermate la applichino in modo diverso perche' l'indizio
+smetta di funzionare. La riga del totale nella tabella della Scopa resta oro per entrambe le
+colonne, perche' li' e' un'intestazione e non un esito.
+
+**Pulsante info.** Ogni schermata di gioco ha in alto a sinistra un pulsante che apre le
+regole del gioco in corso; la schermata iniziale ne ha uno che apre la presentazione dell'app
+e la parte sulla privacy. La finestra e' costruita in `InfoDialog.kt` con un `ScrollView`
+esplicito e non con il messaggio dell'`AlertDialog`: quel messaggio scorre da solo su alcune
+versioni di Android e su altre no, e i testi qui sono lunghi, quindi su meta' dei telefoni
+l'ultimo paragrafo sarebbe finito tagliato.
+
+**Privacy.** Il testo informativo dice che l'app non chiede nessun permesso, e la cosa e'
+verificabile: nel manifest non c'e' un solo `uses-permission`. Niente internet, niente
+rubrica, niente posizione, niente fotocamera, niente file. L'unica cosa salvata sono le
+preferenze di gioco, in `SharedPreferences`, sul telefono. L'unico collegamento verso
+l'esterno e' il logo ZiS della schermata iniziale, che apre `zis.it` nel browser di sistema
+con un intent: e' il browser a connettersi, non l'app.
+
+**Pausa responsabile.** Disattivarla non chiede piu' una password. Era una barriera che non
+proteggeva nessuno, perche' e' lo stesso utente a decidere per se stesso, e si limitava a
+mettere un ostacolo in mezzo. L'interruttore ora si muove liberamente nei due sensi.
+
 **versionCode.** È `1000 + numero della build di GitHub Actions`. Il numero di Actions da solo
 è fragile: se il repository viene ricreato il contatore riparte da 1 e il Play Console rifiuta
 l'upload, perché pretende un `versionCode` sempre crescente. La base davanti lascia margine; se
@@ -287,6 +329,10 @@ una carta in mano non ha senso che sia piu' grande di una in tavola. Verificato 
 piccolo (360x560dp) al tablet, anche con le carte del Banco scoperte: il tavolo resta sempre
 piu' capiente di quanto gli serve. Le file si tengono pari (dieci carte fanno 5 e 5, nove
 fanno 5 e 4) e da cinque in giu' si passa a una fila sola, per non lasciare una riga vuota.
+
+Quanto restano scoperte le carte pescate si regola dalle impostazioni: 1, 2 o 3 secondi,
+2 di partenza. Quanto tempo serva per leggere una carta dipende da chi gioca, e siccome da
+li' passa meta' dell'informazione della partita non e' un dettaglio estetico.
 
 Il **ventaglio del Banco** resta invece una fila sola sovrapposta: sono dorsi tutti uguali,
 sovrapporli non costa niente e lo spazio verticale risparmiato va al tavolo.

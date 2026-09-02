@@ -1,11 +1,7 @@
 package com.zis.scopa
 
 import android.os.Bundle
-import android.text.InputType
 import android.view.View
-import android.widget.EditText
-import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.zis.scopa.databinding.ActivitySettingsBinding
@@ -38,6 +34,20 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         if (Prefs.tresetteTarget(this) == 31) b.radioT31.isChecked = true else b.radioT21.isChecked = true
+
+        when (Prefs.drawShowSeconds(this)) {
+            1 -> b.radioDraw1.isChecked = true
+            3 -> b.radioDraw3.isChecked = true
+            else -> b.radioDraw2.isChecked = true
+        }
+
+        b.groupDraw.setOnCheckedChangeListener { _, checkedId ->
+            Prefs.setDrawShowSeconds(this, when (checkedId) {
+                R.id.radioDraw1 -> 1
+                R.id.radioDraw3 -> 3
+                else -> 2
+            })
+        }
 
         b.groupTresette.setOnCheckedChangeListener { _, checkedId ->
             Prefs.setTresetteTarget(this, if (checkedId == R.id.radioT31) 31 else 21)
@@ -96,7 +106,11 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    /** Attivare la pausa e' libero; disattivarla richiede la password. */
+    /**
+     * L'interruttore della pausa si muove liberamente nei due sensi. Prima disattivarla
+     * chiedeva una password: una barriera che non proteggeva nessuno, perche' e' lo stesso
+     * utente a decidere per se stesso, e che si limitava a mettere un ostacolo in mezzo.
+     */
     private fun setupPauseSwitch() {
         b.switchPause.isChecked = Prefs.pauseEnabled(this)
         setupPauseListener()
@@ -105,61 +119,14 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupPauseListener() {
         b.switchPause.setOnCheckedChangeListener { _, checked ->
-            if (checked) {
-                Prefs.setPauseEnabled(this, true)
-                refreshPauseUi()
-            } else {
-                askPassword(
-                    onOk = { Prefs.setPauseEnabled(this, false); refreshPauseUi() },
-                    onFail = {
-                        restoreSwitch()
-                        Toast.makeText(this, R.string.pause_pwd_wrong, Toast.LENGTH_SHORT).show()
-                    },
-                    onCancel = { restoreSwitch() }
-                )
-            }
+            Prefs.setPauseEnabled(this, checked)
+            refreshPauseUi()
         }
-    }
-
-    /** Rimette l'interruttore su "acceso" senza far riscattare il listener. */
-    private fun restoreSwitch() {
-        b.switchPause.setOnCheckedChangeListener(null)
-        b.switchPause.isChecked = true
-        refreshPauseUi()
-    }
-
-    private fun askPassword(onOk: () -> Unit, onFail: () -> Unit, onCancel: () -> Unit) {
-        val input = EditText(this).apply {
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            setHint(R.string.pause_pwd_hint)
-            setTextColor(getColor(R.color.silver))
-            setHintTextColor(getColor(R.color.silver_dark))
-        }
-        val pad = (20 * resources.displayMetrics.density).toInt()
-        val box = FrameLayout(this).apply {
-            setPadding(pad, pad / 2, pad, 0)
-            addView(input)
-        }
-
-        openDialog = AlertDialog.Builder(this)
-            .setTitle(R.string.pause_pwd_title)
-            .setMessage(R.string.pause_pwd_msg)
-            .setView(box)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                if (input.text.toString().trim().equals(PASSWORD, ignoreCase = true)) onOk() else onFail()
-            }
-            .setNegativeButton(android.R.string.cancel) { _, _ -> onCancel() }
-            .setOnCancelListener { onCancel() }
-            .show()
     }
 
     override fun onDestroy() {
         openDialog?.let { if (it.isShowing) it.dismiss() }
         openDialog = null
         super.onDestroy()
-    }
-
-    private companion object {
-        const val PASSWORD = "zis"
     }
 }

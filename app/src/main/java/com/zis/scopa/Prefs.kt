@@ -32,6 +32,13 @@ object Prefs {
      * Prefisso dei file delle carte. Le immagini si chiamano <prefisso>_seme_valore, quindi
      * cambiare mazzo vuol dire cambiare prefisso: card_0_1 oppure trad_0_1.
      */
+    /** Secondi per cui la carta pescata resta scoperta a Tresette: 1, 2 o 3. */
+    fun drawShowSeconds(ctx: Context): Int = p(ctx).getInt("tre_draw_seconds", 2)
+
+    fun setDrawShowSeconds(ctx: Context, value: Int) {
+        p(ctx).edit().putInt("tre_draw_seconds", value).apply()
+    }
+
     /** Punti a cui si vince l'incontro di Tresette: 21 (breve) o 31 (classico). */
     fun tresetteTarget(ctx: Context): Int = p(ctx).getInt("tresette_target", 21)
 

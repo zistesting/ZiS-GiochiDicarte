@@ -42,9 +42,12 @@ class Timing {
     /**
      * Quanto restano ferme e scoperte le due carte pescate prima di entrare nelle mani.
      * Non e' un abbellimento: la regola vuole che la carta pescata la veda anche
-     * l'avversario, quindi deve esserci il tempo materiale di leggerla.
+     * l'avversario, quindi deve esserci il tempo materiale di leggerla. Quanto tempo serva
+     * dipende da chi gioca, percio' e' regolabile dalle impostazioni (1, 2 o 3 secondi).
      */
-    val drawShow get() = ms(600)
+    var drawShowMs: Long = 2000
+
+    val drawShow get() = ms(drawShowMs)
 
     // ---- Briscola: presa ----
     /** Pausa a carte scoperte, per far vedere chi ha vinto la presa. */

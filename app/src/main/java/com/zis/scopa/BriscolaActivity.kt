@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnLayout
 import com.zis.scopa.databinding.ActivityBriscolaBinding
+import com.zis.scopa.databinding.DialogResultBinding
 
 class BriscolaActivity : AppCompatActivity() {
 
@@ -89,6 +90,7 @@ class BriscolaActivity : AppCompatActivity() {
         b = ActivityBriscolaBinding.inflate(layoutInflater)
         setContentView(b.root)
         applySystemBars(b.root)
+        b.btnInfo.setOnClickListener { track(InfoDialog.show(this, R.string.info_title, R.string.rules_briscola)) }
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
@@ -300,9 +302,10 @@ class BriscolaActivity : AppCompatActivity() {
     }
 
     private fun render(trickOverride: List<Card>? = null) {
-        b.txtMatch.text = getString(R.string.brisc_match_line, matchYou, matchBot)
-        b.botScore.text = getString(R.string.bot_points, game.scoreFor(1))
-        b.youScore.text = getString(R.string.you_points, game.scoreFor(0))
+        b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
+        b.txtMatch.tintByOutcome(matchYou > matchBot)
+        b.botScore.text = getString(R.string.bot_points, game.scoreFor(1).toString())
+        b.youScore.text = getString(R.string.you_points, game.scoreFor(0).toString())
 
         b.botHand.removeAllViews()
         for (c in game.hands[1]) {
@@ -509,37 +512,41 @@ class BriscolaActivity : AppCompatActivity() {
         if (you > bot) matchYou++ else if (bot > you) matchBot++
         render()
 
-        val handMsg = when {
-            you > bot -> getString(R.string.brisc_win_you, you, bot)
-            bot > you -> getString(R.string.brisc_win_bot, bot, you)
-            else -> getString(R.string.brisc_draw, you, bot)
-        }
         val matchOver = matchYou >= matchTarget || matchBot >= matchTarget
         if (matchOver) Prefs.markMatchEnded(this)
 
-        val builder = AlertDialog.Builder(this)
-            .setTitle(R.string.play_briscola)
-            .setCancelable(false)
-        if (matchOver) {
-            val matchMsg = if (matchYou > matchBot)
-                getString(R.string.brisc_match_win_you, matchYou, matchBot)
-            else
-                getString(R.string.brisc_match_win_bot, matchBot, matchYou)
-            builder.setMessage("$handMsg\n\n$matchMsg")
-                .setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
-                .setNegativeButton(R.string.back_home) { _, _ -> finish() }
-        } else {
-            // Niente "Nuova partita" a meta' incontro: era l'unico modo di ricominciare
-            // saltando la pausa di un minuto. Come in Scopa restano continua e menu.
-            val scoreLine = getString(R.string.brisc_match_line, matchYou, matchBot)
-            builder.setMessage("$handMsg\n\n$scoreLine")
-                .setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
-                .setNegativeButton(R.string.back_home) { _, _ -> finish() }
+        // Stessa impaginazione della Scopa: esito della mano, riga della partita, e la riga
+        // del vincitore solo quando la partita e' finita. Prima era tutto nel messaggio
+        // dell'AlertDialog, e le singole righe non si potevano colorare.
+        val v = DialogResultBinding.inflate(layoutInflater)
+        v.txtHand.text = when {
+            you > bot -> getString(R.string.hand_you, you, bot)
+            bot > you -> getString(R.string.hand_bot, bot, you)
+            else -> getString(R.string.hand_draw, you, bot)
         }
-        val dlg = builder.show()
-        track(dlg)
-        // win notice for the user in gold
-        if (you > bot) dlg.findViewById<TextView>(android.R.id.message)?.setTextColor(getColor(R.color.gold))
+        v.txtHand.tintByOutcome(you > bot)
+        v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
+        v.txtMatch.tintByOutcome(matchYou > matchBot)
+        if (matchOver) {
+            v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
+                               else getString(R.string.match_win_bot)
+            v.txtWinner.tintByOutcome(matchYou > matchBot)
+            v.txtWinner.visibility = View.VISIBLE
+        }
+
+        val builder = AlertDialog.Builder(this)
+            .setTitle(R.string.round_over)
+            .setView(v.root)
+            .setCancelable(false)
+            .setNegativeButton(R.string.back_home) { _, _ -> finish() }
+        if (matchOver) {
+            builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
+        } else {
+            // Niente "Nuova partita" a meta' partita: era l'unico modo di ricominciare
+            // saltando la pausa di un minuto. Come in Scopa restano continua e menu.
+            builder.setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
+        }
+        track(builder.show())
     }
 
     // ---- animation helpers ----

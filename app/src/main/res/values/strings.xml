@@ -9,13 +9,28 @@
     <!-- Game -->
     <string name="bot">Banco</string>
     <string name="you">Tu</string>
-    <string name="score_line">Punti: %1$d   Scope: %2$d</string>
     <string name="your_turn">Tocca a te: gioca una carta</string>
     <string name="bot_turn">Gioca il Banco…</string>
     <string name="back_home">Menu</string>
 
     <!-- End of round dialog -->
     <string name="round_over">Fine mano</string>
+
+    <!-- Esiti e punteggi: gli stessi per Scopa, Briscola e Tresette.
+         Terminologia: una distribuzione e' una MANO, la serie fino al bersaglio e' la PARTITA.
+         Prima ognuno diceva la sua, e in Briscola "partita" indicava addirittura la singola
+         mano mentre la serie si chiamava "incontro": l'opposto della Scopa. -->
+    <string name="hand_you">Mano tua: %1$d a %2$d</string>
+    <string name="hand_bot">Mano al Banco: %1$d a %2$d</string>
+    <string name="hand_draw">Mano pari: %1$d a %2$d</string>
+    <string name="match_line">Partita: Tu %1$d - %2$d Banco</string>
+    <string name="match_win_you">Hai vinto la partita!</string>
+    <string name="match_win_bot">Ha vinto il Banco.</string>
+    <string name="you_points">Tu: %1$s</string>
+    <string name="bot_points">Banco: %1$s</string>
+    <string name="briscola_hands_label">Mani da vincere per la partita</string>
+    <string name="hands_5">5 mani</string>
+    <string name="hands_11">11 mani</string>
     <string name="pt_carte">Carte</string>
     <string name="pt_denari">Denari</string>
     <string name="pt_settebello">Settebello</string>
@@ -29,40 +44,33 @@
     <string name="score_target_label">Punteggio partita</string>
     <string name="target_11">11 punti</string>
     <string name="target_21">21 punti</string>
-    <string name="match_line">Partita: Tu %1$d - %2$d Banco</string>
     <string name="continue_match">Continua</string>
     <string name="new_match">Nuova partita</string>
-    <string name="match_win_you">Hai vinto la partita!</string>
-    <string name="match_win_bot">Ha vinto il Banco.</string>
     <string name="play_briscola">Briscola</string>
-    <string name="brisc_match_line">Incontro: Tu %1$d - %2$d Banco</string>
-    <string name="you_points">Tu: %1$d</string>
-    <string name="bot_points">Banco: %1$d</string>
     <string name="you_take">Presa tua</string>
     <string name="bot_take">Presa Banco</string>
-    <string name="brisc_win_you">Hai vinto la partita! %1$d a %2$d</string>
-    <string name="brisc_win_bot">Ha vinto il Banco. %1$d a %2$d</string>
-    <string name="brisc_draw">Pareggio! %1$d a %2$d</string>
-    <string name="briscola_hands_label">Partite da vincere</string>
-    <string name="hands_5">5 partite</string>
-    <string name="hands_11">11 partite</string>
-    <string name="brisc_match_win_you">Hai vinto l\'incontro! %1$d a %2$d partite</string>
-    <string name="brisc_match_win_bot">Incontro perso. %1$d a %2$d partite</string>
 
     <!-- Tresette -->
     <string name="play_tresette">Tresette</string>
-    <string name="tre_match_line">Incontro: Tu %1$d - %2$d Banco</string>
-    <string name="tre_you_points">Tu: %1$s</string>
-    <string name="tre_bot_points">Banco: %1$s</string>
     <string name="tre_points_third">%1$d e ⅓</string>
     <string name="tre_points_twothirds">%1$d e ⅔</string>
-    <string name="tre_hand_you">Mano tua: %1$d a %2$d</string>
-    <string name="tre_hand_bot">Mano al Banco: %1$d a %2$d</string>
-    <string name="tre_match_win_you">Hai vinto l\'incontro! %1$d a %2$d</string>
-    <string name="tre_match_win_bot">Incontro perso. %1$d a %2$d</string>
     <string name="tresette_target_label">Punti per vincere l\'incontro</string>
     <string name="tre_target_21">21 punti</string>
     <string name="tre_target_31">31 punti</string>
+    <string name="draw_seconds_label">Per quanto resta scoperta la carta pescata</string>
+    <string name="draw_1s">1 secondo</string>
+    <string name="draw_2s">2 secondi</string>
+    <string name="draw_3s">3 secondi</string>
+
+    <!-- Pulsanti info e spiegazioni -->
+    <string name="cd_info">Informazioni</string>
+    <string name="info_title">Come si gioca</string>
+    <string name="info_app_title">ZiS Giochi di Carte</string>
+    <string name="close">Chiudi</string>
+    <string name="rules_scopa">Si gioca in due con il mazzo da 40 carte. Quattro carte scoperte in tavola, tre a testa in mano.\n\nA turno si cala una carta. Se in tavola c\'e\' una carta dello stesso valore, la si prende. Se non c\'e\', si possono prendere piu\' carte la cui somma sia pari al valore calato: l\'Asso vale 1, il Fante 8, il Cavallo 9, il Re 10. Se c\'e\' la carta singola dello stesso valore, quella ha la precedenza e va presa. Se non si prende niente, la carta resta in tavola.\n\nSvuotare la tavola con una presa vale una SCOPA, che e\' un punto. Non vale sull\'ultima carta della mano.\n\nFinite le carte si pesca ancora finche\' il mazzo dura. A fine mano le carte rimaste in tavola vanno a chi ha preso per ultimo.\n\nSi contano quattro punti, uno ciascuno: piu\' carte, piu\' denari, il settebello (il 7 di denari), e la primiera. Piu\' le scope. In caso di parita\' quel punto non lo prende nessuno.\n\nLa primiera si calcola prendendo la carta migliore per ogni seme e sommandone il valore: 7 vale 21, il 6 vale 18, l\'Asso 16, il 5 vale 15, il 4 vale 14, il 3 vale 13, il 2 vale 12, le figure 10.</string>
+    <string name="rules_briscola">Si gioca in due con il mazzo da 40 carte. Tre carte a testa, il resto forma il mazzo. L\'ultima carta del mazzo si mette scoperta sotto: il suo seme e\' la briscola, e batte tutti gli altri semi.\n\nUno cala una carta, l\'altro risponde con quella che vuole: non c\'e\' obbligo di seme. Prende chi ha calato la briscola piu\' alta, oppure, se non ce ne sono, la carta piu\' alta del seme di apertura. Chi prende pesca per primo e apre la mano successiva.\n\nOrdine di forza, dalla piu\' alta: Asso, 3, Re, Cavallo, Fante, 7, 6, 5, 4, 2.\n\nPunti: Asso 11, 3 vale 10, Re 4, Cavallo 3, Fante 2. Le altre carte non valgono niente. In tutto ci sono 120 punti: ne bastano 61 per vincere, e a 60 pari la mano e\' patta.</string>
+    <string name="rules_tresette">Si gioca in due con il mazzo da 40 carte. Dieci carte a testa, venti restano nel tallone.\n\nChi risponde DEVE rispondere al seme di chi ha aperto. Puo\' calare un altro seme solo se quel seme non ce l\'ha, ma in quel caso non prende. L\'app fa rispettare la regola da sola: le carte che non puoi giocare restano spente.\n\nPrende chi ha calato la carta piu\' alta del seme di apertura. Poi si pesca, prima chi ha preso, e la carta pescata si mostra all\'avversario: tienile d\'occhio, servono a capire cosa gli resta in mano. Finito il tallone si giocano le ultime dieci prese senza pescare.\n\nOrdine di forza, dalla piu\' alta: 3, 2, Asso, Re, Cavallo, Fante, 7, 6, 5, 4.\n\nPunti: l\'Asso vale un punto intero; il 2, il 3, il Fante, il Cavallo e il Re valgono un terzo ciascuno; dal 4 al 7 niente. L\'ultima presa vale un punto. A fine mano ogni giocatore scarta i terzi che gli avanzano, e la mano vale sempre 11 punti in tutto.\n\nL\'incontro si vince a 21 o a 31 punti, come scegli nelle impostazioni.</string>
+    <string name="info_app">Tre giochi di carte italiani contro il computer: Scopa, Briscola e Tresette. Mazzo da 40 carte, scegliendo fra due grafiche nelle impostazioni.\n\nRISPETTO DELLA TUA PRIVACY\n\nQuesta app non raccoglie e non trasmette nulla. Non ci sono statistiche d\'uso, non ci sono pubblicita\', non ci sono strumenti di tracciamento di terze parti.\n\nNon chiede nessun permesso. Nel file di configurazione dell\'app non ne e\' dichiarato neanche uno: non ha accesso a internet, ne\' alla rubrica, ne\' alla posizione, ne\' alla fotocamera, ne\' ai file del telefono. Puoi verificarlo tu stesso in Impostazioni di Android, alla voce Autorizzazioni dell\'app.\n\nL\'unica cosa che l\'app salva sono le tue preferenze di gioco (mazzo scelto, punti per vincere, e simili), e restano sul tuo telefono.\n\nL\'unico collegamento verso l\'esterno e\' il logo ZiS in fondo alla schermata iniziale: se lo tocchi, si apre il sito zis.it nel tuo browser. Fino ad allora l\'app non contatta nessuno.\n\nGIOCO RESPONSABILE\n\nQui non si scommette e non si vince nulla: si gioca a carte e basta. Resta comunque attivo un avviso fra una partita e l\'altra, che si puo\' disattivare dalle impostazioni.</string>
 
     <!-- Pausa responsabile -->
     <string name="test_section">Test</string>
@@ -81,11 +89,7 @@ Se senti il bisogno di ricominciare subito, se stai giocando per rifarti di una 
 Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 558 822 (gratuito e anonimo, dal lunedì al venerdì dalle 10 alle 16).</string>
     <string name="pause_countdown">Attendi %1$d s</string>
     <string name="pause_wait">Attendi</string>
-    <string name="pause_pwd_title">Disattiva la pausa</string>
-    <string name="pause_pwd_msg">Inserisci la password per disattivare la pausa fra le partite.</string>
-    <string name="pause_pwd_hint">Password</string>
     <string name="pause_off_info">Pausa disattivata. Si riattiva automaticamente fra %1$d min.</string>
-    <string name="pause_pwd_wrong">Password errata: la pausa resta attiva.</string>
     <!-- Mazzo -->
     <string name="deck_section">Mazzo</string>
     <string name="deck_label">Aspetto delle carte</string>

@@ -106,6 +106,7 @@ class GameActivity : AppCompatActivity() {
         b = ActivityGameBinding.inflate(layoutInflater)
         setContentView(b.root)
         applySystemBars(b.root)
+        b.btnInfo.setOnClickListener { track(InfoDialog.show(this, R.string.info_title, R.string.rules_scopa)) }
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
@@ -272,6 +273,9 @@ class GameActivity : AppCompatActivity() {
         }
     }
 
+    /** "1 scopa" ma "2 scope": il singolare non si cava con un %d secco. */
+    private fun scopeText(n: Int): String = resources.getQuantityString(R.plurals.scope_n, n, n)
+
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
     private fun makeCard(card: Card?, faceUp: Boolean, w: Int, h: Int): CardView {
@@ -316,8 +320,10 @@ class GameActivity : AppCompatActivity() {
     }
 
     private fun render() {
-        b.botScore.text = getString(R.string.score_line, matchBot, game.scope[1])
-        b.youScore.text = getString(R.string.score_line, matchYou, game.scope[0])
+        b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
+        b.txtMatch.tintByOutcome(matchYou > matchBot)
+        b.botScore.text = getString(R.string.bot_points, scopeText(game.scope[1]))
+        b.youScore.text = getString(R.string.you_points, scopeText(game.scope[0]))
 
         b.botHand.removeAllViews()
         for (c in game.hands[1]) b.botHand.addView(makeCard(if (showBot) c else null, showBot, cardW, cardH))
@@ -597,9 +603,11 @@ class GameActivity : AppCompatActivity() {
         v.youScope.text = you.scope.toString();          v.botScope.text = bot.scope.toString()
         v.youTot.text = you.total.toString();            v.botTot.text = bot.total.toString()
         v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
+        v.txtMatch.tintByOutcome(matchYou > matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
+            v.txtWinner.tintByOutcome(matchYou > matchBot)
             v.txtWinner.visibility = View.VISIBLE
         }
 

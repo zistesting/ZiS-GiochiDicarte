@@ -8,9 +8,9 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="116dp"
-        android:layout_height="116dp"
-        android:layout_marginTop="44dp"
+        android:layout_width="92dp"
+        android:layout_height="92dp"
+        android:layout_marginTop="40dp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/app_logo"
         app:layout_constraintEnd_toEndOf="parent"
@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/btnSettings"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/version"
@@ -116,28 +116,52 @@
             android:shadowRadius="4" />
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/btnZis"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_margin="18dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="@string/cd_web"
-        android:scaleType="fitCenter"
-        android:src="@drawable/zis_logo"
+    <!-- Riga in fondo: info, impostazioni, logo ZiS. Sono in un LinearLayout invece che
+         ancorati ai due bordi opposti, cosi' l'ordine e' quello scritto qui e restano
+         distanziati allo stesso modo su qualunque larghezza di schermo. -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <ImageButton
-        android:id="@+id/btnSettings"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_margin="18dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="@string/cd_settings"
-        android:scaleType="fitCenter"
-        android:src="@drawable/btn_settings"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <ImageButton
+            android:id="@+id/btnInfo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/cd_info"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_info" />
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/cd_settings"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_settings" />
+
+        <ImageButton
+            android:id="@+id/btnZis"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="18dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/cd_web"
+            android:scaleType="fitCenter"
+            android:src="@drawable/zis_logo" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

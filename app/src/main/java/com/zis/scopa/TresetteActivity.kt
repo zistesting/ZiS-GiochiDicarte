@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.doOnLayout
 import com.zis.scopa.databinding.ActivityTresetteBinding
+import com.zis.scopa.databinding.DialogResultBinding
 
 /**
  * Tresette in due con il tallone. Struttura identica a Briscola, con tre differenze che si
@@ -102,9 +103,11 @@ class TresetteActivity : AppCompatActivity() {
         b = ActivityTresetteBinding.inflate(layoutInflater)
         setContentView(b.root)
         applySystemBars(b.root)
+        b.btnInfo.setOnClickListener { track(InfoDialog.show(this, R.string.info_title, R.string.rules_tresette)) }
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
+        t.drawShowMs = Prefs.drawShowSeconds(this) * 1000L
         CardView.setDeck(Prefs.deck(this))
         placeCards()
         startMatch()
@@ -125,6 +128,7 @@ class TresetteActivity : AppCompatActivity() {
         autoPlay = Prefs.autoPlay(this)
         showBot = Prefs.showBotCards(this)
         t.fast = autoPlay
+        t.drawShowMs = Prefs.drawShowSeconds(this) * 1000L
         CardView.setDeck(Prefs.deck(this))
         placeCards()
         if (stopped) {
@@ -333,9 +337,10 @@ class TresetteActivity : AppCompatActivity() {
     }
 
     private fun render(trickOverride: List<Card>? = null) {
-        b.txtMatch.text = getString(R.string.tre_match_line, matchYou, matchBot)
-        b.botScore.text = getString(R.string.tre_bot_points, formatThirds(game.thirdsFor(1)))
-        b.youScore.text = getString(R.string.tre_you_points, formatThirds(game.thirdsFor(0)))
+        b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
+        b.txtMatch.tintByOutcome(matchYou > matchBot)
+        b.botScore.text = getString(R.string.bot_points, formatThirds(game.thirdsFor(1)))
+        b.youScore.text = getString(R.string.you_points, formatThirds(game.thirdsFor(0)))
 
         addBotFan()
 
@@ -589,31 +594,33 @@ class TresetteActivity : AppCompatActivity() {
         matchBot += bot
         render()
 
-        // Il totale della mano e' sempre 11, quindi il pareggio a fine mano non esiste.
-        val handMsg = if (you > bot)
-            getString(R.string.tre_hand_you, you, bot)
-        else
-            getString(R.string.tre_hand_bot, bot, you)
-
         val over = (matchYou >= matchTarget || matchBot >= matchTarget) && matchYou != matchBot
         if (over) Prefs.markMatchEnded(this)
 
-        val builder = AlertDialog.Builder(this)
-            .setTitle(R.string.play_tresette)
-            .setCancelable(false)
+        // Stessa impaginazione della Scopa e della Briscola. Il totale della mano e' sempre
+        // 11, quindi qui il pareggio di mano non esiste e bastano i due casi.
+        val v = DialogResultBinding.inflate(layoutInflater)
+        v.txtHand.text = if (you > bot) getString(R.string.hand_you, you, bot)
+                         else getString(R.string.hand_bot, bot, you)
+        v.txtHand.tintByOutcome(you > bot)
+        v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
+        v.txtMatch.tintByOutcome(matchYou > matchBot)
         if (over) {
-            val msg = if (matchYou > matchBot)
-                getString(R.string.tre_match_win_you, matchYou, matchBot)
-            else
-                getString(R.string.tre_match_win_bot, matchBot, matchYou)
-            builder.setMessage("$handMsg\n\n$msg")
-                .setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
-                .setNegativeButton(R.string.back_home) { _, _ -> finish() }
+            v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
+                               else getString(R.string.match_win_bot)
+            v.txtWinner.tintByOutcome(matchYou > matchBot)
+            v.txtWinner.visibility = View.VISIBLE
+        }
+
+        val builder = AlertDialog.Builder(this)
+            .setTitle(R.string.round_over)
+            .setView(v.root)
+            .setCancelable(false)
+            .setNegativeButton(R.string.back_home) { _, _ -> finish() }
+        if (over) {
+            builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
         } else {
-            val scoreLine = getString(R.string.tre_match_line, matchYou, matchBot)
-            builder.setMessage("$handMsg\n\n$scoreLine")
-                .setPositiveButton(R.string.continue_match) { _, _ -> startHand() }
-                .setNegativeButton(R.string.back_home) { _, _ -> finish() }
+            builder.setPositiveButton(R.string.continue_match) { _, _ -> startHand() }
         }
         track(builder.show())
     }

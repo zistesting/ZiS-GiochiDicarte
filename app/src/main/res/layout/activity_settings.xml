@@ -249,6 +249,51 @@
                         android:textColor="@color/silver"
                         android:textSize="17sp" />
                 </RadioGroup>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/draw_seconds_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <RadioGroup
+                    android:id="@+id/groupDraw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/radioDraw1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/draw_1s"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <RadioButton
+                        android:id="@+id/radioDraw2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/draw_2s"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <RadioButton
+                        android:id="@+id/radioDraw3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/draw_3s"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+                </RadioGroup>
             </LinearLayout>
 
             <!-- Gioco responsabile -->
