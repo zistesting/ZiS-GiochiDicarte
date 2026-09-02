@@ -3,7 +3,7 @@
 Scopa e Briscola contro il Banco. Progetto Android nativo (Kotlin + View Binding).
 
 - `minSdk 24` · `targetSdk 36` · `compileSdk 36`
-- AGP 8.9.1 · Gradle 8.11.1 · Kotlin 2.1.0 · JDK 17
+- AGP 8.13.2 · Gradle 8.13 · Kotlin 2.2.20 · JDK 17
 
 ---
 
@@ -105,8 +105,10 @@ una proroga dal Play Console fino al **1° novembre 2026**.
 
 Cosa è già stato fatto:
 
-1. `compileSdk 36`, `targetSdk 36`, AGP 8.9.1 (l'8.5.2 non supporta l'API 36), Gradle 8.11.1,
-   Kotlin 2.1.0.
+1. `compileSdk 36`, `targetSdk 36`, AGP 8.13.2, Gradle 8.13, Kotlin 2.2.20.
+   L'API massima supportata da AGP 8.9 è la 35: con `compileSdk 36` la build funzionava
+   lo stesso ma fuori configurazione supportata, e a ogni run usciva l'avviso «We recommend
+   using a newer Android Gradle plugin». AGP 8.13 arriva all'API 36.1 e pretende Gradle 8.13.
 2. **Edge to edge.** Da API 36 non si può più rinunciare a disegnare sotto la barra di stato e
    sotto quella di navigazione. `SystemBars.kt` applica i margini giusti al contenuto con
    `setOnApplyWindowInsetsListener`, tenendo lo sfondo fino ai bordi. Sostituisce
@@ -133,7 +135,7 @@ Cosa resta da fare prima della pubblicazione:
 ## Note tecniche
 
 **Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
-PNG a 256 colori. Le carte ZiS (`card_*`) vengono da originali a 560x1024, errore massimo
+in **WebP**. Le carte ZiS (`card_*`) vengono da originali a 560x1024, errore massimo
 2,7/255. Le tradizionali (`trad_*`) sono scansioni di stampa: prima di ridurle e' stata tolta
 la retinatura di quadricromia con filtro mediano piu' bilaterale, poi ognuna e' stata
 ritagliata sul disegno e riportata alla proporzione delle carte aggiungendo bianco, non
@@ -141,7 +143,8 @@ stirando; errore massimo 4,3/255, piu' alto perche' il rumore di scansione si co
 del disegno a tinte piatte.
 
 **I dorsi** sono disegnati in vettoriale: nascono gia' a 448x819, quindi non subiscono nessun
-ridimensionamento. Un solo disegno con tre palette: blu/argento per il mazzo ZiS, grigi scuri per quello
+ridimensionamento. Sono gli unici due file salvati in WebP **senza perdita**: su un disegno a
+tinte piatte il lossless pesa meno del lossy (74 KB contro 143 KB per `card_back`). Un solo disegno con tre palette: blu/argento per il mazzo ZiS, grigi scuri per quello
 tradizionale, piu' una versione chiara di scorta. Il sorgente sta in `art/`, fuori da `app/`, e per
 cambiare colori basta modificare il dizionario `PALETTES` in cima allo script.
 
@@ -157,8 +160,19 @@ sprecando memoria per niente. Vale anche per i loghi, che infatti stanno in `dra
 **Misura richiesta dalle immagini.** La carta più grande che l'app disegna è 150dp di larghezza:
 da 230 px circa su un telefono comune fino a 450–500 px su un tablet ad alta densità. Un set
 sorgente da **448×819** copre ogni caso senza ingrandimenti; oltre si guadagna solo peso
-dell'APK. Le immagini vanno salvate in PNG a **256 colori**: su disegni a tinte piatte l'errore
-rispetto ai 24 bit è invisibile e il file pesa circa il 60% in meno.
+dell'APK.
+
+**Formato.** Le carte sono in **WebP a qualità 90**, non più in PNG a 256 colori: 10,7 MB di
+immagini sono diventati 5,1 MB, cioè metà del pacchetto. L'errore introdotto è 1,7/255 in media;
+il picco sta su qualche centinaio di pixel per carta (lo 0,1%) lungo i contorni neri più netti
+delle scansioni tradizionali, e non migliora alzando la qualità — a q96 il file cresce del 50%
+e il picco scende da 92 a 84. A dimensione reale non si vede niente: il WebP anzi attenua il
+dithering che la palette a 256 colori lasciava sulle sfumature. I quattro loghi hanno la
+trasparenza e stanno a q95; i due dorsi sono senza perdita.
+
+WebP è supportato da Android 4.0 in su, quindi non tocca il `minSdk 24`. I nomi delle risorse
+non cambiano (`card_0_1`, non `card_0_1.png`), quindi non c'è una riga di codice da modificare:
+cambia solo l'estensione del file.
 
 **Due mazzi.** Le carte si caricano per nome, `<prefisso>_seme_valore`. Il prefisso lo decide
 l'impostazione **Mazzo**: `card` per le illustrazioni ZiS, `trad` per le figure tradizionali.
@@ -177,6 +191,11 @@ del mazzo precedente.
 **Cache bitmap.** `CardView` usa una `LruCache` limitata a 1/8 della heap. Se la larghezza
 richiesta cambia (rotazione, finestra ridimensionata) la cache si svuota e le carte vengono
 ridecodificate alla nuova misura. `ZisApp` la svuota quando il sistema segnala poca memoria.
+
+**versionCode.** È `1000 + numero della build di GitHub Actions`. Il numero di Actions da solo
+è fragile: se il repository viene ricreato il contatore riparte da 1 e il Play Console rifiuta
+l'upload, perché pretende un `versionCode` sempre crescente. La base davanti lascia margine; se
+dovesse servire basta alzare `VERSION_CODE_BASE` in `app/build.gradle`.
 
 **Mescolata.** Una sola funzione, `shuffledDeck()` in `Card.kt`, usata da Scopa e Briscola.
 Usa `SecureRandom` e non `Random`: `java.util.Random` ha uno stato interno di 48 bit, cioè
@@ -207,6 +226,26 @@ entra nel conto. Nelle mani normali il liscio resta comunque la scelta piu' econ
 ripuliti in `onDestroy()`. Senza questo, uscire dall'app mentre gioca il Banco faceva partire
 il dialogo di fine mano su un'activity distrutta (`BadTokenException`).
 
+**Gioco sospeso in background.** `onStop()` svuota l'`Handler` e l'overlay: finché la schermata
+non è visibile la partita non va avanti da sola. Prima il Banco continuava a giocare mentre
+l'utente era altrove e il riepilogo di fine mano si apriva su una schermata che nessuno stava
+guardando; con il gioco automatico attivo l'app macinava partite intere in background. Al
+ritorno, `onResume()` chiama `recover()`, cioè la stessa funzione del watchdog: la mossa
+interrotta viene rifatta da capo guardando lo stato reale della partita.
+
+**Dialoghi.** Riepilogo, scelta della presa, avviso della pausa e richiesta della password sono
+tenuti in un campo e chiusi in `onDestroy()`. I dialoghi creati con `AlertDialog.Builder` non si
+chiudono da soli: se il sistema distruggeva l'activity a dialogo aperto restavano appesi sia la
+finestra (`WindowLeaked`) sia, nel caso della pausa, il `CountDownTimer`, che continuava a
+scrivere su un pulsante ormai morto tenendo in vita l'intera activity.
+
+**Memoria.** I livelli di `onTrimMemory` non stanno su un'unica scala di gravità, quindi sono
+trattati in due casi distinti. `RUNNING_MODERATE`, `RUNNING_LOW` e `RUNNING_CRITICAL` valgono 5,
+10 e 15: l'app è ancora in primo piano e la RAM sta finendo, e la cache si dimezza. Da
+`UI_HIDDEN` (20) in su l'app non è più visibile e la cache si svuota del tutto. Con la vecchia
+soglia unica `>= UI_HIDDEN` i primi tre non scattavano mai, proprio nei casi in cui liberare
+memoria serve di più.
+
 **Watchdog.** Se una mossa si blocca, dopo 4 secondi il gioco riparte da solo guardando lo
 stato reale della partita. Resta fermo mentre è aperto il dialogo della pausa, altrimenti
 cambierebbe lo stato dietro alla finestra.
@@ -219,6 +258,10 @@ metà incontro in Briscola, che era l'unico modo di ricominciare saltando l'atte
 ## Cosa manca ancora
 
 - **Salvataggio dello stato**: se Android uccide il processo, la partita in corso è persa.
-  Serve `onSaveInstanceState` (o un salvataggio in `SharedPreferences`). La rotazione invece
-  è già gestita.
+  Serve `onSaveInstanceState` (o un salvataggio in `SharedPreferences`). I cambi di
+  configurazione invece sono coperti: oltre alla rotazione, `configChanges` elenca ora anche
+  `uiMode`, `fontScale`, `locale`, `layoutDirection` e `density`, così cambiare tema scuro,
+  dimensione del carattere, lingua o aprire un pieghevole non fa più ripartire la mano da zero.
+  Il prezzo è che le scritte già a schermo non si riscalano subito cambiando la dimensione del
+  carattere: si aggiornano tornando al menu.
 - Nessun suono, nessuna statistica, nessuna modalità a 4 giocatori.
