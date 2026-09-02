@@ -89,11 +89,79 @@ class BriscolaGame {
 
     fun scoreFor(p: Int): Int = piles[p].sumOf { points(it) }
 
+    // ---- conteggio delle carte ----
+
+    /**
+     * Carte che il giocatore [p] non ha ancora visto: non sono nella sua mano, non stanno nei
+     * due mazzetti delle prese e non sono in tavola.
+     *
+     * Finche' il mazzo non e' finito sono le carte del mazzo piu' quelle in mano
+     * all'avversario. Quando il mazzo e' vuoto sono **esattamente** la mano dell'avversario:
+     * le ultime tre prese si giocano quindi a carte scoperte.
+     */
+    fun unseenBy(p: Int): List<Card> {
+        val known = HashSet<Card>(64)
+        known.addAll(hands[p]); known.addAll(piles[0]); known.addAll(piles[1]); known.addAll(trick)
+        return fullDeck().filter { it !in known }
+    }
+
     // ---- simple bot ----
     fun botChoose(): Card {
         val hand = hands[turn]
         require(hand.isNotEmpty()) { "mano vuota per il giocatore $turn" }
+        // Finale a carte note: finito il mazzo, le carte mai viste sono esattamente quelle
+        // dell'avversario. Restano al massimo tre prese, quindi invece di stimare si calcola
+        // la giocata migliore esplorando tutte le combinazioni: e' li' che si decide la
+        // partita, perche' i carichi rimasti valgono da soli decine di punti.
+        if (deck.isEmpty()) {
+            val theirs = unseenBy(turn)
+            if (theirs.size in 1..3) return bestEndgame(hand, theirs)
+        }
         return if (trick.isEmpty()) botLead(hand) else botFollow(hand, trick[0])
+    }
+
+    /** Carta che porta al saldo migliore nelle prese che restano. */
+    private fun bestEndgame(mine: List<Card>, theirs: List<Card>): Card {
+        val lead = trick.firstOrNull()
+        var best: Card? = null
+        var bestScore = Int.MIN_VALUE
+        for (c in mine) {
+            val rest = mine - c
+            val v = if (lead == null) {
+                solve(rest, theirs, c, false)
+            } else {
+                val win = followWins(lead, c)
+                val pot = points(lead) + points(c)
+                (if (win) pot else -pot) + solve(rest, theirs, null, win)
+            }
+            if (v > bestScore) { bestScore = v; best = c }
+        }
+        return best ?: mine.first()
+    }
+
+    /**
+     * Saldo di punti (mio meno avversario) delle prese ancora da giocare, con gioco perfetto
+     * dalle due parti. [lead] e' la carta gia' in tavola, null se tocca aprire; [meToPlay]
+     * dice se la prossima carta la gioco io. Con tre carte per parte l'albero ha 36 foglie,
+     * quindi si esplora tutto senza tagli.
+     */
+    private fun solve(mine: List<Card>, theirs: List<Card>, lead: Card?, meToPlay: Boolean): Int {
+        if (lead == null) {
+            if (mine.isEmpty() || theirs.isEmpty()) return 0
+            return if (meToPlay) mine.maxOf { c -> solve(mine - c, theirs, c, false) }
+                   else theirs.minOf { c -> solve(mine, theirs - c, c, true) }
+        }
+        return if (meToPlay) mine.maxOf { c ->
+            // rispondo io, quindi chi ha aperto e' l'avversario
+            val win = followWins(lead, c)
+            val pot = points(lead) + points(c)
+            (if (win) pot else -pot) + solve(mine - c, theirs, null, win)
+        } else theirs.minOf { c ->
+            // risponde lui, quindi chi ha aperto sono io
+            val win = followWins(lead, c)
+            val pot = points(lead) + points(c)
+            (if (win) -pot else pot) + solve(mine, theirs - c, null, !win)
+        }
     }
 
     /**

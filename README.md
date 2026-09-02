@@ -136,11 +136,40 @@ Cosa resta da fare prima della pubblicazione:
 
 **Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
 in **WebP**. Le carte ZiS (`card_*`) vengono da originali a 560x1024, errore massimo
-2,7/255. Le tradizionali (`trad_*`) sono scansioni di stampa: prima di ridurle e' stata tolta
-la retinatura di quadricromia con filtro mediano piu' bilaterale, poi ognuna e' stata
-ritagliata sul disegno e riportata alla proporzione delle carte aggiungendo bianco, non
-stirando; errore massimo 4,3/255, piu' alto perche' il rumore di scansione si comprime peggio
-del disegno a tinte piatte.
+2,7/255.
+
+**Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
+uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
+sull'asso di denari). Hanno sostituito le scansioni precedenti, che erano coperte da
+copyright. Ogni foglio contiene dieci carte su due file: `5 4 3 2 A` sopra, `Re Cavallo
+Fante 7 6` sotto.
+
+L'estrazione e' automatica e ripetibile. Il riquadro delle dieci carte si isola sfruttando il
+fatto che la carta e' color crema mentre lo sfondo della scansione e' grigio neutro (`R - B`
+sopra 10). Dentro ogni cella si cerca poi la cornice nera facendo scorrere un rettangolo di
+misura fissa, 439x934 px, e tenendo la posizione in cui il suo perimetro raccoglie piu' pixel
+neri: prendere semplicemente la riga piu' scura sbagliava sulle carte con disegni lunghi, per
+esempio il 7 di bastoni. Ogni carta viene poi ritagliata sulla cornice, filtrata con un
+mediano 3x3 per togliere la retinatura di quadricromia, riportata alla proporzione delle carte
+aggiungendo carta del colore giusto (non stirando) e ridotta a 448x819.
+
+**Fondo bianco.** La carta d'epoca e' color crema e la scansione ha una dominante gialla. Il
+fondo viene portato al bianco in due passaggi. Prima un bilanciamento: ogni canale e' diviso
+per il valore che ha sulla carta, quindi la carta finisce esattamente a 255. Sui toni scuri
+l'effetto e' quasi nullo (un nero a 20 sale a 22), percio' il tratto non cambia. Poi
+l'appiattimento: quello che a quel punto e' gia' quasi bianco e quasi grigio viene portato a
+bianco pieno, ma con una sfumatura invece che con una soglia secca, altrimenti i contorni
+morbidi del disegno prenderebbero un alone. Verificato su tutte e quaranta: le strisce di
+margine sono a 255 pieno.
+
+Errore del WebP q90 su queste: 2,7/255 in media, piu' alto delle ZiS perche' la grana della
+scansione si comprime peggio del disegno a tinte piatte.
+
+Il dorso `trad_back` non viene dai fogli: resta quello disegnato in vettoriale in `art/`.
+
+> Se pubblichi, conviene tenere nel repository anche la provenienza delle scansioni (da dove
+> vengono e con che licenza). Non serve al codice, serve ad avere la risposta pronta se un
+> domani qualcuno la chiede.
 
 **I dorsi** sono disegnati in vettoriale: nascono gia' a 448x819, quindi non subiscono nessun
 ridimensionamento. Sono gli unici due file salvati in WebP **senza perdita**: su un disegno a
@@ -216,11 +245,48 @@ spazi e un carattere a larghezza fissa: 27 caratteri che sui telefoni stretti an
 e mandavano tutto fuori squadra. Con la tabella le colonne le tiene il layout e si usa il
 carattere normale dell'app.
 
+**Conteggio delle carte.** Il Banco tiene conto di quello che e' uscito. `unseenBy(p)` e'
+la lista delle carte che il giocatore `p` non ha ancora visto: non in mano sua, non in tavola,
+non nei mucchi delle prese. Finche' il mazzo non e' finito sono le carte del mazzo piu' quelle
+dell'avversario; **quando il mazzo e' vuoto sono esattamente la mano dell'avversario**, e da
+li' l'ultima mano si puo' giocare a carte note.
+
+In **Briscola**, finito il mazzo restano al massimo tre prese: l'albero ha 36 foglie e si
+esplora tutto (`solve` in `BriscolaGame.kt`), quindi il finale e' giocato alla perfezione. E'
+li' che si decide la partita, perche' i carichi rimasti valgono da soli decine di punti.
+
+In **Scopa**, a mazzo finito restano al massimo sei giocate e si cerca la migliore con un
+minimax e taglio alfa-beta (`solve` in `ScopaGame.kt`). Cosi' il Banco sa se sta regalando una
+scopa, sa che conviene fare l'ultima presa (chi la fa si porta via il tavolo) e chiude bene
+primiera e denari. L'alfa-beta non e' un lusso: senza, l'albero e' cento volte piu' grande.
+La ricerca costa 0,04 ms in media, quindi non si sente. C'e' comunque un tetto di 60.000 nodi
+che fa ricadere sull'euristica, ma su ventimila ricerche il massimo osservato e' stato 221.
+
+Fuori dall'ultima mano il conteggio serve in Scopa a pesare il rischio di scopa: lasciare il
+tavolo a un totale fra 1 e 10 e' pericoloso solo se una carta di quel valore puo' essere
+ancora in mano all'avversario. Se sono gia' uscite tutte e quattro il rischio e' zero, e prima
+il Banco lo evitava lo stesso.
+
+Quanto rende, misurato facendo giocare il Banco nuovo contro quello vecchio, 20.000 partite
+per gioco, con chi comincia che si alterna:
+
+| | vince il nuovo | vince il vecchio | saldo medio |
+|---|---|---|---|
+| Scopa | 58,9% | 41,1% | +0,56 punti a mano |
+| Briscola | 55,4% | 44,6% | +3,5 punti su 120 |
+
 **Apertura del Banco (Briscola).** Il Banco non ha piu' la regola secca "mai aprire di
 briscola": con una mano tipo briscola 4 + briscola cavallo + un 3 lo obbligava a buttare il
 carico, dieci punti regalati per non calare una briscola che non vale niente. Adesso confronta
 il costo di ogni carta, cioe' i suoi punti piu' quanto varrebbe tenersela, e la briscola bassa
 entra nel conto. Nelle mani normali il liscio resta comunque la scelta piu' economica.
+
+**Da quale carta parte la giocata del Banco.** Le carte del Banco sono coperte, ma le viste
+sono create nell'ordine della mano, quindi la posizione di partenza dell'animazione si ricava
+dall'indice della carta scelta. Prima partiva sempre quella all'estrema sinistra: se il Banco
+aveva scelto un'altra carta, a sinistra ne spariva una e in mezzo al tavolo ne compariva
+un'altra. In Briscola il salto delle carte appena pescate va ripetuto identico a `render()`,
+altrimenti l'indice slitta di uno.
 
 **Callback differiti.** Tutti i passaggi di turno sono `postDelayed` su un unico `Handler`,
 ripuliti in `onDestroy()`. Senza questo, uscire dall'app mentre gioca il Banco faceva partire

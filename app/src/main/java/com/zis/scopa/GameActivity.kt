@@ -396,9 +396,20 @@ class GameActivity : AppCompatActivity() {
         if (game.finished) { busy = true; endRound(); return }
         if (game.hands[1].isEmpty()) { recover(); return }
         val (card, cap) = game.choose(1)
-        val src: View = if (b.botHand.childCount > 0) b.botHand.getChildAt(0) else b.botHand
+        val src: View = botHandView(card) ?: b.botHand
         val (sx, sy) = topLeftInOverlay(src)
         playAnimated(card, cap, sx, sy, byBot = true)
+    }
+
+    /**
+     * Vista da cui deve partire la carta calata dal Banco. Le carte del Banco sono coperte,
+     * ma render() le crea nell'ordine della mano, quindi la posizione si ricava dall'indice.
+     * Prima partiva sempre quella a sinistra: se il Banco aveva scelto un'altra carta, a
+     * sinistra ne spariva una e in mezzo al tavolo ne compariva un'altra.
+     */
+    private fun botHandView(card: Card): View? {
+        val i = game.hands[1].indexOf(card)
+        return if (i in 0 until b.botHand.childCount) b.botHand.getChildAt(i) else null
     }
 
     /**
@@ -585,7 +596,7 @@ class GameActivity : AppCompatActivity() {
         v.youPrimiera.text = you.primiera.toString();    v.botPrimiera.text = bot.primiera.toString()
         v.youScope.text = you.scope.toString();          v.botScope.text = bot.scope.toString()
         v.youTot.text = you.total.toString();            v.botTot.text = bot.total.toString()
-        v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot, target)
+        v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)

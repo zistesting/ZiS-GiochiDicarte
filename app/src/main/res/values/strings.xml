@@ -29,7 +29,7 @@
     <string name="score_target_label">Punteggio partita</string>
     <string name="target_11">11 punti</string>
     <string name="target_21">21 punti</string>
-    <string name="match_line">Partita: Tu %1$d - %2$d Banco (a %3$d)</string>
+    <string name="match_line">Partita: Tu %1$d - %2$d Banco</string>
     <string name="continue_match">Continua</string>
     <string name="new_match">Nuova partita</string>
     <string name="match_win_you">Hai vinto la partita!</string>

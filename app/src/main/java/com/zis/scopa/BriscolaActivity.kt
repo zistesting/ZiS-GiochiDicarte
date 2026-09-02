@@ -368,9 +368,26 @@ class BriscolaActivity : AppCompatActivity() {
         if (game.finished) { busy = true; endGame(); return }
         if (game.hands[1].isEmpty()) { recover(); return }
         val card = game.botChoose()
-        val src: View = if (b.botHand.childCount > 0) b.botHand.getChildAt(0) else b.botHand
+        val src: View = botHandView(card) ?: b.botHand
         val (sx, sy) = topLeftInOverlay(src)
         playAnimated(card, sx, sy)
+    }
+
+    /**
+     * Vista da cui deve partire la carta calata dal Banco. Le carte del Banco sono coperte,
+     * ma render() le crea nell'ordine della mano, quindi la posizione si ricava dall'indice.
+     * Il salto delle carte appena pescate va ripetuto qui identico a render(), altrimenti
+     * l'indice slitta di uno. Prima partiva sempre quella a sinistra e, se il Banco aveva
+     * scelto un'altra carta, a sinistra ne spariva una e in tavola ne compariva un'altra.
+     */
+    private fun botHandView(card: Card): View? {
+        var i = 0
+        for (c in game.hands[1]) {
+            if (hideDrawn && c == game.lastDrawn[1]) continue
+            if (c == card) return if (i < b.botHand.childCount) b.botHand.getChildAt(i) else null
+            i++
+        }
+        return null
     }
 
     /**
