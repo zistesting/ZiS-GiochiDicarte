@@ -1,10 +1,9 @@
-PARTE 2 di 2 - tutte le immagini  (88 file, sotto il limite di 100 di GitHub)
+PARTE 2 di 2 - tutte le immagini  (89 file, sotto il limite di 100 di GitHub)
 
   41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
   41  mazzo tradizionale   trad_0_1 ... trad_3_10 + trad_back
-   6  loghi e sfondo       app_logo, btn_info, btn_settings, title_logo, zis_logo, velvet
-
-Il mazzo ZiS e' ora ridisegnato per intero: tutte e 40 le carte, nei quattro semi.
+   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
+                           title_logo, zis_logo, velvet
 
 --- caricamento ---
 
@@ -14,11 +13,18 @@ I nomi sono gli stessi che ci sono gia' nel repository, quindi caricandoli si
 sovrascrivono e basta.
 
 Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti gli 88 file di questa cartella (non la cartella: il suo contenuto).
+dentro tutti gli 89 file di questa cartella (non la cartella: il suo contenuto).
 
 In alternativa puoi caricare il CONTENUTO della cartella "parte2" nella radice del
 repository: la app/ che trovi qui si fonde con quella gia' presente e le immagini
 finiscono al posto giusto da sole.
+
+--- cosa e' cambiato rispetto alla versione precedente ---
+
+  btn_stats    icona nuova delle statistiche (unico file aggiunto)
+
+Le carte non sono cambiate: se hai gia' caricato la versione precedente, ti basta
+aggiungere btn_stats.webp.
 
 --- avvertenza di sempre ---
 
