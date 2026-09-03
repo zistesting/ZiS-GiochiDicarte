@@ -183,7 +183,10 @@ Il dorso `trad_back` non viene dai fogli: resta quello disegnato in vettoriale i
 
 > Se pubblichi, conviene tenere nel repository anche la provenienza delle scansioni (da dove
 > vengono e con che licenza). Non serve al codice, serve ad avere la risposta pronta se un
-> domani qualcuno la chiede.
+> domani qualcuno la chiede. Lo stesso vale per il mazzo ZiS: il modello e' il disegno
+> tradizionale italiano, non il mazzo di un singolo produttore, e i fogli Armanino di inizio
+> Novecento in `art/` lo documentano — hanno le stesse composizioni (aquila sull'asso di
+> denari, putto sull'asso di spade, stemma sul 4 di denari) un secolo prima.
 
 **I dorsi** sono disegnati in vettoriale: nascono gia' a 448x819, quindi non subiscono nessun
 ridimensionamento. Sono gli unici due file salvati in WebP **senza perdita**: su un disegno a

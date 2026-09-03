@@ -118,10 +118,11 @@ class BriscolaActivity : AppCompatActivity() {
         lp.width = cardH
         lp.height = cardW
         lp.gravity = Gravity.CENTER_VERTICAL
-        // Centrata sotto il mazzo e non affiancata: coricata e' larga quasi due carte, e
-        // messa di fianco arriverebbe sotto le carte della presa. Centrata invece sporge di
-        // mezza carta per lato, e la meta' di sinistra sparisce fuori schermo insieme al mazzo.
-        lp.marginStart = -cardW / 2 - cardH / 2
+        // Il centro della briscola cade sul bordo destro del mazzo, quindi ne sporge fuori
+        // esattamente meta'. Centrandola invece sul mazzo (come nel primo tentativo) oltre il
+        // bordo ne restava solo un quinto: la carta c'era ma non si leggeva. La meta' che
+        // resta nascosta va sotto il mazzo e fuori dal bordo sinistro dello schermo.
+        lp.marginStart = -cardH / 2
         b.briscolaBox.layoutParams = lp
 
         // La briscola coricata esce dai confini sia del suo riquadro sia della riga: senza

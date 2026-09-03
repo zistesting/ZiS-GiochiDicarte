@@ -19,24 +19,25 @@
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:stretchColumns="0">
+        android:stretchColumns="0"
+        android:shrinkColumns="0">
 
         <TableRow>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
-                style="@style/ScoreValue"
+                style="@style/StatsValue"
                 android:text="@string/stat_played"
                 android:textColor="@color/celeste"
                 android:textStyle="bold" />
             <TextView
-                style="@style/ScoreValue"
+                style="@style/StatsValue"
                 android:text="@string/bot"
                 android:textColor="@color/celeste"
                 android:textStyle="bold" />
             <TextView
-                style="@style/ScoreValue"
+                style="@style/StatsValue"
                 android:text="@string/you"
                 android:textColor="@color/celeste"
                 android:textStyle="bold" />
@@ -49,22 +50,22 @@
             android:background="@color/silver_dark" />
 
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:text="@string/play_scopa" />
-            <TextView android:id="@+id/scopaPlayed" style="@style/ScoreValue" />
-            <TextView android:id="@+id/scopaBot" style="@style/ScoreValue" />
-            <TextView android:id="@+id/scopaYou" style="@style/ScoreValue" android:textColor="@color/gold" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_scopa" />
+            <TextView android:id="@+id/scopaPlayed" style="@style/StatsValue" />
+            <TextView android:id="@+id/scopaBot" style="@style/StatsValue" />
+            <TextView android:id="@+id/scopaYou" style="@style/StatsValue" android:textColor="@color/gold" />
         </TableRow>
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:text="@string/play_briscola" />
-            <TextView android:id="@+id/briscPlayed" style="@style/ScoreValue" />
-            <TextView android:id="@+id/briscBot" style="@style/ScoreValue" />
-            <TextView android:id="@+id/briscYou" style="@style/ScoreValue" android:textColor="@color/gold" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_briscola" />
+            <TextView android:id="@+id/briscPlayed" style="@style/StatsValue" />
+            <TextView android:id="@+id/briscBot" style="@style/StatsValue" />
+            <TextView android:id="@+id/briscYou" style="@style/StatsValue" android:textColor="@color/gold" />
         </TableRow>
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:text="@string/play_tresette" />
-            <TextView android:id="@+id/trePlayed" style="@style/ScoreValue" />
-            <TextView android:id="@+id/treBot" style="@style/ScoreValue" />
-            <TextView android:id="@+id/treYou" style="@style/ScoreValue" android:textColor="@color/gold" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_tresette" />
+            <TextView android:id="@+id/trePlayed" style="@style/StatsValue" />
+            <TextView android:id="@+id/treBot" style="@style/StatsValue" />
+            <TextView android:id="@+id/treYou" style="@style/StatsValue" android:textColor="@color/gold" />
         </TableRow>
 
         <View
@@ -74,10 +75,10 @@
             android:background="@color/silver_dark" />
 
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:text="@string/stat_total" android:textStyle="bold" />
-            <TextView android:id="@+id/totPlayed" style="@style/ScoreValue" android:textStyle="bold" />
-            <TextView android:id="@+id/totBot" style="@style/ScoreValue" android:textStyle="bold" />
-            <TextView android:id="@+id/totYou" style="@style/ScoreValue" android:textColor="@color/gold" android:textStyle="bold" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/stat_total" android:textStyle="bold" />
+            <TextView android:id="@+id/totPlayed" style="@style/StatsValue" android:textStyle="bold" />
+            <TextView android:id="@+id/totBot" style="@style/StatsValue" android:textStyle="bold" />
+            <TextView android:id="@+id/totYou" style="@style/StatsValue" android:textColor="@color/gold" android:textStyle="bold" />
         </TableRow>
     </TableLayout>
 
