@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- "1 scopa" ma "2 scope": in italiano il singolare non si puo' cavare con un %d secco -->
-    <plurals name="scope_n">
-        <item quantity="one">%d scopa</item>
-        <item quantity="other">%d scope</item>
-    </plurals>
-</resources>
