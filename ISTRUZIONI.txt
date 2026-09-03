@@ -4,14 +4,14 @@ PARTE 2 di 2 - tutte le immagini  (88 file, sotto il limite di 100 di GitHub)
   41  mazzo tradizionale   trad_0_1 ... trad_3_10 + trad_back
    6  loghi e sfondo       app_logo, btn_info, btn_settings, title_logo, zis_logo, velvet
 
+Il mazzo ZiS e' ora ridisegnato per intero: tutte e 40 le carte, nei quattro semi.
+
 --- caricamento ---
 
-QUESTA VOLTA NON SERVE CANCELLARE NIENTE.
+NON SERVE CANCELLARE NIENTE.
 
-La prima volta bisognava cancellare la cartella perche' si passava da .png a .webp e i
-due gruppi di file sarebbero convissuti. Adesso i nomi sono gli stessi che ci sono gia'
-nel repository, quindi caricandoli si sovrascrivono e basta. L'unico file nuovo e'
-btn_info.webp, che si aggiunge.
+I nomi sono gli stessi che ci sono gia' nel repository, quindi caricandoli si
+sovrascrivono e basta.
 
 Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
 dentro tutti gli 88 file di questa cartella (non la cartella: il suo contenuto).
@@ -19,18 +19,6 @@ dentro tutti gli 88 file di questa cartella (non la cartella: il suo contenuto).
 In alternativa puoi caricare il CONTENUTO della cartella "parte2" nella radice del
 repository: la app/ che trovi qui si fonde con quella gia' presente e le immagini
 finiscono al posto giusto da sole.
-
---- cosa e' cambiato rispetto alla versione precedente ---
-
-  card_2_1 ... card_2_10    spade, ridisegnate
-  card_3_1 ... card_3_10    bastoni, ridisegnate
-  btn_settings              icona nuova
-  btn_info                  icona nuova (file aggiunto)
-  title_logo                senza la fascia dei semi sotto la scritta
-
-Denari e coppe del mazzo ZiS sono ancora quelle di prima: finche' non arrivano anche
-quelle ridisegnate, il mazzo resta misto (bastoni e spade su fondo bianco, denari e
-coppe su fondo azzurrino).
 
 --- avvertenza di sempre ---
 
