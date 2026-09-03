@@ -259,6 +259,24 @@ leggere i numeri, e basta che due schermate la applichino in modo diverso perche
 smetta di funzionare. La riga del totale nella tabella della Scopa resta oro per entrambe le
 colonne, perche' li' e' un'intestazione e non un esito.
 
+**Statistiche.** Il pulsante in fondo alla schermata iniziale apre una tabella con, per ogni
+gioco, le partite concluse, quelle vinte dal Banco e quelle vinte dall'utente, piu' la riga
+dei totali. Le colonne le tiene una `TableLayout` con gli stessi stili del riepilogo di fine
+mano della Scopa, cosi' le due tabelle dell'app si somigliano invece di essere ognuna a modo
+suo. Righe e colonne sono pero' scambiate rispetto a quella: qui le righe sono i giochi,
+perche' i loro nomi sono parole lunghe e stanno meglio nella colonna larga di sinistra,
+lasciando alle tre colonne strette i soli numeri.
+
+Si contano **solo le vittorie**, da una parte e dall'altra: le partite giocate sono la loro
+somma. Un terzo contatore separato potrebbe divergere dagli altri due, e non ci sarebbe modo
+di sapere quale dei tre ha ragione. Le partite abbandonate a meta' non si contano, perche'
+non hanno un esito; la tabella lo dice quando e' vuota, invece di lasciar credere che il
+conteggio sia rotto.
+
+I quattro pulsanti in fondo alla schermata iniziale sono scesi da 60 a 52dp con margini piu'
+stretti: a 60dp quattro pulsanti facevano 384dp e su un telefono da 360dp non ci stavano.
+Adesso sono 304dp in tutto.
+
 **Pulsante info.** Ogni schermata di gioco ha in alto a sinistra un pulsante che apre le
 regole del gioco in corso; la schermata iniziale ne ha uno che apre la presentazione dell'app
 e la parte sulla privacy. La finestra e' costruita in `InfoDialog.kt` con un `ScrollView`

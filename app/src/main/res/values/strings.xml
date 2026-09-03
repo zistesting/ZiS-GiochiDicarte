@@ -3,7 +3,7 @@
 
     <!-- Home -->
     <string name="title">Giochi di Carte</string>
-    <string name="play">Scopa</string>
+    <string name="play_scopa">Scopa</string>
     <string name="quit">Esci</string>
 
     <!-- Game -->
@@ -61,6 +61,16 @@
     <string name="draw_1s">1 secondo</string>
     <string name="draw_2s">2 secondi</string>
     <string name="draw_3s">3 secondi</string>
+
+    <!-- Statistiche -->
+    <string name="cd_stats">Statistiche</string>
+    <string name="stats_title">Statistiche</string>
+    <string name="stat_played">Giocate</string>
+    <string name="stat_total">Totale</string>
+    <string name="stats_empty">Nessuna partita conclusa: le partite si contano solo quando arrivano al punteggio di vittoria.</string>
+    <string name="stats_note">Vinte da te in giallo. Le partite lasciate a metà non vengono contate.</string>
+    <string name="stats_reset">Azzera</string>
+    <string name="stats_reset_ask">Vuoi azzerare tutte le statistiche? L\'operazione non si può annullare.</string>
 
     <!-- Pulsanti info e spiegazioni -->
     <string name="cd_info">Informazioni</string>

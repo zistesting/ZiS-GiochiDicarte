@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         b.btnTresette.setOnClickListener { startActivity(Intent(this, TresetteActivity::class.java)) }
         b.btnQuit.setOnClickListener { finishAffinity() }
         b.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
+        b.btnStats.setOnClickListener { showStats() }
         b.btnInfo.setOnClickListener {
             infoDialog = InfoDialog.show(this, R.string.info_app_title, R.string.info_app)
         }
@@ -34,6 +35,12 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://zis.it")))
             } catch (_: Exception) { }
         }
+    }
+
+    /** Dopo un azzeramento la tabella si riapre, cosi' si vede subito che e' vuota. */
+    private fun showStats() {
+        infoDialog?.let { if (it.isShowing) it.dismiss() }
+        infoDialog = StatsDialog.show(this, onReset = { showStats() })
     }
 
     override fun onDestroy() {

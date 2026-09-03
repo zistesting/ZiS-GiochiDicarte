@@ -538,7 +538,10 @@ class BriscolaActivity : AppCompatActivity() {
         render()
 
         val matchOver = matchYou >= matchTarget || matchBot >= matchTarget
-        if (matchOver) Prefs.markMatchEnded(this)
+        if (matchOver) {
+            Prefs.markMatchEnded(this)
+            Prefs.recordMatch(this, Prefs.GAME_BRISCOLA, matchYou > matchBot)
+        }
 
         // Stessa impaginazione della Scopa: esito della mano, riga della partita, e la riga
         // del vincitore solo quando la partita e' finita. Prima era tutto nel messaggio

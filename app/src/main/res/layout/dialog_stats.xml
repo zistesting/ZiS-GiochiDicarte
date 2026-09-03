@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Statistiche di gioco. Colonne tenute da una TableLayout come nel riepilogo di fine mano
+  della Scopa: stessi stili ScoreLabel e ScoreValue, stessa riga di separazione.
+
+  Qui pero' le righe sono i giochi e le colonne le tre misure, non il contrario: i nomi dei
+  giochi sono parole lunghe e stanno meglio nella colonna larga di sinistra, lasciando alle
+  tre colonne strette i soli numeri.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="6dp">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="0">
+
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                style="@style/ScoreValue"
+                android:text="@string/stat_played"
+                android:textColor="@color/celeste"
+                android:textStyle="bold" />
+            <TextView
+                style="@style/ScoreValue"
+                android:text="@string/bot"
+                android:textColor="@color/celeste"
+                android:textStyle="bold" />
+            <TextView
+                style="@style/ScoreValue"
+                android:text="@string/you"
+                android:textColor="@color/celeste"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/silver_dark" />
+
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:text="@string/play_scopa" />
+            <TextView android:id="@+id/scopaPlayed" style="@style/ScoreValue" />
+            <TextView android:id="@+id/scopaBot" style="@style/ScoreValue" />
+            <TextView android:id="@+id/scopaYou" style="@style/ScoreValue" android:textColor="@color/gold" />
+        </TableRow>
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:text="@string/play_briscola" />
+            <TextView android:id="@+id/briscPlayed" style="@style/ScoreValue" />
+            <TextView android:id="@+id/briscBot" style="@style/ScoreValue" />
+            <TextView android:id="@+id/briscYou" style="@style/ScoreValue" android:textColor="@color/gold" />
+        </TableRow>
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:text="@string/play_tresette" />
+            <TextView android:id="@+id/trePlayed" style="@style/ScoreValue" />
+            <TextView android:id="@+id/treBot" style="@style/ScoreValue" />
+            <TextView android:id="@+id/treYou" style="@style/ScoreValue" android:textColor="@color/gold" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/silver_dark" />
+
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:text="@string/stat_total" android:textStyle="bold" />
+            <TextView android:id="@+id/totPlayed" style="@style/ScoreValue" android:textStyle="bold" />
+            <TextView android:id="@+id/totBot" style="@style/ScoreValue" android:textStyle="bold" />
+            <TextView android:id="@+id/totYou" style="@style/ScoreValue" android:textColor="@color/gold" android:textStyle="bold" />
+        </TableRow>
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/statsNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:textColor="@color/silver_dark"
+        android:textSize="13sp" />
+</LinearLayout>

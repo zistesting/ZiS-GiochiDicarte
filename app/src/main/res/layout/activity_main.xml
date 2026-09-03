@@ -61,7 +61,7 @@
             android:layout_width="240dp"
             android:layout_height="56dp"
             android:background="@drawable/btn_cartiglio"
-            android:text="@string/play"
+            android:text="@string/play_scopa"
             android:textColor="@color/silver"
             android:textSize="17sp"
             android:textAllCaps="false"
@@ -116,7 +116,9 @@
             android:shadowRadius="4" />
     </LinearLayout>
 
-    <!-- Riga in fondo: info, impostazioni, logo ZiS. Sono in un LinearLayout invece che
+    <!-- Riga in fondo: info, statistiche, impostazioni, logo ZiS. Quattro pulsanti da
+         60dp non ci stavano in larghezza su un telefono da 360dp, quindi sono scesi a 52dp
+         con margini piu' stretti: 304dp in tutto, che ci stanno ovunque. Sono in un LinearLayout invece che
          ancorati ai due bordi opposti, cosi' l'ordine e' quello scritto qui e restano
          distanziati allo stesso modo su qualunque larghezza di schermo. -->
     <LinearLayout
@@ -132,21 +134,32 @@
 
         <ImageButton
             android:id="@+id/btnInfo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginStart="18dp"
-            android:layout_marginEnd="18dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_info"
             android:scaleType="fitCenter"
             android:src="@drawable/btn_info" />
 
         <ImageButton
+            android:id="@+id/btnStats"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/cd_stats"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_stats" />
+
+        <ImageButton
             android:id="@+id/btnSettings"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginStart="18dp"
-            android:layout_marginEnd="18dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_settings"
             android:scaleType="fitCenter"
@@ -154,10 +167,10 @@
 
         <ImageButton
             android:id="@+id/btnZis"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginStart="18dp"
-            android:layout_marginEnd="18dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_web"
             android:scaleType="fitCenter"

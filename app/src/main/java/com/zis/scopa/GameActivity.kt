@@ -593,7 +593,10 @@ class GameActivity : AppCompatActivity() {
         render()
         // in parita' sul traguardo non si assegna la partita: si gioca un'altra mano
         val over = (matchYou >= target || matchBot >= target) && matchYou != matchBot
-        if (over) Prefs.markMatchEnded(this)
+        if (over) {
+            Prefs.markMatchEnded(this)
+            Prefs.recordMatch(this, Prefs.GAME_SCOPA, matchYou > matchBot)
+        }
 
         val v = DialogScoreBinding.inflate(layoutInflater)
         v.youCarte.text = you.carte.toString();          v.botCarte.text = bot.carte.toString()

@@ -595,7 +595,10 @@ class TresetteActivity : AppCompatActivity() {
         render()
 
         val over = (matchYou >= matchTarget || matchBot >= matchTarget) && matchYou != matchBot
-        if (over) Prefs.markMatchEnded(this)
+        if (over) {
+            Prefs.markMatchEnded(this)
+            Prefs.recordMatch(this, Prefs.GAME_TRESETTE, matchYou > matchBot)
+        }
 
         // Stessa impaginazione della Scopa e della Briscola. Il totale della mano e' sempre
         // 11, quindi qui il pareggio di mano non esiste e bastano i due casi.

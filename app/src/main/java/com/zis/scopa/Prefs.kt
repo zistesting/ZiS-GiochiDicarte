@@ -32,6 +32,35 @@ object Prefs {
      * Prefisso dei file delle carte. Le immagini si chiamano <prefisso>_seme_valore, quindi
      * cambiare mazzo vuol dire cambiare prefisso: card_0_1 oppure trad_0_1.
      */
+    // ---- statistiche ----
+
+    const val GAME_SCOPA = "scopa"
+    const val GAME_BRISCOLA = "briscola"
+    const val GAME_TRESETTE = "tresette"
+
+    /**
+     * Registra una partita conclusa. Si contano solo le vittorie, da una parte o dall'altra:
+     * le partite giocate sono la loro somma. Tenere un terzo contatore separato vorrebbe dire
+     * poterlo veder divergere dagli altri due, e non ci sarebbe modo di sapere quale dei tre
+     * ha ragione. Le partite abbandonate a meta' non si contano, perche' non hanno un esito.
+     */
+    fun recordMatch(ctx: Context, game: String, youWon: Boolean) {
+        val key = "stats_${game}_" + if (youWon) "you" else "bot"
+        val pr = p(ctx)
+        pr.edit().putInt(key, pr.getInt(key, 0) + 1).apply()
+    }
+
+    fun wonBy(ctx: Context, game: String, you: Boolean): Int =
+        p(ctx).getInt("stats_${game}_" + if (you) "you" else "bot", 0)
+
+    fun clearStats(ctx: Context) {
+        val e = p(ctx).edit()
+        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE)) {
+            e.remove("stats_${g}_you"); e.remove("stats_${g}_bot")
+        }
+        e.apply()
+    }
+
     /** Secondi per cui la carta pescata resta scoperta a Tresette: 1, 2 o 3. */
     fun drawShowSeconds(ctx: Context): Int = p(ctx).getInt("tre_draw_seconds", 2)
 
