@@ -7,24 +7,17 @@ PARTE 2 di 2 - tutte le immagini  (89 file, sotto il limite di 100 di GitHub)
 
 --- caricamento ---
 
-NON SERVE CANCELLARE NIENTE.
-
-I nomi sono gli stessi che ci sono gia' nel repository, quindi caricandoli si
-sovrascrivono e basta.
+NON SERVE CANCELLARE NIENTE: i nomi sono gli stessi che ci sono gia' nel repository,
+quindi caricandoli si sovrascrivono.
 
 Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
 dentro tutti gli 89 file di questa cartella (non la cartella: il suo contenuto).
 
-In alternativa puoi caricare il CONTENUTO della cartella "parte2" nella radice del
-repository: la app/ che trovi qui si fonde con quella gia' presente e le immagini
-finiscono al posto giusto da sole.
-
 --- cosa e' cambiato rispetto alla versione precedente ---
 
-  btn_stats    icona nuova delle statistiche (unico file aggiunto)
+  app_logo     logo nuovo: vale sia per la schermata iniziale sia per l'icona dell'app
 
-Le carte non sono cambiate: se hai gia' caricato la versione precedente, ti basta
-aggiungere btn_stats.webp.
+Nient'altro. Se hai gia' caricato la versione precedente ti basta questo file.
 
 --- avvertenza di sempre ---
 
