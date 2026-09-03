@@ -50,8 +50,8 @@
     <string name="target_21">21 punti</string>
     <string name="continue_match">Continua</string>
     <string name="new_match">Nuova partita</string>
-    <!-- Fine mano: ridistribuisce le stesse carte e riporta i punteggi a prima della mano -->
-    <string name="replay_hand">Rigioca la mano</string>
+    <!-- Fine mano: torna all'inizio dell'ultima giocata, per rifare l'ultima scelta -->
+    <string name="replay_last_play">Rigioca l\'ultima giocata</string>
     <string name="play_briscola">Briscola</string>
     <string name="you_take">Presa tua</string>
     <string name="bot_take">Presa Banco</string>

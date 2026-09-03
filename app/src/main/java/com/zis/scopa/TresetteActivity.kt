@@ -73,13 +73,25 @@ class TresetteActivity : AppCompatActivity() {
     private var moveSeq = 0
     private var watchdogSeq = -1
 
+    // ---- rigioca l'ultima giocata: cosa serve per riportare indietro l'orologio ----
+    /** Punteggi della partita prima che la mano appena finita venisse sommata. */
+    private var matchBeforeEnd = Pair(0, 0)
+    /** Esito registrato nelle statistiche a fine partita (null se la partita non e' finita). */
+    private var recordedWin: Boolean? = null
+    /** Valore di last_match_end prima di questa fine partita, per rimetterlo se si rigioca. */
+    private var prevMatchEnd = 0L
+
     /**
-     * Fotografia della mano appena iniziata, per poterla rigiocare: l'ordine del mazzo,
-     * chi apre e i punteggi della partita com'erano prima della mano. Il Banco non tira
-     * a caso, quindi con lo stesso mazzo e le stesse tue giocate la mano si ripete uguale.
+     * Annulla la registrazione fatta a fine partita: la partita torna aperta, quindi
+     * l'esito esce dalle statistiche e la pausa fra le partite non parte.
      */
-    private class HandSnapshot(val deck: List<Card>, val youStart: Boolean, val matchYou: Int, val matchBot: Int)
-    private var lastHand: HandSnapshot? = null
+    private fun undoMatchRecord(gameKey: String) {
+        recordedWin?.let {
+            Prefs.unrecordMatch(this, gameKey, it)
+            Prefs.setLastMatchEnd(this, prevMatchEnd)
+            recordedWin = null
+        }
+    }
 
     private val watchdog = Runnable {
         if (destroyed || ending) return@Runnable
@@ -212,18 +224,9 @@ class TresetteActivity : AppCompatActivity() {
         startHand()
     }
 
-    /** Con [replay] a true si ridistribuisce l'ultima mano, riportando indietro i punteggi. */
-    private fun startHand(replay: Boolean = false) {
-        val snap = if (replay) lastHand else null
-        if (snap != null) {
-            matchYou = snap.matchYou
-            matchBot = snap.matchBot
-            youStartNext = snap.youStart
-        }
-        val youStart = youStartNext
-        game.newGame(youStart, fixedDeck = snap?.deck)
-        lastHand = HandSnapshot(game.initialDeck, youStart, matchYou, matchBot)
-        youStartNext = !youStart
+    private fun startHand() {
+        game.newGame(youStartNext)
+        youStartNext = !youStartNext
         ending = false
         hideDrawn = false
         busy = true
@@ -599,6 +602,26 @@ class TresetteActivity : AppCompatActivity() {
 
     // ---------------- fine mano ----------------
 
+
+    /**
+     * Riporta la mano all'inizio dell'ultima giocata (vedi la fotografia nel motore), rimette
+     * i punteggi della partita com'erano e fa ripartire il gioco da li'. Il Banco non tira
+     * a caso: le sue carte saranno le stesse, cambia solo quello che decidi tu.
+     */
+    private fun replayLastPlay() {
+        if (!game.restoreLastTrick()) return
+        matchYou = matchBeforeEnd.first
+        matchBot = matchBeforeEnd.second
+        undoMatchRecord(Prefs.GAME_TRESETTE)
+        ending = false
+        moveSeq++
+        busy = true
+        b.txtStatus.setText(if (game.turn == 1) R.string.bot_turn else R.string.your_turn)
+        // recover() legge lo stato reale: fa giocare il Banco se tocca a lui, altrimenti
+        // libera la mano per la tua giocata
+        recover()
+    }
+
     private fun endHand() {
         if (ending || destroyed || isFinishing) return
         ending = true
@@ -607,13 +630,17 @@ class TresetteActivity : AppCompatActivity() {
 
         val you = game.scoreFor(0)
         val bot = game.scoreFor(1)
+        matchBeforeEnd = Pair(matchYou, matchBot)
         matchYou += you
         matchBot += bot
         render()
 
         val over = (matchYou >= matchTarget || matchBot >= matchTarget) && matchYou != matchBot
+        recordedWin = null
         if (over) {
+            prevMatchEnd = Prefs.lastMatchEnd(this)
             Prefs.markMatchEnded(this)
+            recordedWin = matchYou > matchBot
             Prefs.recordMatch(this, Prefs.GAME_TRESETTE, matchYou > matchBot)
         }
 
@@ -641,11 +668,9 @@ class TresetteActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
         } else {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startHand() }
-            // A partita finita non si rigioca: l'esito e' gia' nelle statistiche e la pausa
-            // e' gia' partita, rigiocare vorrebbe dire annullare tutt'e due.
-            if (lastHand != null) {
-                builder.setNeutralButton(R.string.replay_hand) { _, _ -> startHand(replay = true) }
-            }
+        }
+        if (game.lastTrickState != null) {
+            builder.setNeutralButton(R.string.replay_last_play) { _, _ -> replayLastPlay() }
         }
         track(builder.show())
     }

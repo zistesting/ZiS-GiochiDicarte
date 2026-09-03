@@ -50,6 +50,16 @@ object Prefs {
         pr.edit().putInt(key, pr.getInt(key, 0) + 1).apply()
     }
 
+    /**
+     * Annulla l'ultima registrazione. Serve quando, a partita finita, l'utente rigioca
+     * l'ultima giocata: la partita torna aperta e il suo esito non e' piu' quello segnato.
+     */
+    fun unrecordMatch(ctx: Context, game: String, youWon: Boolean) {
+        val key = "stats_${game}_" + if (youWon) "you" else "bot"
+        val pr = p(ctx)
+        pr.edit().putInt(key, maxOf(0, pr.getInt(key, 0) - 1)).apply()
+    }
+
     fun wonBy(ctx: Context, game: String, you: Boolean): Int =
         p(ctx).getInt("stats_${game}_" + if (you) "you" else "bot", 0)
 
@@ -134,6 +144,16 @@ object Prefs {
 
     fun markMatchEnded(ctx: Context) {
         p(ctx).edit().putLong("last_match_end", System.currentTimeMillis()).apply()
+    }
+
+    /** Istante dell'ultima fine partita (0 se nessuna): si legge prima di [markMatchEnded] per poterlo rimettere. */
+    fun lastMatchEnd(ctx: Context): Long = p(ctx).getLong("last_match_end", 0L)
+
+    /** Rimette il valore letto con [lastMatchEnd]: annulla un [markMatchEnded] quando la partita viene riaperta. */
+    fun setLastMatchEnd(ctx: Context, value: Long) {
+        val e = p(ctx).edit()
+        if (value <= 0L) e.remove("last_match_end") else e.putLong("last_match_end", value)
+        e.apply()
     }
 
     /**

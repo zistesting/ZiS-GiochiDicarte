@@ -32,6 +32,48 @@ class BriscolaGame {
     var turn = 0
     var finished = false
 
+    // ---------------- ultima presa: fotografia e ripristino ----------------
+
+    /** Fotografia completa della mano: tutto cio' che serve per riprendere da quel punto. */
+    class State(
+        val deck: List<Card>, val hands: List<List<Card>>, val piles: List<List<Card>>,
+        val trick: List<Card>, val lastDrawn: List<Card?>, val leader: Int, val turn: Int
+    )
+
+    /**
+     * Stato della mano all'inizio dell'ultima presa, cioe' quando il mazzo e' finito e
+     * ciascuno ha in mano la sua ultima carta, prima che venga calata la prima delle due.
+     * A fine mano permette di rigiocare quell'ultima giocata. Il Banco non tira a caso,
+     * quindi le sue carte saranno le stesse: cambia solo quello che decidi tu.
+     */
+    var lastTrickState: State? = null
+        private set
+
+    private fun isLastTrickStart(): Boolean =
+        deck.isEmpty() && trick.isEmpty() && hands[0].size == 1 && hands[1].size == 1
+
+    private fun snapshot() = State(
+        deck.toList(), listOf(hands[0].toList(), hands[1].toList()),
+        listOf(piles[0].toList(), piles[1].toList()),
+        trick.toList(), lastDrawn.toList(), leader, turn
+    )
+
+    /** Riporta la mano all'inizio dell'ultima presa. Vero se c'era una fotografia da cui ripartire. */
+    fun restoreLastTrick(): Boolean {
+        val s = lastTrickState ?: return false
+        deck.clear(); deck.addAll(s.deck)
+        for (p in 0..1) {
+            hands[p].clear(); hands[p].addAll(s.hands[p])
+            piles[p].clear(); piles[p].addAll(s.piles[p])
+            lastDrawn[p] = s.lastDrawn[p]
+        }
+        trick.clear(); trick.addAll(s.trick)
+        leader = s.leader
+        turn = s.turn
+        finished = false
+        return true
+    }
+
     fun points(c: Card): Int = when (c.value) {
         1 -> 11; 3 -> 10; 10 -> 4; 9 -> 3; 8 -> 2; else -> 0
     }
@@ -40,21 +82,12 @@ class BriscolaGame {
         1 -> 10; 3 -> 9; 10 -> 8; 9 -> 7; 8 -> 6; 7 -> 5; 6 -> 4; 5 -> 3; 4 -> 2; 2 -> 1; else -> 0
     }
 
-    /**
-     * Ordine del mazzo con cui e' iniziata la mano, prima della distribuzione. Serve a
-     * rigiocare la stessa mano: ripassandolo a [newGame] le carte tornano identiche.
-     */
-    var initialDeck: List<Card> = emptyList()
-        private set
-
-    /** Nuova mano. Con [fixedDeck] si ridistribuisce esattamente quel mazzo (rigioca). */
-    fun newGame(youStart: Boolean, fixedDeck: List<Card>? = null) {
+    fun newGame(youStart: Boolean) {
         deck.clear(); hands[0].clear(); hands[1].clear()
         piles[0].clear(); piles[1].clear(); trick.clear()
         finished = false
-        val d = fixedDeck?.toList() ?: shuffledDeck()
-        initialDeck = d
-        deck.addAll(d)
+        lastTrickState = null
+        deck.addAll(shuffledDeck())
         repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
         trumpCard = deck.last()
         briscolaSuit = deck.last().suit
@@ -84,6 +117,7 @@ class BriscolaGame {
         leader = winner
         turn = winner
         if (hands[0].isEmpty() && hands[1].isEmpty()) finished = true
+        else if (isLastTrickStart()) lastTrickState = snapshot()
         return winner
     }
 

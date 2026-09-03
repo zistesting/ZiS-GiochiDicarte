@@ -48,17 +48,55 @@ class TresetteGame {
     var lastTrickWinner = -1
         private set
 
+    // ---------------- ultima presa: fotografia e ripristino ----------------
+
+    /** Fotografia completa della mano: tutto cio' che serve per riprendere da quel punto. */
+    class State(
+        val deck: List<Card>, val hands: List<List<Card>>, val piles: List<List<Card>>,
+        val trick: List<Card>, val lastDrawn: List<Card?>, val seen: List<Set<Card>>,
+        val leader: Int, val turn: Int, val lastTrickWinner: Int
+    )
+
     /**
-     * Ordine del mazzo con cui e' iniziata la mano, prima della distribuzione. Serve a
-     * rigiocare la stessa mano: ripassandolo a [newGame] le carte tornano identiche.
+     * Stato della mano all'inizio dell'ultima presa, cioe' quando il tallone e' finito e
+     * ciascuno ha in mano la sua ultima carta, prima che venga calata la prima delle due.
+     * A fine mano permette di rigiocare quell'ultima giocata. Il Banco non tira a caso,
+     * quindi le sue carte saranno le stesse: cambia solo quello che decidi tu.
      */
-    var initialDeck: List<Card> = emptyList()
+    var lastTrickState: State? = null
         private set
 
-    /** Nuova mano. Con [fixedDeck] si ridistribuisce esattamente quel mazzo (rigioca). */
-    fun newGame(youStart: Boolean, fixedDeck: List<Card>? = null) {
-        val d = fixedDeck?.toList() ?: shuffledDeck()
-        initialDeck = d
+    private fun isLastTrickStart(): Boolean =
+        deck.isEmpty() && trick.isEmpty() && hands[0].size == 1 && hands[1].size == 1
+
+    private fun snapshot() = State(
+        deck.toList(), listOf(hands[0].toList(), hands[1].toList()),
+        listOf(piles[0].toList(), piles[1].toList()),
+        trick.toList(), lastDrawn.toList(),
+        listOf(seenInHandOf[0].toSet(), seenInHandOf[1].toSet()),
+        leader, turn, lastTrickWinner
+    )
+
+    /** Riporta la mano all'inizio dell'ultima presa. Vero se c'era una fotografia da cui ripartire. */
+    fun restoreLastTrick(): Boolean {
+        val s = lastTrickState ?: return false
+        deck.clear(); deck.addAll(s.deck)
+        for (p in 0..1) {
+            hands[p].clear(); hands[p].addAll(s.hands[p])
+            piles[p].clear(); piles[p].addAll(s.piles[p])
+            lastDrawn[p] = s.lastDrawn[p]
+            seenInHandOf[p].clear(); seenInHandOf[p].addAll(s.seen[p])
+        }
+        trick.clear(); trick.addAll(s.trick)
+        leader = s.leader
+        turn = s.turn
+        lastTrickWinner = s.lastTrickWinner
+        finished = false
+        return true
+    }
+
+    fun newGame(youStart: Boolean) {
+        val d = shuffledDeck()
         deck.clear(); deck.addAll(d.subList(20, 40))
         hands[0].clear(); hands[0].addAll(d.subList(0, 10))
         hands[1].clear(); hands[1].addAll(d.subList(10, 20))
@@ -70,6 +108,7 @@ class TresetteGame {
         turn = leader
         finished = false
         lastTrickWinner = -1
+        lastTrickState = null
     }
 
     /** Forza di presa: 3 e' la piu' alta, 4 la piu' bassa. */
@@ -134,6 +173,7 @@ class TresetteGame {
         leader = winner
         turn = winner
         if (hands[0].isEmpty() && hands[1].isEmpty()) finished = true
+        else if (isLastTrickStart()) lastTrickState = snapshot()
         return winner
     }
 
