@@ -32,7 +32,7 @@ class BriscolaGame {
     var turn = 0
     var finished = false
 
-    // ---------------- ultima presa: fotografia e ripristino ----------------
+    // ---------------- ultime carte: fotografia e ripristino ----------------
 
     /** Fotografia completa della mano: tutto cio' che serve per riprendere da quel punto. */
     class State(
@@ -41,16 +41,19 @@ class BriscolaGame {
     )
 
     /**
-     * Stato della mano all'inizio dell'ultima presa, cioe' quando il mazzo e' finito e
-     * ciascuno ha in mano la sua ultima carta, prima che venga calata la prima delle due.
-     * A fine mano permette di rigiocare quell'ultima giocata. Il Banco non tira a caso,
+     * Stato della mano all'inizio delle ultime carte: il mazzo e' finito, ciascuno ha
+     * in mano le ultime tre carte a testa, quelle pescate con la briscola, nessuna e' ancora stata calata.
+     * A fine mano permette di rigiocare tutta quella fase finale. Il Banco non tira a caso,
      * quindi le sue carte saranno le stesse: cambia solo quello che decidi tu.
      */
-    var lastTrickState: State? = null
+    var lastDealState: State? = null
         private set
 
-    private fun isLastTrickStart(): Boolean =
-        deck.isEmpty() && trick.isEmpty() && hands[0].size == 1 && hands[1].size == 1
+    /** Carte a testa nella fase finale. */
+    val lastDealCards: Int get() = 3
+
+    private fun isLastDealStart(): Boolean =
+        deck.isEmpty() && trick.isEmpty() && hands[0].size == lastDealCards && hands[1].size == lastDealCards
 
     private fun snapshot() = State(
         deck.toList(), listOf(hands[0].toList(), hands[1].toList()),
@@ -58,9 +61,9 @@ class BriscolaGame {
         trick.toList(), lastDrawn.toList(), leader, turn
     )
 
-    /** Riporta la mano all'inizio dell'ultima presa. Vero se c'era una fotografia da cui ripartire. */
-    fun restoreLastTrick(): Boolean {
-        val s = lastTrickState ?: return false
+    /** Riporta la mano all'inizio delle ultime carte. Vero se c'era una fotografia da cui ripartire. */
+    fun restoreLastDeal(): Boolean {
+        val s = lastDealState ?: return false
         deck.clear(); deck.addAll(s.deck)
         for (p in 0..1) {
             hands[p].clear(); hands[p].addAll(s.hands[p])
@@ -86,7 +89,7 @@ class BriscolaGame {
         deck.clear(); hands[0].clear(); hands[1].clear()
         piles[0].clear(); piles[1].clear(); trick.clear()
         finished = false
-        lastTrickState = null
+        lastDealState = null
         deck.addAll(shuffledDeck())
         repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
         trumpCard = deck.last()
@@ -117,7 +120,8 @@ class BriscolaGame {
         leader = winner
         turn = winner
         if (hands[0].isEmpty() && hands[1].isEmpty()) finished = true
-        else if (isLastTrickStart()) lastTrickState = snapshot()
+        // appena pescate le ultime carte: fotografia per poter rigiocare la fase finale
+        else if (isLastDealStart()) lastDealState = snapshot()
         return winner
     }
 

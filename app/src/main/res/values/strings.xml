@@ -50,8 +50,8 @@
     <string name="target_21">21 punti</string>
     <string name="continue_match">Continua</string>
     <string name="new_match">Nuova partita</string>
-    <!-- Fine mano: torna all'inizio dell'ultima giocata, per rifare l'ultima scelta -->
-    <string name="replay_last_play">Rigioca l\'ultima giocata</string>
+    <!-- Fine mano: torna a quando il mazzo e' finito (3 carte a testa, 10 nel Tresette) -->
+    <string name="replay_last_deal">Rigioca le ultime %1$d carte</string>
     <string name="play_briscola">Briscola</string>
     <string name="you_take">Presa tua</string>
     <string name="bot_take">Presa Banco</string>

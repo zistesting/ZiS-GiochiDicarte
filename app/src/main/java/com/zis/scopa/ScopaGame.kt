@@ -19,7 +19,7 @@ class ScopaGame {
     var turn = 0
     var finished = false
 
-    // ---------------- ultimo giro: fotografia e ripristino ----------------
+    // ---------------- ultime carte: fotografia e ripristino ----------------
 
     /** Fotografia completa della mano: tutto cio' che serve per riprendere da quel punto. */
     class State(
@@ -29,16 +29,19 @@ class ScopaGame {
     )
 
     /**
-     * Stato della mano all'inizio dell'ultimo giro, cioe' quando il mazzo e' finito e
-     * ciascuno ha in mano la sua ultima carta, prima che venga calata la prima delle due.
-     * A fine mano permette di rigiocare quell'ultima giocata. Il Banco non tira a caso,
-     * quindi le sue carte saranno le stesse: cambia solo quello che decidi tu.
+     * Stato della mano all'inizio delle ultime carte: il mazzo e' finito, ciascuno ha appena
+     * ricevuto le sue ultime tre, nessuna e' ancora stata calata. A fine mano permette di
+     * rigiocare tutta quella fase finale. Il Banco non tira a caso, quindi le sue carte
+     * saranno le stesse: cambia solo quello che decidi tu.
      */
-    var lastRoundState: State? = null
+    var lastDealState: State? = null
         private set
 
-    private fun isLastRoundStart(): Boolean =
-        deck.isEmpty() && hands[0].size == 1 && hands[1].size == 1
+    /** Carte a testa nella fase finale: le ultime tre del mazzo. */
+    val lastDealCards: Int get() = 3
+
+    private fun isLastDealStart(): Boolean =
+        deck.isEmpty() && hands[0].size == lastDealCards && hands[1].size == lastDealCards
 
     private fun snapshot() = State(
         deck.toList(), table.toList(),
@@ -47,9 +50,9 @@ class ScopaGame {
         scope.copyOf(), lastCapturer, turn
     )
 
-    /** Riporta la mano all'inizio dell'ultimo giro. Vero se c'era una fotografia da cui ripartire. */
-    fun restoreLastRound(): Boolean {
-        val s = lastRoundState ?: return false
+    /** Riporta la mano all'inizio delle ultime carte. Vero se c'era una fotografia da cui ripartire. */
+    fun restoreLastDeal(): Boolean {
+        val s = lastDealState ?: return false
         deck.clear(); deck.addAll(s.deck)
         table.clear(); table.addAll(s.table)
         for (p in 0..1) {
@@ -68,7 +71,7 @@ class ScopaGame {
         scope[0] = 0; scope[1] = 0
         lastCapturer = -1
         finished = false
-        lastRoundState = null
+        lastDealState = null
 
         // Rimescola se esce una mano tutta dello stesso valore (capita nello 0,4% dei casi
         // ma e' fastidiosa perche' toglie ogni scelta) o se in tavola finiscono tre o piu' re,
@@ -142,7 +145,8 @@ class ScopaGame {
             finished = true
         } else {
             turn = 1 - p
-            if (isLastRoundStart()) lastRoundState = snapshot()
+            // appena distribuite le ultime tre carte a testa: fotografia per poterle rigiocare
+            if (isLastDealStart()) lastDealState = snapshot()
         }
         return scopa
     }

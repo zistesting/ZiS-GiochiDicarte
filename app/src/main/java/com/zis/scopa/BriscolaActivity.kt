@@ -60,7 +60,7 @@ class BriscolaActivity : AppCompatActivity() {
     private var moveSeq = 0
     private var watchdogSeq = -1
 
-    // ---- rigioca l'ultima giocata: cosa serve per riportare indietro l'orologio ----
+    // ---- rigioca le ultime carte: cosa serve per riportare indietro l'orologio ----
     /** Punteggi della partita prima che la mano appena finita venisse sommata. */
     private var matchBeforeEnd = Pair(0, 0)
     /** Esito registrato nelle statistiche a fine partita (null se la partita non e' finita). */
@@ -549,12 +549,12 @@ class BriscolaActivity : AppCompatActivity() {
 
 
     /**
-     * Riporta la mano all'inizio dell'ultima giocata (vedi la fotografia nel motore), rimette
+     * Riporta la mano all'inizio delle ultime carte (vedi la fotografia nel motore), rimette
      * i punteggi della partita com'erano e fa ripartire il gioco da li'. Il Banco non tira
      * a caso: le sue carte saranno le stesse, cambia solo quello che decidi tu.
      */
-    private fun replayLastPlay() {
-        if (!game.restoreLastTrick()) return
+    private fun replayLastDeal() {
+        if (!game.restoreLastDeal()) return
         matchYou = matchBeforeEnd.first
         matchBot = matchBeforeEnd.second
         undoMatchRecord(Prefs.GAME_BRISCOLA)
@@ -619,8 +619,8 @@ class BriscolaActivity : AppCompatActivity() {
             // saltando la pausa di un minuto. Come in Scopa restano continua e menu.
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
         }
-        if (game.lastTrickState != null) {
-            builder.setNeutralButton(R.string.replay_last_play) { _, _ -> replayLastPlay() }
+        if (game.lastDealState != null) {
+            builder.setNeutralButton(getString(R.string.replay_last_deal, game.lastDealCards)) { _, _ -> replayLastDeal() }
         }
         track(builder.show())
     }

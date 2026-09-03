@@ -48,7 +48,7 @@ class TresetteGame {
     var lastTrickWinner = -1
         private set
 
-    // ---------------- ultima presa: fotografia e ripristino ----------------
+    // ---------------- ultime carte: fotografia e ripristino ----------------
 
     /** Fotografia completa della mano: tutto cio' che serve per riprendere da quel punto. */
     class State(
@@ -58,16 +58,19 @@ class TresetteGame {
     )
 
     /**
-     * Stato della mano all'inizio dell'ultima presa, cioe' quando il tallone e' finito e
-     * ciascuno ha in mano la sua ultima carta, prima che venga calata la prima delle due.
-     * A fine mano permette di rigiocare quell'ultima giocata. Il Banco non tira a caso,
+     * Stato della mano all'inizio delle ultime carte: il tallone e' finito, ciascuno ha
+     * in mano le dieci carte a testa con cui si giocano le ultime prese, nessuna e' ancora stata calata.
+     * A fine mano permette di rigiocare tutta quella fase finale. Il Banco non tira a caso,
      * quindi le sue carte saranno le stesse: cambia solo quello che decidi tu.
      */
-    var lastTrickState: State? = null
+    var lastDealState: State? = null
         private set
 
-    private fun isLastTrickStart(): Boolean =
-        deck.isEmpty() && trick.isEmpty() && hands[0].size == 1 && hands[1].size == 1
+    /** Carte a testa nella fase finale. */
+    val lastDealCards: Int get() = 10
+
+    private fun isLastDealStart(): Boolean =
+        deck.isEmpty() && trick.isEmpty() && hands[0].size == lastDealCards && hands[1].size == lastDealCards
 
     private fun snapshot() = State(
         deck.toList(), listOf(hands[0].toList(), hands[1].toList()),
@@ -77,9 +80,9 @@ class TresetteGame {
         leader, turn, lastTrickWinner
     )
 
-    /** Riporta la mano all'inizio dell'ultima presa. Vero se c'era una fotografia da cui ripartire. */
-    fun restoreLastTrick(): Boolean {
-        val s = lastTrickState ?: return false
+    /** Riporta la mano all'inizio delle ultime carte. Vero se c'era una fotografia da cui ripartire. */
+    fun restoreLastDeal(): Boolean {
+        val s = lastDealState ?: return false
         deck.clear(); deck.addAll(s.deck)
         for (p in 0..1) {
             hands[p].clear(); hands[p].addAll(s.hands[p])
@@ -108,7 +111,7 @@ class TresetteGame {
         turn = leader
         finished = false
         lastTrickWinner = -1
-        lastTrickState = null
+        lastDealState = null
     }
 
     /** Forza di presa: 3 e' la piu' alta, 4 la piu' bassa. */
@@ -173,7 +176,8 @@ class TresetteGame {
         leader = winner
         turn = winner
         if (hands[0].isEmpty() && hands[1].isEmpty()) finished = true
-        else if (isLastTrickStart()) lastTrickState = snapshot()
+        // appena pescate le ultime carte: fotografia per poter rigiocare la fase finale
+        else if (isLastDealStart()) lastDealState = snapshot()
         return winner
     }
 
