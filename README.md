@@ -412,6 +412,18 @@ per gioco, con chi comincia che si alterna:
 | Scopa | 58,9% | 41,1% | +0,56 punti a mano |
 | Briscola | 55,4% | 44,6% | +3,5 punti su 120 |
 
+**La briscola sta coricata sotto il mazzo.** Il riquadro che la contiene ha le misure
+scambiate (largo quanto e' alta una carta, alto quanto e' larga) e la carta dentro e' ruotata
+di 90 gradi. Due dettagli non ovvi. Primo: e' centrata sul mazzo e non affiancata, perche'
+coricata e' larga quasi due carte e messa di fianco arriverebbe sotto le carte della presa;
+centrata invece sporge di mezza carta per lato, e la meta' di sinistra sparisce fuori schermo
+insieme al mazzo. Verificato dal telefono piccolo al tablet: fra la punta della briscola e la
+prima carta della presa restano sempre almeno 26dp. Secondo: la rotazione e' **oraria**, cosi'
+la meta' che resta in vista e' quella alta della carta; girandola dall'altra parte si vedrebbe
+la meta' bassa, cioe' il cartiglio vuoto, e la briscola sarebbe piu' difficile da riconoscere
+con un'occhiata. Serve anche `clipChildren = false` sul riquadro e sulla riga, altrimenti la
+carta coricata, che esce dai loro confini, verrebbe tagliata.
+
 **Apertura del Banco (Briscola).** Il Banco non ha piu' la regola secca "mai aprire di
 briscola": con una mano tipo briscola 4 + briscola cavallo + un 3 lo obbligava a buttare il
 carico, dieci punti regalati per non calare una briscola che non vale niente. Adesso confronta
