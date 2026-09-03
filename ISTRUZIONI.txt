@@ -15,9 +15,8 @@ dentro tutti gli 89 file di questa cartella (non la cartella: il suo contenuto).
 
 --- cosa e' cambiato rispetto alla versione precedente ---
 
-  app_logo     logo nuovo: vale sia per la schermata iniziale sia per l'icona dell'app
-
-Nient'altro. Se hai gia' caricato la versione precedente ti basta questo file.
+Niente: le immagini sono identiche a quelle gia' nel repository. Se le hai gia'
+caricate puoi saltare questa parte e caricare solo la Parte 1.
 
 --- avvertenza di sempre ---
 
