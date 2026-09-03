@@ -38,6 +38,10 @@
     <string name="pt_totale">Totale</string>
     <string name="pt_scope">Scope</string>
     <string name="choose_capture">Scegli la presa</string>
+    <!-- Cartelli che compaiono al centro del tavolo dopo una presa -->
+    <string name="banner_scopa">SCOPA!</string>
+    <string name="banner_settebello">SETTEBELLO!</string>
+    <string name="banner_nice_take">Bella presa!</string>
     <string name="cd_web">Sito ZiS</string>
     <string name="cd_settings">Impostazioni</string>
     <string name="settings_title">Impostazioni</string>
@@ -46,6 +50,8 @@
     <string name="target_21">21 punti</string>
     <string name="continue_match">Continua</string>
     <string name="new_match">Nuova partita</string>
+    <!-- Fine mano: ridistribuisce le stesse carte e riporta i punteggi a prima della mano -->
+    <string name="replay_hand">Rigioca la mano</string>
     <string name="play_briscola">Briscola</string>
     <string name="you_take">Presa tua</string>
     <string name="bot_take">Presa Banco</string>
@@ -90,7 +96,7 @@
     <string name="auto_play_desc">Il programma gioca da solo sia le carte del Banco sia le tue. Serve a provare in fretta il funzionamento.</string>
     <string name="pause_section">Gioco responsabile</string>
     <string name="pause_switch">Pausa di 1 minuto fra le partite</string>
-    <string name="pause_switch_desc">Al termine di ogni partita compare un avviso e bisogna attendere un minuto prima di ricominciare. Per disattivarla serve una password.</string>
+    <string name="pause_switch_desc">Al termine di ogni partita compare un avviso e bisogna attendere un minuto prima di ricominciare. Se la disattivi, si riaccende da sola dopo un\'ora.</string>
     <string name="pause_title">Prenditi una pausa</string>
     <string name="pause_message">Giocare a lungo senza interruzioni può diventare un\'abitudine difficile da controllare. Fermati un minuto: alzati, bevi qualcosa, guarda che ora è.
 

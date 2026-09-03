@@ -59,6 +59,14 @@ class GameActivity : AppCompatActivity() {
     private var moveSeq = 0
     private var watchdogSeq = -1
 
+    /**
+     * Fotografia della mano appena iniziata, per poterla rigiocare: l'ordine del mazzo,
+     * chi apre e i punteggi della partita com'erano prima della mano. Il Banco non tira
+     * a caso, quindi con lo stesso mazzo e le stesse tue giocate la mano si ripete uguale.
+     */
+    private class HandSnapshot(val deck: List<Card>, val youStart: Boolean, val matchYou: Int, val matchBot: Int)
+    private var lastHand: HandSnapshot? = null
+
     private val watchdog = Runnable {
         if (destroyed || roundEnding) return@Runnable
         if (moveSeq != watchdogSeq) return@Runnable   // il gioco si e' mosso: nulla da fare
@@ -219,9 +227,18 @@ class GameActivity : AppCompatActivity() {
         startRound()
     }
 
-    private fun startRound() {
-        game.newGame(youStart = youStartNext)
-        youStartNext = !youStartNext
+    /** Con [replay] a true si ridistribuisce l'ultima mano, riportando indietro i punteggi. */
+    private fun startRound(replay: Boolean = false) {
+        val snap = if (replay) lastHand else null
+        if (snap != null) {
+            matchYou = snap.matchYou
+            matchBot = snap.matchBot
+            youStartNext = snap.youStart
+        }
+        val youStart = youStartNext
+        game.newGame(youStart = youStart, fixedDeck = snap?.deck)
+        lastHand = HandSnapshot(game.initialDeck, youStart, matchYou, matchBot)
+        youStartNext = !youStart
         roundEnding = false
         moveSeq++
         busy = true
@@ -364,10 +381,14 @@ class GameActivity : AppCompatActivity() {
 
     private fun doPlayerPlay(card: Card, fromView: View, capture: List<Card>) {
         if (busy || game.turn != 0 || game.finished) return
+        // La vista si rilegge adesso e non si usa quella del tocco: se in mezzo c'e' stato
+        // un onStop (dialogo "Scegli la presa" aperto, utente in home e ritorno) render()
+        // ha ricreato la mano e fromView e' una vista staccata, con coordinate a caso.
+        val src = findHandCardView(card) ?: fromView
         busy = true
         armWatchdog()
-        fromView.visibility = View.INVISIBLE
-        val (sx, sy) = topLeftInOverlay(fromView)
+        src.visibility = View.INVISIBLE
+        val (sx, sy) = topLeftInOverlay(src)
         playAnimated(card, capture, sx, sy, byBot = false)
     }
 
@@ -492,11 +513,11 @@ class GameActivity : AppCompatActivity() {
 
     private fun afterPlay(scopa: Boolean, capture: List<Card>, byBot: Boolean, playedCard: Card) {
         val events = mutableListOf<String>()
-        if (scopa) events.add("SCOPA!")
+        if (scopa) events.add(getString(R.string.banner_scopa))
         // Settebello secured this turn: either captured from the table, or played as the capturing card.
         val gotSettebello = capture.any { it.isSettebello } || (playedCard.isSettebello && capture.isNotEmpty())
-        if (gotSettebello) events.add("SETTEBELLO!")
-        if (events.isEmpty() && capture.size >= 3) events.add("Bella presa!")
+        if (gotSettebello) events.add(getString(R.string.banner_settebello))
+        if (events.isEmpty() && capture.size >= 3) events.add(getString(R.string.banner_nice_take))
         // in gioco automatico i cartelli si saltano: non c'e' nessuno che li legga
         val hasBanner = events.isNotEmpty() && !t.fast
         if (hasBanner) showBanner(events.joinToString("   "), byBot)
@@ -623,6 +644,11 @@ class GameActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
         } else {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startRound() }
+            // A partita finita non si rigioca: l'esito e' gia' nelle statistiche e la pausa
+            // e' gia' partita, rigiocare vorrebbe dire annullare tutt'e due.
+            if (lastHand != null) {
+                builder.setNeutralButton(R.string.replay_hand) { _, _ -> startRound(replay = true) }
+            }
         }
         track(builder.show())
     }

@@ -29,7 +29,6 @@ class ZisApp : Application() {
         }
     }
 
-    @Deprecated("Deprecato in API 34, serve ancora per i dispositivi meno recenti")
     override fun onLowMemory() {
         super.onLowMemory()
         CardView.clearCache()

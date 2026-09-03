@@ -60,6 +60,14 @@ class BriscolaActivity : AppCompatActivity() {
     private var moveSeq = 0
     private var watchdogSeq = -1
 
+    /**
+     * Fotografia della mano appena iniziata, per poterla rigiocare: l'ordine del mazzo,
+     * chi apre e i punteggi della partita com'erano prima della mano. Il Banco non tira
+     * a caso, quindi con lo stesso mazzo e le stesse tue giocate la mano si ripete uguale.
+     */
+    private class HandSnapshot(val deck: List<Card>, val youStart: Boolean, val matchYou: Int, val matchBot: Int)
+    private var lastHand: HandSnapshot? = null
+
     private val watchdog = Runnable {
         if (destroyed || ending) return@Runnable
         if (moveSeq != watchdogSeq) return@Runnable
@@ -256,9 +264,18 @@ class BriscolaActivity : AppCompatActivity() {
         startGame()
     }
 
-    private fun startGame() {
-        game.newGame(youStart = youStartNext)
-        youStartNext = !youStartNext
+    /** Con [replay] a true si ridistribuisce l'ultima mano, riportando indietro i punteggi. */
+    private fun startGame(replay: Boolean = false) {
+        val snap = if (replay) lastHand else null
+        if (snap != null) {
+            matchYou = snap.matchYou
+            matchBot = snap.matchBot
+            youStartNext = snap.youStart
+        }
+        val youStart = youStartNext
+        game.newGame(youStart = youStart, fixedDeck = snap?.deck)
+        lastHand = HandSnapshot(game.initialDeck, youStart, matchYou, matchBot)
+        youStartNext = !youStart
         ending = false
         hideDrawn = false
         busy = true
@@ -574,6 +591,11 @@ class BriscolaActivity : AppCompatActivity() {
             // Niente "Nuova partita" a meta' partita: era l'unico modo di ricominciare
             // saltando la pausa di un minuto. Come in Scopa restano continua e menu.
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
+            // A partita finita non si rigioca: l'esito e' gia' nelle statistiche e la pausa
+            // e' gia' partita, rigiocare vorrebbe dire annullare tutt'e due.
+            if (lastHand != null) {
+                builder.setNeutralButton(R.string.replay_hand) { _, _ -> startGame(replay = true) }
+            }
         }
         track(builder.show())
     }

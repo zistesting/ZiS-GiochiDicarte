@@ -2,16 +2,12 @@ package com.zis.scopa
 
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.zis.scopa.databinding.ActivitySettingsBinding
 
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var b: ActivitySettingsBinding
-
-    /** Dialogo della password: va chiuso in onDestroy, altrimenti resta appeso all'activity. */
-    private var openDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,11 +118,5 @@ class SettingsActivity : AppCompatActivity() {
             Prefs.setPauseEnabled(this, checked)
             refreshPauseUi()
         }
-    }
-
-    override fun onDestroy() {
-        openDialog?.let { if (it.isShowing) it.dismiss() }
-        openDialog = null
-        super.onDestroy()
     }
 }

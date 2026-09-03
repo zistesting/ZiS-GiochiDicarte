@@ -73,6 +73,14 @@ class TresetteActivity : AppCompatActivity() {
     private var moveSeq = 0
     private var watchdogSeq = -1
 
+    /**
+     * Fotografia della mano appena iniziata, per poterla rigiocare: l'ordine del mazzo,
+     * chi apre e i punteggi della partita com'erano prima della mano. Il Banco non tira
+     * a caso, quindi con lo stesso mazzo e le stesse tue giocate la mano si ripete uguale.
+     */
+    private class HandSnapshot(val deck: List<Card>, val youStart: Boolean, val matchYou: Int, val matchBot: Int)
+    private var lastHand: HandSnapshot? = null
+
     private val watchdog = Runnable {
         if (destroyed || ending) return@Runnable
         if (moveSeq != watchdogSeq) return@Runnable
@@ -204,9 +212,18 @@ class TresetteActivity : AppCompatActivity() {
         startHand()
     }
 
-    private fun startHand() {
-        game.newGame(youStartNext)
-        youStartNext = !youStartNext
+    /** Con [replay] a true si ridistribuisce l'ultima mano, riportando indietro i punteggi. */
+    private fun startHand(replay: Boolean = false) {
+        val snap = if (replay) lastHand else null
+        if (snap != null) {
+            matchYou = snap.matchYou
+            matchBot = snap.matchBot
+            youStartNext = snap.youStart
+        }
+        val youStart = youStartNext
+        game.newGame(youStart, fixedDeck = snap?.deck)
+        lastHand = HandSnapshot(game.initialDeck, youStart, matchYou, matchBot)
+        youStartNext = !youStart
         ending = false
         hideDrawn = false
         busy = true
@@ -624,6 +641,11 @@ class TresetteActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
         } else {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startHand() }
+            // A partita finita non si rigioca: l'esito e' gia' nelle statistiche e la pausa
+            // e' gia' partita, rigiocare vorrebbe dire annullare tutt'e due.
+            if (lastHand != null) {
+                builder.setNeutralButton(R.string.replay_hand) { _, _ -> startHand(replay = true) }
+            }
         }
         track(builder.show())
     }

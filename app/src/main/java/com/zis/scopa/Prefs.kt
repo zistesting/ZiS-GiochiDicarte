@@ -103,8 +103,8 @@ object Prefs {
     // ---------------- pausa responsabile ----------------
 
     /**
-     * Attiva di serie. Si disattiva solo con la password e, comunque, la disattivazione
-     * scade dopo un'ora: passato quel tempo la pausa torna accesa da sola.
+     * Attiva di serie. Si puo' spegnere dalle impostazioni, ma la disattivazione scade
+     * dopo un'ora: passato quel tempo la pausa torna accesa da sola.
      */
     fun pauseEnabled(ctx: Context): Boolean {
         val pr = p(ctx)

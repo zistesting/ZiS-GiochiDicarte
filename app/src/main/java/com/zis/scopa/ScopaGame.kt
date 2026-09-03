@@ -19,26 +19,45 @@ class ScopaGame {
     var turn = 0
     var finished = false
 
-    fun newGame(youStart: Boolean = true) {
+    /**
+     * Ordine del mazzo con cui e' iniziata la mano, prima della distribuzione. Serve a
+     * rigiocare la stessa mano: ripassandolo a [newGame] le carte tornano identiche.
+     */
+    var initialDeck: List<Card> = emptyList()
+        private set
+
+    /** Nuova mano. Con [fixedDeck] si ridistribuisce esattamente quel mazzo (rigioca). */
+    fun newGame(youStart: Boolean = true, fixedDeck: List<Card>? = null) {
         captured[0].clear(); captured[1].clear()
         scope[0] = 0; scope[1] = 0
         lastCapturer = -1
         finished = false
 
-        // Rimescola se esce una mano tutta dello stesso valore (capita nello 0,4% dei casi
-        // ma e' fastidiosa perche' toglie ogni scelta) o se in tavola finiscono tre o piu' re,
-        // situazione che la regola tradizionale gia' prevede di rifare.
-        var tries = 0
-        do {
-            deck.clear(); table.clear()
-            hands[0].clear(); hands[1].clear()
-            deck.addAll(shuffledDeck())
-            repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
-            repeat(4) { table.add(deck.removeFirst()) }
-            tries++
-        } while (tries < 20 && (allSameValue(hands[0]) || allSameValue(hands[1]) || tooManyKings(table)))
+        if (fixedDeck != null) {
+            // mazzo gia' passato al vaglio la prima volta: nessun rimescolamento
+            deal(fixedDeck)
+        } else {
+            // Rimescola se esce una mano tutta dello stesso valore (capita nello 0,4% dei casi
+            // ma e' fastidiosa perche' toglie ogni scelta) o se in tavola finiscono tre o piu' re,
+            // situazione che la regola tradizionale gia' prevede di rifare.
+            var tries = 0
+            do {
+                deal(shuffledDeck())
+                tries++
+            } while (tries < 20 && (allSameValue(hands[0]) || allSameValue(hands[1]) || tooManyKings(table)))
+        }
 
         turn = if (youStart) 0 else 1
+    }
+
+    /** Distribuisce dal mazzo [d]: tre carte a testa e quattro in tavola. */
+    private fun deal(d: List<Card>) {
+        initialDeck = d.toList()
+        deck.clear(); table.clear()
+        hands[0].clear(); hands[1].clear()
+        deck.addAll(d)
+        repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
+        repeat(4) { table.add(deck.removeFirst()) }
     }
 
     private fun allSameValue(h: List<Card>): Boolean =

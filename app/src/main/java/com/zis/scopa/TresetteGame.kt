@@ -48,8 +48,17 @@ class TresetteGame {
     var lastTrickWinner = -1
         private set
 
-    fun newGame(youStart: Boolean) {
-        val d = shuffledDeck()
+    /**
+     * Ordine del mazzo con cui e' iniziata la mano, prima della distribuzione. Serve a
+     * rigiocare la stessa mano: ripassandolo a [newGame] le carte tornano identiche.
+     */
+    var initialDeck: List<Card> = emptyList()
+        private set
+
+    /** Nuova mano. Con [fixedDeck] si ridistribuisce esattamente quel mazzo (rigioca). */
+    fun newGame(youStart: Boolean, fixedDeck: List<Card>? = null) {
+        val d = fixedDeck?.toList() ?: shuffledDeck()
+        initialDeck = d
         deck.clear(); deck.addAll(d.subList(20, 40))
         hands[0].clear(); hands[0].addAll(d.subList(0, 10))
         hands[1].clear(); hands[1].addAll(d.subList(10, 20))
@@ -188,8 +197,22 @@ class TresetteGame {
         return thirds(c) + if (higher == 0) 2.0 else maxOf(0.0, 1.2 - 0.4 * higher)
     }
 
+    /**
+     * Euristica per quando il tallone non e' ancora finito.
+     *
+     * Le carte ignote si dividono in due: quelle che l'avversario ha pescato scoperte e ha
+     * ancora in mano ([seenInHandOf]) sono una certezza, tutte le altre stanno nel tallone
+     * o nella parte della sua mano che non ho mai visto. Prima le due categorie si
+     * confondevano in un'unica probabilita': una carta vista pescare contava come una
+     * carta qualsiasi del tallone, e il Banco usciva tranquillo con un Re di coppe pur
+     * avendo visto l'avversario pescare il 3 di coppe.
+     */
     private fun heuristic(p: Int): Card {
         val unseen = unseenBy(p)
+        val known = seenInHandOf[p]
+        val unknown = unseen.filter { it !in known }
+        // carte in mano all'avversario che non ho mai visto
+        val hiddenSlots = maxOf(0, hands[1 - p].size - known.size)
         val legal = legalMoves(p)
 
         if (trick.isNotEmpty()) {
@@ -210,14 +233,20 @@ class TresetteGame {
         // resto di mano. Altrimenti esco con la carta che rischia di costarmi meno.
         var best = legal.first(); var bestScore = -1e9
         for (c in legal) {
-            val suitUnseen = unseen.filter { it.suit == c.suit }
-            val higher = suitUnseen.count { strength(it.value) > strength(c.value) }
-            val s = if (higher == 0) {
-                // presa sicura: prendo la mia carta piu' quella che l'avversario deve calare
-                val cheapest = suitUnseen.minOfOrNull { thirds(it) } ?: 0
+            val higherKnown = known.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
+            val higherUnknown = unknown.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
+            val s = if (higherKnown == 0 && higherUnknown == 0) {
+                // presa sicura: prendo la mia carta piu' quella che l'avversario deve calare.
+                // Se so che ha carte di questo seme, calera' la piu' economica fra quelle;
+                // altrimenti stimo con la piu' economica fra le ignote del seme.
+                val knownSuit = known.filter { it.suit == c.suit }
+                val cheapest = (if (knownSuit.isNotEmpty()) knownSuit else unknown.filter { it.suit == c.suit })
+                    .minOfOrNull { thirds(it) } ?: 0
                 6.0 + thirds(c) + cheapest
             } else {
-                val risk = minOf(1.0, higher.toDouble() * hands[1 - p].size / maxOf(1, unseen.size))
+                // una carta piu' alta vista in mano sua e' una certezza, non una probabilita'
+                val risk = if (higherKnown > 0) 1.0
+                           else minOf(1.0, higherUnknown.toDouble() * hiddenSlots / maxOf(1, unknown.size))
                 -(thirds(c) * 2.0 + 0.5) * risk - 0.03 * strength(c.value)
             }
             if (s > bestScore) { bestScore = s; best = c }
@@ -236,6 +265,14 @@ class TresetteGame {
     /** Tetto di nodi, come rete di sicurezza: se scatta si torna all'euristica. */
     private class Budget(var left: Int) { var aborted = false }
 
+    /**
+     * "Infinito" della ricerca. Non si usano Int.MIN_VALUE e Int.MAX_VALUE perche' la
+     * finestra alfa-beta viene spostata di qualche terzo di punto a ogni presa, e sottrarre
+     * da Int.MIN_VALUE fa ribaltare il segno. I punti di una mano sono al massimo 35 terzi,
+     * quindi un milione e' infinito quanto basta.
+     */
+    private val INF = 1_000_000
+
     private fun legalFrom(hand: List<Card>, lead: Card?): List<Card> {
         if (lead == null) return hand
         val same = hand.filter { it.suit == lead.suit }
@@ -249,17 +286,17 @@ class TresetteGame {
         val lead = trick.firstOrNull()
         val budget = Budget(400_000)
         var best: Card? = null
-        var bestScore = Int.MIN_VALUE
+        var bestScore = -INF
         for (c in legalFrom(mine, lead)) {
             val rest = mine - c
             val v = if (lead == null) {
-                solve(rest, theirs, c, false, Int.MIN_VALUE, Int.MAX_VALUE, budget)
+                solve(rest, theirs, c, false, -INF, INF, budget)
             } else {
                 val win = followWins(lead, c)
                 val pot = thirds(lead) + thirds(c)
                 val last = rest.isEmpty() && theirs.isEmpty()
                 val gain = if (win) pot + (if (last) 3 else 0) else 0
-                gain + solve(rest, theirs, null, win, Int.MIN_VALUE, Int.MAX_VALUE, budget)
+                gain + solve(rest, theirs, null, win, -INF, INF, budget)
             }
             if (budget.aborted) return null
             if (v > bestScore) { bestScore = v; best = c }
@@ -285,7 +322,7 @@ class TresetteGame {
         if (lead == null) {
             // apre chi tocca
             if (meToPlay) {
-                var best = Int.MIN_VALUE
+                var best = -INF
                 for (c in legalFrom(mine, null)) {
                     val v = solve(mine - c, theirs, c, false, alpha, beta, budget)
                     if (budget.aborted) return best
@@ -295,7 +332,7 @@ class TresetteGame {
                 }
                 return best
             }
-            var best = Int.MAX_VALUE
+            var best = INF
             for (c in legalFrom(theirs, null)) {
                 val v = solve(mine, theirs - c, c, true, alpha, beta, budget)
                 if (budget.aborted) return best
@@ -308,14 +345,18 @@ class TresetteGame {
 
         if (meToPlay) {
             // rispondo io: chi ha aperto e' l'avversario
-            var best = Int.MIN_VALUE
+            var best = -INF
             for (c in legalFrom(mine, lead)) {
                 val rest = mine - c
                 val win = followWins(lead, c)
                 val pot = thirds(lead) + thirds(c)
                 val last = rest.isEmpty() && theirs.isEmpty()
                 val gain = if (win) pot + (if (last) 3 else 0) else 0
-                val v = gain + solve(rest, theirs, null, win, alpha, beta, budget)
+                // Il valore del nodo e' gain + valore del figlio, quindi la finestra alfa-beta
+                // va passata al figlio spostata di -gain. Senza lo spostamento il figlio
+                // potava su soglie sbagliate e restituiva un limite al posto del valore vero:
+                // in un finale su quindici il Banco sceglieva una carta non ottima.
+                val v = gain + solve(rest, theirs, null, win, alpha - gain, beta - gain, budget)
                 if (budget.aborted) return best
                 if (v > best) best = v
                 if (best > alpha) alpha = best
@@ -324,14 +365,15 @@ class TresetteGame {
             return best
         }
         // risponde lui: chi ha aperto sono io
-        var best = Int.MAX_VALUE
+        var best = INF
         for (c in legalFrom(theirs, lead)) {
             val rest = theirs - c
             val oppWins = followWins(lead, c)
             val pot = thirds(lead) + thirds(c)
             val last = mine.isEmpty() && rest.isEmpty()
             val gain = if (oppWins) 0 else pot + (if (last) 3 else 0)
-            val v = gain + solve(mine, rest, null, !oppWins, alpha, beta, budget)
+            // stesso spostamento della finestra del ramo qui sopra
+            val v = gain + solve(mine, rest, null, !oppWins, alpha - gain, beta - gain, budget)
             if (budget.aborted) return best
             if (v < best) best = v
             if (best < beta) beta = best

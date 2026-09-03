@@ -40,11 +40,21 @@ class BriscolaGame {
         1 -> 10; 3 -> 9; 10 -> 8; 9 -> 7; 8 -> 6; 7 -> 5; 6 -> 4; 5 -> 3; 4 -> 2; 2 -> 1; else -> 0
     }
 
-    fun newGame(youStart: Boolean) {
+    /**
+     * Ordine del mazzo con cui e' iniziata la mano, prima della distribuzione. Serve a
+     * rigiocare la stessa mano: ripassandolo a [newGame] le carte tornano identiche.
+     */
+    var initialDeck: List<Card> = emptyList()
+        private set
+
+    /** Nuova mano. Con [fixedDeck] si ridistribuisce esattamente quel mazzo (rigioca). */
+    fun newGame(youStart: Boolean, fixedDeck: List<Card>? = null) {
         deck.clear(); hands[0].clear(); hands[1].clear()
         piles[0].clear(); piles[1].clear(); trick.clear()
         finished = false
-        deck.addAll(shuffledDeck())
+        val d = fixedDeck?.toList() ?: shuffledDeck()
+        initialDeck = d
+        deck.addAll(d)
         repeat(3) { hands[0].add(deck.removeFirst()); hands[1].add(deck.removeFirst()) }
         trumpCard = deck.last()
         briscolaSuit = deck.last().suit
