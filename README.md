@@ -139,12 +139,28 @@ Cosa resta da fare prima della pubblicazione:
 ## Note tecniche
 
 **Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
-in **WebP**. Le carte ZiS (`card_*`) vengono da originali a 560x1024. Le venti di bastoni e spade sono
-state ridisegnate: arrivano gia' nella proporzione giusta, quindi si riducono e basta. Due
-facevano eccezione (il 2 di bastoni largo 584 px, il Cavallo di spade largo 550) e per quelle
-la proporzione si sistema **ritagliando o allargando il bordo**, mai stirando: il taglio e
-l'aggiunta restano centrati sul telaio del disegno, non sul rettangolo dell'immagine, cosi'
-la cornice non finisce fuori asse.
+in **WebP**.
+
+Le carte ZiS (`card_*`) sono state rifatte da otto fogli, due per seme, in stile carta
+ritagliata. Ogni foglio contiene cinque carte in fila: il foglio A ha `5 4 3 2 Asso`, il
+foglio B ha `Re Cavallo Fante 7 6`. L'estrazione e' automatica (`art/`): le cornici si
+trovano cercando le colonne e le righe in cui almeno meta' dei pixel e' scura, cioe' le linee
+piene del bordo, e la larghezza fuori scala di una carta tagliata dal confine dello slot
+viene riportata alla mediana delle altre quattro, perche' le carte di un foglio sono tutte
+uguali. Ogni carta viene poi portata a 448x819 **aggiungendo margine bianco**, mai stirando.
+
+**Fondo bianco delle carte ZiS.** Il punto delicato e' capire qual e' il bianco. Nei fogli lo
+sfondo attorno alle carte e' gia' 255, ma la faccia della carta no: in tre fogli su otto e' un
+grigio chiaro attorno a 238. Un percentile sull'immagine intera pescherebbe lo sfondo del
+foglio e lascerebbe quel grigio dov'e'. Il bianco si stima quindi dalla **moda dei pixel
+chiari del ritaglio**, cioe' dal valore che ricorre di piu' sopra 200: e' la faccia della
+carta, che occupa piu' area di qualunque altra tinta chiara. Da li' il solito bilanciamento
+per canale piu' un appiattimento a rampa e non a soglia, per non lasciare aloni sui contorni
+morbidi. La rampa parte da 244, mentre il grigio piu' chiaro del disegno (le lame d'argento
+delle spade) sta sotto 235, quindi non viene toccato. Verificato su tutte e quaranta: il fondo
+e' 255 pieno.
+
+Il **dorso** `card_back` non viene dai fogli: resta quello disegnato in vettoriale in `art/`.
 
 **Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
 uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
