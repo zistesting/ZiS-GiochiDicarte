@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Le immagini delle carte sono caricate a runtime con getIdentifier("card_X_Y"),
-     quindi lo shrinker delle risorse non le "vede" usate e le eliminerebbe.
-     Questo file le protegge se un domani attivi shrinkResources. -->
-<resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/card_*,@drawable/trad_*" />
