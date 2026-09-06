@@ -98,19 +98,50 @@ class ScopaGame {
      *  every combination (size >= 2) of table cards summing to the value. */
     fun capturesFor(value: Int): List<List<Card>> = capturesOn(table, value)
 
-    /** Come capturesFor, ma su un tavolo qualsiasi: serve alla ricerca dell'ultima mano. */
+    /**
+     * Come capturesFor, ma su un tavolo qualsiasi: serve alla ricerca dell'ultima mano.
+     *
+     * Prima qui si enumeravano tutte le 2^n maschere di bit del tavolo. Funzionava, ma il
+     * costo cresceva col numero di carte in tavola e il tetto di nodi della ricerca non lo
+     * teneva: quel tetto conta i nodi, non il lavoro fatto DENTRO ogni nodo. Con un tavolo
+     * da quindici o piu' carte ogni singolo nodo faceva decine di migliaia di giri, e la
+     * cosa succede sul thread della UI (capturesFor viene chiamata anche al tocco).
+     *
+     * Adesso e' una ricorsione su somma con due potature che valgono moltissimo in questo
+     * gioco, dove il bersaglio non supera mai 10:
+     *  - una carta di valore maggiore o uguale al bersaglio non puo' entrare in nessuna somma
+     *    di due o piu' carte, quindi si scarta subito;
+     *  - le carte restano ordinate per valore crescente, percio' appena la prima disponibile
+     *    sfora il resto si interrompe il ciclo invece di provare anche tutte le successive.
+     *
+     * Il risultato e' lo stesso insieme di combinazioni di prima (cambia solo l'ordine in cui
+     * escono), ma il costo passa da "esponenziale nel tavolo" a "esponenziale nel bersaglio",
+     * che vale al massimo 10.
+     */
     private fun capturesOn(t: List<Card>, value: Int): List<List<Card>> {
         val singles = t.filter { it.value == value }
         if (singles.isNotEmpty()) return singles.map { listOf(it) }
+
+        val usable = t.filter { it.value < value }.sortedBy { it.value }
+        if (usable.size < 2) return emptyList()
+
         val res = mutableListOf<List<Card>>()
-        val n = t.size
-        for (mask in 1 until (1 shl n)) {
-            if (Integer.bitCount(mask) < 2) continue
-            var sum = 0
-            val sub = ArrayList<Card>()
-            for (i in 0 until n) if ((mask shr i) and 1 == 1) { sum += t[i].value; sub.add(t[i]) }
-            if (sum == value) res.add(sub)
+        val cur = ArrayList<Card>(usable.size)
+
+        fun search(from: Int, remaining: Int) {
+            if (remaining == 0) {
+                if (cur.size >= 2) res.add(ArrayList(cur))
+                return
+            }
+            for (i in from until usable.size) {
+                val c = usable[i]
+                if (c.value > remaining) break   // ordinate: da qui in poi sforano tutte
+                cur.add(c)
+                search(i + 1, remaining - c.value)
+                cur.removeAt(cur.size - 1)
+            }
         }
+        search(0, value)
         return res
     }
 

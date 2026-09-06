@@ -26,13 +26,7 @@ object Prefs {
         p(ctx).edit().putInt("briscola_target", value).apply()
     }
 
-    // ---------------- mazzo ----------------
-
-    /**
-     * Prefisso dei file delle carte. Le immagini si chiamano <prefisso>_seme_valore, quindi
-     * cambiare mazzo vuol dire cambiare prefisso: card_0_1 oppure trad_0_1.
-     */
-    // ---- statistiche ----
+    // ---------------- statistiche ----------------
 
     const val GAME_SCOPA = "scopa"
     const val GAME_BRISCOLA = "briscola"
@@ -85,6 +79,12 @@ object Prefs {
         p(ctx).edit().putInt("tresette_target", value).apply()
     }
 
+    // ---------------- mazzo ----------------
+
+    /**
+     * Mazzo scelto. E' la chiave con cui Decks.kt sceglie quale delle due tabelle di immagini
+     * usare: DECK_ZIS per le illustrazioni ZiS, DECK_TRAD per le figure tradizionali.
+     */
     const val DECK_ZIS = "card"
     const val DECK_TRAD = "trad"
 

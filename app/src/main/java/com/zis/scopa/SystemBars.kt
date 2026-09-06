@@ -3,24 +3,33 @@ package com.zis.scopa
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 
 /**
- * Da Android 15 in poi, e in modo definitivo con targetSdk 36, le schermate disegnano sempre
- * a tutto schermo: passano sotto la barra di stato e sotto quella di navigazione, e non c'e'
- * piu' modo di rinunciarci. Qui lo sfondo continua ad arrivare fino ai bordi, ma il contenuto
- * riceve il margine giusto per non finire sotto le barre di sistema o sotto il notch.
+ * Edge to edge esplicito, uguale su tutte le versioni di Android.
  *
- * Sostituisce android:fitsSystemWindows="true" nei layout, che copriva solo i casi semplici.
+ * Da targetSdk 35 il sistema disegna comunque sotto le barre e non si puo' piu' rinunciare;
+ * sotto la 35, invece, la decor view applica da sola gli inset al contenuto e li consuma,
+ * quindi il listener qui sotto riceveva zero. Il risultato era corretto per caso, ma
+ * l'aspetto cambiava fra un telefono vecchio e uno nuovo e dipendeva da un comportamento
+ * implicito della piattaforma, che e' gia' cambiato una volta.
+ *
+ * Con setDecorFitsSystemWindows(false) chiediamo esplicitamente noi lo schermo intero, su
+ * qualunque versione: lo sfondo arriva sempre fino ai bordi e il contenuto riceve sempre il
+ * margine giusto da questo listener.
  */
 fun AppCompatActivity.applySystemBars(root: View) {
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+
     // sfondo scuro: le icone delle barre di sistema devono restare chiare
     WindowInsetsControllerCompat(window, root).apply {
         isAppearanceLightStatusBars = false
         isAppearanceLightNavigationBars = false
     }
+
     ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
         val bars = insets.getInsets(
             WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
@@ -28,4 +37,7 @@ fun AppCompatActivity.applySystemBars(root: View) {
         v.updatePadding(left = bars.left, top = bars.top, right = bars.right, bottom = bars.bottom)
         insets
     }
+    // Se la vista e' gia' agganciata (ricreazione dell'activity) il sistema potrebbe non
+    // rimandare gli inset da solo: li chiediamo noi.
+    ViewCompat.requestApplyInsets(root)
 }

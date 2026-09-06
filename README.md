@@ -110,8 +110,11 @@ Cosa è già stato fatto:
    lo stesso ma fuori configurazione supportata, e a ogni run usciva l'avviso «We recommend
    using a newer Android Gradle plugin». AGP 8.13 arriva all'API 36.1 e pretende Gradle 8.13.
 2. **Edge to edge.** Da API 36 non si può più rinunciare a disegnare sotto la barra di stato e
-   sotto quella di navigazione. `SystemBars.kt` applica i margini giusti al contenuto con
-   `setOnApplyWindowInsetsListener`, tenendo lo sfondo fino ai bordi. Sostituisce
+   sotto quella di navigazione. `SystemBars.kt` chiama `setDecorFitsSystemWindows(false)` e poi
+   applica i margini giusti al contenuto con `setOnApplyWindowInsetsListener`, tenendo lo sfondo
+   fino ai bordi. La chiamata esplicita non è ridondante: senza, sotto API 35 la decor view
+   consumava gli inset da sola e il listener riceveva zero, quindi il risultato era corretto ma
+   per un comportamento implicito della piattaforma, già cambiato una volta. Sostituisce
    `android:fitsSystemWindows="true"`, che copriva solo i casi semplici.
 3. **Schermi grandi.** Da API 36 i dispositivi con lato corto da 600dp in su ignorano
    `screenOrientation="portrait"`: l'app può ritrovarsi in orizzontale o in una finestra
@@ -126,9 +129,10 @@ Cosa resta da fare prima della pubblicazione:
 - Compilare la scheda del Play Console: privacy policy, questionario sui contenuti, fascia
   d'età, screenshot. L'app non raccoglie dati e non chiede permessi, quindi la dichiarazione
   "Sicurezza dei dati" è la più semplice possibile.
-- Valutare `minifyEnabled true` per ridurre il pacchetto. Le carte sono caricate per nome con
-  `getIdentifier`, quindi `res/raw/keep.xml` le protegge già dallo shrinker, ma va provato su
-  un dispositivo prima di pubblicare.
+- Valutare `minifyEnabled true` + `shrinkResources true` per ridurre il pacchetto. Ora che le
+  carte sono riferimenti diretti a `R.drawable` lo shrinker le vede usate da solo, quindi
+  `res/raw/keep.xml` non serve più (resta, ma è innocuo). Va comunque provato su un dispositivo
+  prima di pubblicare.
 
 ---
 
@@ -220,23 +224,38 @@ WebP è supportato da Android 4.0 in su, quindi non tocca il `minSdk 24`. I nomi
 non cambiano (`card_0_1`, non `card_0_1.png`), quindi non c'è una riga di codice da modificare:
 cambia solo l'estensione del file.
 
-**Due mazzi.** Le carte si caricano per nome, `<prefisso>_seme_valore`. Il prefisso lo decide
-l'impostazione **Mazzo**: `card` per le illustrazioni ZiS, `trad` per le figure tradizionali.
-Per aggiungere il secondo mazzo bastano 41 file in `res/drawable-nodpi/` chiamati
-`trad_0_1.png` ... `trad_3_10.png` piu' `trad_back.png` (semi: 0 denari, 1 coppe, 2 spade,
-3 bastoni). Nessuna riga di codice da toccare.
+**Due mazzi.** I due mazzi sono due tabelle di riferimenti a `R.drawable` in `Decks.kt`,
+indicizzate per seme e valore. L'impostazione **Mazzo** sceglie quale tabella usare.
 
-Finche' quei file non ci sono, ogni immagine mancante ripiega su quella ZiS corrispondente:
-si puo' quindi pubblicare l'interruttore prima di avere il mazzo, e caricare le carte anche
-poche per volta senza mai lasciare buchi bianchi sul tavolo. Le impostazioni avvisano quando
-il mazzo tradizionale e' selezionato ma non installato.
+Prima le carte si caricavano per nome con `Resources.getIdentifier("card_0_1", ...)`. Quella
+funzione e' deprecata dall'API 29, fa un lookup per stringa **a ogni disegno** e soprattutto
+rende le immagini invisibili allo shrinker delle risorse. Con i riferimenti diretti il costo a
+runtime e' un accesso a un array, e se una carta manca il progetto **non compila**, invece di
+mostrare un rettangolo bianco a partita iniziata.
+
+Il rovescio della medaglia e' che il ripiego "immagine mancante -> carta ZiS corrispondente"
+non esiste piu', e con esso e' sparito l'avviso "mazzo tradizionale non installato" nelle
+impostazioni: adesso i 41 file `trad_*` devono esserci al momento della compilazione. E' uno
+scambio conveniente, perche' un errore di compilazione si vede subito mentre una carta bianca
+si scopriva a partita in corso.
 
 Cambiando mazzo la cache delle bitmap si svuota, altrimenti resterebbero a schermo le carte
 del mazzo precedente.
 
-**Cache bitmap.** `CardView` usa una `LruCache` limitata a 1/8 della heap. Se la larghezza
-richiesta cambia (rotazione, finestra ridimensionata) la cache si svuota e le carte vengono
-ridecodificate alla nuova misura. `ZisApp` la svuota quando il sistema segnala poca memoria.
+**Cache bitmap.** `CardView` usa una `LruCache` limitata a 1/8 della heap, con chiave
+`risorsa + larghezza`, cosi' misure diverse convivono invece di buttarsi a vicenda.
+`ZisApp` la svuota quando il sistema segnala poca memoria.
+
+**Riuso delle viste.** `render()` non ricostruisce piu' il tavolo da zero: aggiunge o toglie
+solo le `CardView` che servono e aggiorna quelle che restano. Prima ogni chiamata buttava e
+riallocava fino a venticinque viste (nel Tresette), piu' volte per ogni presa. L'unica
+attenzione e' che le animazioni lasciano stato sulla vista, `visibility` a `INVISIBLE`,
+`translation`, `alpha`, `scale`: prima lo azzerava la ricostruzione, ora lo azzera `resetCard`.
+
+**Accessibilita'.** Ogni `CardView` espone una `contentDescription`: il nome italiano della
+carta se e' scoperta, "Carta coperta" se non lo e', e nel Tresette l'aggiunta "non giocabile"
+sulle carte spente dall'obbligo di seme. Senza quest'ultima chi usa TalkBack non avrebbe modo
+di sapere che quella carta e' fuori gioco, perche' l'unico indizio era l'opacita' al 35%.
 
 **Riepiloghi uniformi.** I tre giochi dicono le stesse cose con le stesse parole. La
 terminologia e' una sola: una distribuzione e' una **mano**, la serie fino al bersaglio e' la
@@ -420,6 +439,15 @@ primiera e denari. L'alfa-beta non e' un lusso: senza, l'albero e' cento volte p
 La ricerca costa 0,04 ms in media, quindi non si sente. C'e' comunque un tetto di 60.000 nodi
 che fa ricadere sull'euristica, ma su ventimila ricerche il massimo osservato e' stato 221.
 
+Le prese possibili per una carta (`capturesOn`) non si enumerano piu' provando tutte le `2^n`
+maschere di bit del tavolo: e' una ricorsione su somma che scarta le carte gia' piu' grandi del
+bersaglio e, tenendo le altre ordinate, si ferma appena la piu' piccola disponibile sfora. Il
+costo passa da esponenziale nel numero di carte in tavola a esponenziale nel bersaglio, che
+nella scopa non supera mai 10. Non era un dettaglio: il tetto di nodi conta i nodi, **non** il
+lavoro fatto dentro ognuno, e `capturesFor` viene chiamata anche al tocco dell'utente, cioe'
+sul thread della UI. Su un tavolo da sedici carte senza prese singole sono due ordini di
+grandezza; le combinazioni restituite sono le stesse, verificate su 20.000 tavoli casuali.
+
 Fuori dall'ultima mano il conteggio serve in Scopa a pesare il rischio di scopa: lasciare il
 tavolo a un totale fra 1 e 10 e' pericoloso solo se una carta di quel valore puo' essere
 ancora in mano all'avversario. Se sono gia' uscite tutte e quattro il rischio e' zero, e prima
@@ -475,12 +503,19 @@ chiudono da soli: se il sistema distruggeva l'activity a dialogo aperto restavan
 finestra (`WindowLeaked`) sia, nel caso della pausa, il `CountDownTimer`, che continuava a
 scrivere su un pulsante ormai morto tenendo in vita l'intera activity.
 
-**Memoria.** I livelli di `onTrimMemory` non stanno su un'unica scala di gravità, quindi sono
-trattati in due casi distinti. `RUNNING_MODERATE`, `RUNNING_LOW` e `RUNNING_CRITICAL` valgono 5,
-10 e 15: l'app è ancora in primo piano e la RAM sta finendo, e la cache si dimezza. Da
-`UI_HIDDEN` (20) in su l'app non è più visibile e la cache si svuota del tutto. Con la vecchia
-soglia unica `>= UI_HIDDEN` i primi tre non scattavano mai, proprio nei casi in cui liberare
-memoria serve di più.
+**Memoria.** I livelli di `onTrimMemory` non stanno su un'unica scala di gravità, e per giunta
+non arrivano più tutti. Da **API 34** il sistema non notifica più le app di `RUNNING_MODERATE`
+(5), `RUNNING_LOW` (10), `RUNNING_CRITICAL` (15), `MODERATE` (60) e `COMPLETE` (80): sono
+deprecati con la nota «Apps are not notified of this level since API level 34». Anche
+`onLowMemory()` non viene più chiamata. Su un telefono moderno arrivano quindi solo
+`UI_HIDDEN` (20) e `BACKGROUND` (40), cioè i due casi in cui l'app non è più visibile e la
+cache si svuota del tutto.
+
+Il ramo che dimezza la cache resta perché il `minSdk` è 24: su Android 13 e precedenti quelle
+segnalazioni arrivano ancora ed è lì che serve. Non serve invece rimpiazzarle leggendo
+`ActivityManager.getMyMemoryState()`: esiste dall'API 16, quindi non costerebbe compatibilità,
+ma su Android 14+ la `LruCache` si autoregola già (è tarata su 1/8 della heap) e interrogare
+lo stato della memoria a ogni fotogramma costerebbe più di quanto farebbe risparmiare.
 
 **Watchdog.** Se una mossa si blocca, dopo 4 secondi il gioco riparte da solo guardando lo
 stato reale della partita. Resta fermo mentre è aperto il dialogo della pausa, altrimenti

@@ -298,45 +298,126 @@ class GameActivity : AppCompatActivity() {
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
-    private fun makeCard(card: Card?, faceUp: Boolean, w: Int, h: Int): CardView {
-        val cv = CardView(this)
-        cv.card = card
-        cv.faceUp = faceUp
-        val lp = LinearLayout.LayoutParams(w, h)
-        lp.marginStart = dp(3)
-        lp.marginEnd = dp(3)
-        cv.layoutParams = lp
-        return cv
+    // ---------- riuso delle viste ----------
+    //
+    // Prima render() faceva removeAllViews() e ricostruiva tutto: fino a una quindicina di
+    // CardView buttate e riallocate a ogni chiamata, e render() viene chiamata piu' volte per
+    // ogni giocata. CardView era gia' scritta per essere riusata (i setter di card e faceUp
+    // chiamano invalidate()), ma nessuno la riusava.
+    //
+    // Adesso le viste restano e si aggiornano le proprieta'. L'unica cosa a cui stare attenti
+    // e' che le animazioni lasciano dietro di se' dello stato sulla vista (visibility a
+    // INVISIBLE, translation, alpha): prima lo azzerava la ricostruzione, ora va rimesso a
+    // mano in resetCard, altrimenti una carta resta invisibile o spostata per sempre.
+
+    /** Rimette una vista riusata nello stato "appena creata". */
+    private fun resetCard(cv: CardView) {
+        cv.animate().cancel()
+        cv.visibility = View.VISIBLE
+        cv.alpha = 1f
+        cv.translationX = 0f
+        cv.translationY = 0f
+        cv.scaleX = 1f
+        cv.scaleY = 1f
+        cv.rotation = 0f
     }
 
-    private fun gridLp(): GridLayout.LayoutParams {
-        val lp = GridLayout.LayoutParams()
-        lp.width = cardW
-        lp.height = cardH
-        lp.setMargins(dp(3), dp(3), dp(3), dp(3))
-        return lp
+    private fun newCard(): CardView = CardView(this)
+
+    /** Allinea una fila (mano) al contenuto voluto, riusando le viste gia' presenti. */
+    private fun syncHand(row: LinearLayout, cards: List<Card>, faceUp: Boolean, clickable: Boolean) {
+        while (row.childCount > cards.size) row.removeViewAt(row.childCount - 1)
+        while (row.childCount < cards.size) {
+            val lp = LinearLayout.LayoutParams(cardW, cardH)
+            lp.marginStart = dp(3)
+            lp.marginEnd = dp(3)
+            row.addView(newCard(), lp)
+        }
+        for (i in cards.indices) {
+            val cv = row.getChildAt(i) as CardView
+            val lp = cv.layoutParams as LinearLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; cv.layoutParams = lp
+            }
+            resetCard(cv)
+            val c = cards[i]
+            cv.card = if (faceUp) c else null
+            cv.faceUp = faceUp
+            if (clickable) {
+                cv.setOnClickListener { onPlayerCard(c, cv) }
+            } else {
+                cv.setOnClickListener(null)
+                cv.isClickable = false
+            }
+        }
     }
+
+    /** Come syncHand, ma per la griglia del tavolo. */
+    private fun syncTable(cards: List<Card>) {
+        val grid = b.gridCenter
+        while (grid.childCount > cards.size) grid.removeViewAt(grid.childCount - 1)
+        while (grid.childCount < cards.size) {
+            val lp = GridLayout.LayoutParams()
+            lp.width = cardW
+            lp.height = cardH
+            lp.setMargins(dp(3), dp(3), dp(3), dp(3))
+            grid.addView(newCard(), lp)
+        }
+        for (i in cards.indices) {
+            val cv = grid.getChildAt(i) as CardView
+            val lp = cv.layoutParams as GridLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; cv.layoutParams = lp
+            }
+            resetCard(cv)
+            cv.card = cards[i]
+            cv.faceUp = true
+        }
+    }
+
+    // Le due viste del mazzo si creano una volta sola e restano: cambia solo il numero sopra.
+    private var deckBack: CardView? = null
+    private var deckCount: TextView? = null
 
     /** Disegna il mazzo nel riquadro ancorato a sinistra, col numero di carte rimaste. */
     private fun renderDeck() {
-        b.deckBox.removeAllViews()
-        if (game.deck.isEmpty()) return
-        val back = CardView(this); back.faceUp = false
-        b.deckBox.addView(back, FrameLayout.LayoutParams(cardW, cardH))
-        val tv = TextView(this)
-        tv.text = game.deck.size.toString()
-        tv.setTextColor(getColor(R.color.silver))
-        tv.textSize = 15f
-        tv.setTypeface(tv.typeface, Typeface.BOLD)
-        tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
-        tv.setPadding(dp(6), dp(1), dp(6), dp(1))
-        val tp = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
-        )
-        // meta' mazzo e' fuori schermo: il contatore sta a destra, dove si vede
-        tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-        tp.marginEnd = dp(6)
-        b.deckBox.addView(tv, tp)
+        if (deckBack == null) {
+            val back = CardView(this)
+            back.faceUp = false
+            b.deckBox.addView(back, FrameLayout.LayoutParams(cardW, cardH))
+            deckBack = back
+
+            val tv = TextView(this)
+            tv.setTextColor(getColor(R.color.silver))
+            tv.textSize = 15f
+            tv.setTypeface(tv.typeface, Typeface.BOLD)
+            tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
+            tv.setPadding(dp(6), dp(1), dp(6), dp(1))
+            val tp = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            // meta' mazzo e' fuori schermo: il contatore sta a destra, dove si vede
+            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            tp.marginEnd = dp(6)
+            b.deckBox.addView(tv, tp)
+            deckCount = tv
+        }
+        val n = game.deck.size
+        val visible = if (n > 0) View.VISIBLE else View.GONE
+        deckBack?.let {
+            val lp = it.layoutParams as FrameLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
+            }
+            it.visibility = visible
+        }
+        deckCount?.let {
+            it.text = n.toString()
+            // il numero da solo non dice niente a TalkBack
+            it.contentDescription =
+                if (n > 0) getString(R.string.cd_deck, n) else getString(R.string.cd_deck_empty)
+            it.visibility = visible
+        }
     }
 
     private fun render() {
@@ -345,22 +426,11 @@ class GameActivity : AppCompatActivity() {
         b.botScore.text = getString(R.string.bot_points, scopeText(game.scope[1]))
         b.youScore.text = getString(R.string.you_points, scopeText(game.scope[0]))
 
-        b.botHand.removeAllViews()
-        for (c in game.hands[1]) b.botHand.addView(makeCard(if (showBot) c else null, showBot, cardW, cardH))
-
-        b.youHand.removeAllViews()
-        for (c in game.hands[0]) {
-            val cv = makeCard(c, true, cardW, cardH)
-            cv.setOnClickListener { onPlayerCard(c, cv) }
-            b.youHand.addView(cv)
-        }
+        syncHand(b.botHand, game.hands[1], faceUp = showBot, clickable = false)
+        syncHand(b.youHand, game.hands[0], faceUp = true, clickable = true)
 
         renderDeck()
-        b.gridCenter.removeAllViews()
-        for (c in game.table) {
-            val cv = CardView(this); cv.card = c; cv.faceUp = true
-            b.gridCenter.addView(cv, gridLp())
-        }
+        syncTable(game.table)
         armWatchdog()
     }
 

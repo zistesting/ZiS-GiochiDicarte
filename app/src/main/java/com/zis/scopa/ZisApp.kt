@@ -10,16 +10,19 @@ import android.content.ComponentCallbacks2
 class ZisApp : Application() {
 
     /**
-     * I livelli di onTrimMemory non stanno su un'unica scala di gravita', quindi non si
-     * possono trattare con una soglia sola. I due gruppi sono separati:
+     * ATTENZIONE ai livelli: non sono una scala unica, e soprattutto non arrivano piu' tutti.
      *
-     *  - RUNNING_MODERATE 5, RUNNING_LOW 10, RUNNING_CRITICAL 15: l'app e' ancora in primo
-     *    piano e la RAM sta finendo. Sono i valori piu' bassi, quindi la vecchia condizione
-     *    "level >= UI_HIDDEN (20)" non li prendeva mai, proprio nei casi in cui liberare
-     *    memoria serve di piu'. Qui la cache si dimezza: le carte a schermo si ridecodificano
-     *    al bisogno, le altre lasciano posto.
-     *  - UI_HIDDEN 20 e oltre (BACKGROUND 40, MODERATE 60, COMPLETE 80): l'app non e' piu'
-     *    visibile, le carte non servono a nessuno e la cache si svuota del tutto.
+     * Da API 34 (Android 14) il sistema NON notifica piu' le app di RUNNING_MODERATE (5),
+     * RUNNING_LOW (10), RUNNING_CRITICAL (15), MODERATE (60) e COMPLETE (80): sono deprecati
+     * proprio con la nota "Apps are not notified of this level since API level 34". Su un
+     * telefono moderno arrivano quindi solo UI_HIDDEN (20) e BACKGROUND (40), cioe' i due casi
+     * in cui l'app non e' piu' visibile e la cache si puo' svuotare del tutto.
+     *
+     * Il ramo dei RUNNING_* resta perche' il minSdk e' 24: su Android 13 e precedenti quelle
+     * segnalazioni arrivano ancora, ed e' li' che dimezzare la cache serve davvero. Non serve
+     * invece andare a leggere ActivityManager.getMyMemoryState() per rimpiazzarli: su Android
+     * 14+ la LruCache si autoregola gia' (e' tarata su 1/8 della heap) e interrogare lo stato
+     * della memoria a ogni fotogramma costerebbe piu' di quello che farebbe risparmiare.
      */
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
@@ -29,6 +32,12 @@ class ZisApp : Application() {
         }
     }
 
+    /**
+     * Deprecata e mai piu' chiamata da API 34 in su, ma su Android 13 e precedenti arriva
+     * ancora ed e' l'ultimo avviso prima che il processo venga ucciso: la teniamo finche'
+     * il minSdk resta 24.
+     */
+    @Suppress("DEPRECATION")
     override fun onLowMemory() {
         super.onLowMemory()
         CardView.clearCache()

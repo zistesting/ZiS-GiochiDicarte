@@ -13,7 +13,18 @@ import com.zis.scopa.databinding.DialogStatsBinding
  */
 object StatsDialog {
 
-    fun show(activity: AppCompatActivity, onReset: () -> Unit): AlertDialog? {
+    /**
+     * @param onOpened viene richiamato per OGNI finestra aperta da qui, compresa la conferma
+     *   dell'azzeramento, che e' annidata dentro la prima. Prima quella conferma non veniva
+     *   consegnata a nessuno: se il sistema distruggeva l'activity mentre era aperta restava
+     *   appesa al suo contesto e il log segnava WindowLeaked. Ora chi apre la tabella la
+     *   registra come registra tutte le altre.
+     */
+    fun show(
+        activity: AppCompatActivity,
+        onReset: () -> Unit,
+        onOpened: (AlertDialog) -> Unit = {}
+    ): AlertDialog? {
         if (activity.isFinishing || activity.isDestroyed) return null
 
         val v = DialogStatsBinding.inflate(activity.layoutInflater)
@@ -53,19 +64,32 @@ object StatsDialog {
             // L'azzeramento chiede conferma: e' l'unica azione dell'app che distrugge dati,
             // e sta accanto al pulsante che si preme per uscire dalla finestra.
             builder.setNegativeButton(R.string.stats_reset) { _, _ ->
-                AlertDialog.Builder(activity)
-                    .setTitle(R.string.stats_reset)
-                    .setMessage(R.string.stats_reset_ask)
-                    .setPositiveButton(R.string.stats_reset) { _, _ ->
-                        Prefs.clearStats(activity)
-                        onReset()
-                    }
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show()
+                confirmReset(activity, onReset, onOpened)
             }
         }
         val dialog = builder.create()
         dialog.show()
+        onOpened(dialog)
         return dialog
+    }
+
+    /** Conferma dell'azzeramento, anch'essa consegnata a chi la deve chiudere in onDestroy. */
+    private fun confirmReset(
+        activity: AppCompatActivity,
+        onReset: () -> Unit,
+        onOpened: (AlertDialog) -> Unit
+    ) {
+        if (activity.isFinishing || activity.isDestroyed) return
+        val confirm = AlertDialog.Builder(activity)
+            .setTitle(R.string.stats_reset)
+            .setMessage(R.string.stats_reset_ask)
+            .setPositiveButton(R.string.stats_reset) { _, _ ->
+                Prefs.clearStats(activity)
+                onReset()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        confirm.show()
+        onOpened(confirm)
     }
 }

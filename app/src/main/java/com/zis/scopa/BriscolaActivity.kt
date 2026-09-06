@@ -330,15 +330,58 @@ class BriscolaActivity : AppCompatActivity() {
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
 
-    private fun makeCard(card: Card?, faceUp: Boolean, w: Int, h: Int, click: ((View) -> Unit)? = null): CardView {
-        val cv = CardView(this)
-        cv.card = card; cv.faceUp = faceUp
-        val lp = LinearLayout.LayoutParams(w, h)
-        lp.marginStart = dp(3); lp.marginEnd = dp(3)
-        cv.layoutParams = lp
-        if (click != null) cv.setOnClickListener { click(cv) }
-        return cv
+    // ---------- riuso delle viste ----------
+    //
+    // Prima render() faceva removeAllViews() e ricostruiva tutto a ogni chiamata. CardView era
+    // gia' pensata per essere riusata (i setter di card e faceUp chiamano invalidate()) ma
+    // nessuno la riusava. Adesso le viste restano e si aggiornano le proprieta'.
+    //
+    // L'unica attenzione: le animazioni lasciano stato sulla vista (visibility a INVISIBLE,
+    // translation, alpha, scale). Prima lo azzerava la ricostruzione, ora lo azzera resetCard.
+
+    /** Rimette una vista riusata nello stato "appena creata". */
+    private fun resetCard(cv: CardView) {
+        cv.animate().cancel()
+        cv.visibility = View.VISIBLE
+        cv.alpha = 1f
+        cv.translationX = 0f
+        cv.translationY = 0f
+        cv.scaleX = 1f
+        cv.scaleY = 1f
+        cv.rotation = 0f
     }
+
+    /** Allinea una fila di carte al contenuto voluto, riusando le viste gia' presenti. */
+    private fun syncRow(row: LinearLayout, cards: List<Card>, faceUp: Boolean, clickable: Boolean) {
+        while (row.childCount > cards.size) row.removeViewAt(row.childCount - 1)
+        while (row.childCount < cards.size) {
+            val lp = LinearLayout.LayoutParams(cardW, cardH)
+            lp.marginStart = dp(3); lp.marginEnd = dp(3)
+            row.addView(CardView(this), lp)
+        }
+        for (i in cards.indices) {
+            val cv = row.getChildAt(i) as CardView
+            val lp = cv.layoutParams as LinearLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; cv.layoutParams = lp
+            }
+            resetCard(cv)
+            val c = cards[i]
+            cv.card = if (faceUp) c else null
+            cv.faceUp = faceUp
+            if (clickable) {
+                cv.setOnClickListener { onPlayerCard(c, cv) }
+            } else {
+                cv.setOnClickListener(null)
+                cv.isClickable = false
+            }
+        }
+    }
+
+    // Mazzo e briscola: create una volta sola, poi si aggiornano.
+    private var deckBack: CardView? = null
+    private var deckCount: TextView? = null
+    private var trumpView: CardView? = null
 
     private fun render(trickOverride: List<Card>? = null) {
         b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
@@ -346,46 +389,69 @@ class BriscolaActivity : AppCompatActivity() {
         b.botScore.text = getString(R.string.bot_points, game.scoreFor(1).toString())
         b.youScore.text = getString(R.string.you_points, game.scoreFor(0).toString())
 
-        b.botHand.removeAllViews()
-        for (c in game.hands[1]) {
-            if (hideDrawn && c == game.lastDrawn[1]) continue
-            b.botHand.addView(makeCard(if (showBot) c else null, showBot, cardW, cardH))
-        }
+        syncRow(b.botHand, visibleHand(1), faceUp = showBot, clickable = false)
+        syncRow(b.youHand, visibleHand(0), faceUp = true, clickable = true)
 
-        b.youHand.removeAllViews()
-        for (c in game.hands[0]) {
-            if (hideDrawn && c == game.lastDrawn[0]) continue
-            b.youHand.addView(makeCard(c, true, cardW, cardH) { cv -> onPlayerCard(c, cv) })
-        }
+        renderDeck()
+        renderTrump()
 
-        // deck pile (cards above the briscola) + the face-up briscola card
-        b.deckBox.removeAllViews()
-        // finche' le carte pescate restano nascoste, il contatore non deve calare in anticipo
-        val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
-        val extra = game.deck.size + pending - 1   // cards on top of the briscola
-        if (extra > 0) {
+        // trick (played cards)
+        syncRow(b.trickRow, trickOverride ?: game.trick, faceUp = true, clickable = false)
+
+        armWatchdog()
+    }
+
+    /** Le carte della mano di [p] nell'ordine in cui compaiono a schermo. */
+    private fun visibleHand(p: Int): List<Card> =
+        game.hands[p].filter { !(hideDrawn && it == game.lastDrawn[p]) }
+
+    /** Mazzo: le carte sopra la briscola, col numero rimasto. */
+    private fun renderDeck() {
+        if (deckBack == null) {
             val fl = FrameLayout(this)
-            fl.addView(CardView(this).apply { faceUp = false }, FrameLayout.LayoutParams(cardW, cardH))
+            val back = CardView(this).apply { faceUp = false }
+            fl.addView(back, FrameLayout.LayoutParams(cardW, cardH))
             val tv = TextView(this)
-            tv.text = extra.toString()
             tv.setTextColor(getColor(R.color.silver)); tv.textSize = 14f
             tv.setTypeface(tv.typeface, Typeface.BOLD)
             tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
             tv.setPadding(dp(5), dp(1), dp(5), dp(1))
-            val tp = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
+            val tp = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
             tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
             tp.marginEnd = dp(6)
             fl.addView(tv, tp)
             b.deckBox.addView(fl)
+            deckBack = back
+            deckCount = tv
         }
+        // finche' le carte pescate restano nascoste, il contatore non deve calare in anticipo
+        val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
+        val extra = game.deck.size + pending - 1   // cards on top of the briscola
+        val visible = if (extra > 0) View.VISIBLE else View.GONE
+        deckBack?.let {
+            val lp = it.layoutParams as FrameLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
+            }
+        }
+        deckCount?.let {
+            it.text = extra.toString()
+            it.contentDescription =
+                if (extra > 0) getString(R.string.cd_deck, extra) else getString(R.string.cd_deck_empty)
+        }
+        (deckBack?.parent as? View)?.visibility = visible
+    }
 
-        // La briscola si vede finche' sta sotto al mazzo; nella presa in cui viene pescata
-        // resta a schermo fino alla fine dell'animazione, poi compare nella mano di chi l'ha presa.
-        b.briscolaBox.removeAllViews()
-        val trumpVisible = game.trumpInDeck ||
-            (hideDrawn && game.lastDrawn.any { it != null && it == game.trumpCard })
-        if (trumpVisible) game.trumpCard?.let { tc ->
-            val cv = CardView(this); cv.card = tc; cv.faceUp = true
+    /**
+     * La briscola si vede finche' sta sotto al mazzo; nella presa in cui viene pescata resta
+     * a schermo fino alla fine dell'animazione, poi compare nella mano di chi l'ha presa.
+     */
+    private fun renderTrump() {
+        if (trumpView == null) {
+            val cv = CardView(this)
+            cv.faceUp = true
             // Ruotata in senso orario, non antiorario: cosi' la meta' che resta in vista
             // e' quella ALTA della carta. Girandola dall'altra parte si vedrebbe la meta'
             // bassa, cioe' il cartiglio vuoto, e la briscola sarebbe piu' difficile da
@@ -394,14 +460,19 @@ class BriscolaActivity : AppCompatActivity() {
             val clp = FrameLayout.LayoutParams(cardW, cardH)
             clp.gravity = Gravity.CENTER
             b.briscolaBox.addView(cv, clp)
+            trumpView = cv
         }
-
-        // trick (played cards)
-        b.trickRow.removeAllViews()
-        val shownTrick = trickOverride ?: game.trick
-        for (c in shownTrick) b.trickRow.addView(makeCard(c, true, cardW, cardH))
-
-        armWatchdog()
+        val trumpVisible = game.trumpInDeck ||
+            (hideDrawn && game.lastDrawn.any { it != null && it == game.trumpCard })
+        trumpView?.let {
+            val lp = it.layoutParams as FrameLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
+            }
+            it.card = game.trumpCard
+            it.rotation = 90f
+            it.visibility = if (trumpVisible && game.trumpCard != null) View.VISIBLE else View.GONE
+        }
     }
 
     private fun onPlayerCard(card: Card, fromView: View) {
@@ -430,13 +501,8 @@ class BriscolaActivity : AppCompatActivity() {
      * scelto un'altra carta, a sinistra ne spariva una e in tavola ne compariva un'altra.
      */
     private fun botHandView(card: Card): View? {
-        var i = 0
-        for (c in game.hands[1]) {
-            if (hideDrawn && c == game.lastDrawn[1]) continue
-            if (c == card) return if (i < b.botHand.childCount) b.botHand.getChildAt(i) else null
-            i++
-        }
-        return null
+        val i = visibleHand(1).indexOf(card)
+        return if (i in 0 until b.botHand.childCount) b.botHand.getChildAt(i) else null
     }
 
     /**
@@ -615,7 +681,7 @@ class BriscolaActivity : AppCompatActivity() {
         if (matchOver) {
             builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
         } else {
-            // Niente "Nuova partita" a meta' partita: era l'unico modo di ricominciare
+            // Niente "Nuovo incontro" a meta' incontro: era l'unico modo di ricominciare
             // saltando la pausa di un minuto. Come in Scopa restano continua e menu.
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
         }

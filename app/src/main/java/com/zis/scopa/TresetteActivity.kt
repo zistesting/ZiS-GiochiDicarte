@@ -211,8 +211,13 @@ class TresetteActivity : AppCompatActivity() {
         youStartNext = true
         val wait = Prefs.pauseRemaining(this)
         if (wait > 0) {
+            // Nessuna mano in corso finche' il dialogo resta aperto. Il removeCallbacks non e'
+            // ridondante: era l'unico punto in cui questa schermata si comportava diversamente
+            // da Scopa e Briscola, e "i tre giochi fanno la stessa cosa" e' proprio l'invariante
+            // su cui si regge tutta questa parte del codice.
             ending = true
             busy = true
+            ui.removeCallbacks(watchdog)
             track(PauseDialog.show(this, wait, onReady = { beginMatch() }, onLeave = { finish() }))
         } else {
             beginMatch()
@@ -291,26 +296,60 @@ class TresetteActivity : AppCompatActivity() {
     private fun visibleHand(p: Int): List<Card> =
         sorted(game.hands[p]).filter { !(hideDrawn && it == game.lastDrawn[p]) }
 
-    private fun makeCard(card: Card?, faceUp: Boolean, w: Int, h: Int): CardView {
-        val cv = CardView(this)
-        cv.card = card
-        cv.faceUp = faceUp
-        cv.layoutParams = LinearLayout.LayoutParams(w, h)
-        return cv
+    // ---------- riuso delle viste ----------
+    //
+    // Prima render() faceva removeAllViews() e ricostruiva tutto: qui sono fino a venticinque
+    // CardView (dieci in mano, dieci al Banco, due in tavola, il tallone) buttate e riallocate
+    // a ogni chiamata, e render() viene chiamata piu' volte per presa. CardView era gia'
+    // scritta per essere riusata, ma nessuno la riusava.
+    //
+    // L'unica attenzione: le animazioni lasciano stato sulla vista (visibility a INVISIBLE,
+    // translation, alpha, scale). Prima lo azzerava la ricostruzione, ora lo azzera resetCard.
+    // L'alpha in particolare va rimessa a mano DOPO resetCard, perche' qui vale 0,35 sulle
+    // carte non giocabili.
+
+    /** Rimette una vista riusata nello stato "appena creata". */
+    private fun resetCard(cv: CardView) {
+        cv.animate().cancel()
+        cv.visibility = View.VISIBLE
+        cv.alpha = 1f
+        cv.translationX = 0f
+        cv.translationY = 0f
+        cv.scaleX = 1f
+        cv.scaleY = 1f
+        cv.rotation = 0f
+    }
+
+    /** Misure e margini di una carta riusata. */
+    private fun sizeCard(cv: CardView, w: Int, h: Int, side: Int, top: Int, startOverride: Int? = null) {
+        val lp = cv.layoutParams as LinearLayout.LayoutParams
+        lp.width = w
+        lp.height = h
+        lp.marginStart = startOverride ?: side
+        lp.marginEnd = side
+        lp.topMargin = top
+        cv.layoutParams = lp
+    }
+
+    /** Aggiunge o toglie carte in coda finche' il contenitore non ne ha [n]. */
+    private fun fitCards(row: LinearLayout, n: Int, w: Int, h: Int) {
+        while (row.childCount > n) row.removeViewAt(row.childCount - 1)
+        while (row.childCount < n) row.addView(CardView(this), LinearLayout.LayoutParams(w, h))
     }
 
     /** Ventaglio del Banco: una fila sola di dorsi sovrapposti. */
     private fun addBotFan() {
-        b.botHand.removeAllViews()
-        botViews.clear()
         val cards = visibleHand(1)
         val step = fanStep(cards.size)
-        for ((i, c) in cards.withIndex()) {
-            val cv = makeCard(if (showBot) c else null, showBot, handW, handH)
-            val lp = cv.layoutParams as LinearLayout.LayoutParams
+        fitCards(b.botHand, cards.size, handW, handH)
+        botViews.clear()
+        for (i in cards.indices) {
+            val cv = b.botHand.getChildAt(i) as CardView
             // le carte si accavallano portando indietro il margine iniziale di ognuna
-            if (i > 0) lp.marginStart = step - handW
-            b.botHand.addView(cv, lp)
+            sizeCard(cv, handW, handH, side = 0, top = 0, startOverride = if (i > 0) step - handW else 0)
+            resetCard(cv)
+            cv.card = if (showBot) cards[i] else null
+            cv.faceUp = showBot
             botViews.add(cv)
         }
     }
@@ -322,12 +361,12 @@ class TresetteActivity : AppCompatActivity() {
      * mangiarsi lo spazio del tavolo.
      */
     private fun addYouHand(legal: Set<Card>) {
-        b.youHand.removeAllViews()
-        youViews.clear()
         val cards = visibleHand(0)
         val perRow = if (cards.size > 5) (cards.size + 1) / 2 else cards.size
-        var i = 0
-        while (i < cards.size) {
+        val rows = if (cards.isEmpty()) 0 else (cards.size + perRow - 1) / perRow
+
+        while (b.youHand.childCount > rows) b.youHand.removeViewAt(b.youHand.childCount - 1)
+        while (b.youHand.childCount < rows) {
             val row = LinearLayout(this)
             row.orientation = LinearLayout.HORIZONTAL
             row.gravity = Gravity.CENTER_HORIZONTAL
@@ -336,24 +375,90 @@ class TresetteActivity : AppCompatActivity() {
             )
             rowLp.gravity = Gravity.CENTER_HORIZONTAL
             b.youHand.addView(row, rowLp)
-            var k = 0
-            while (k < perRow && i < cards.size) {
+        }
+
+        youViews.clear()
+        var i = 0
+        for (r in 0 until rows) {
+            val row = b.youHand.getChildAt(r) as LinearLayout
+            val n = minOf(perRow, cards.size - i)
+            fitCards(row, n, handW, handH)
+            for (k in 0 until n) {
+                val cv = row.getChildAt(k) as CardView
+                sizeCard(cv, handW, handH, side = dp(2), top = dp(2))
+                resetCard(cv)
                 val c = cards[i]
-                val cv = makeCard(c, true, handW, handH)
-                val lp = cv.layoutParams as LinearLayout.LayoutParams
-                lp.marginStart = dp(2); lp.marginEnd = dp(2); lp.topMargin = dp(2)
-                row.addView(cv, lp)
-                youViews.add(cv)
-                if (c in legal) {
-                    cv.alpha = 1f
+                cv.card = c
+                cv.faceUp = true
+                val giocabile = c in legal
+                // playable non cambia il disegno: cambia quello che TalkBack legge, perche'
+                // chi non vede l'alpha non ha altro modo di sapere che la carta e' fuori gioco
+                cv.playable = giocabile
+                if (giocabile) {
                     cv.setOnClickListener { onPlayerCard(c, cv) }
                 } else {
                     // obbligo di rispondere al seme: la carta si vede ma non si puo' giocare
                     cv.alpha = 0.35f
+                    cv.setOnClickListener(null)
+                    cv.isClickable = false
                 }
-                i++; k++
+                youViews.add(cv)
+                i++
             }
         }
+    }
+
+    /** Carte della presa in corso, al centro del tavolo. */
+    private fun renderTrick(cards: List<Card>) {
+        fitCards(b.trickRow, cards.size, cardW, cardH)
+        for (i in cards.indices) {
+            val cv = b.trickRow.getChildAt(i) as CardView
+            sizeCard(cv, cardW, cardH, side = dp(3), top = 0)
+            resetCard(cv)
+            cv.card = cards[i]
+            cv.faceUp = true
+        }
+    }
+
+    // Il tallone: creato una volta sola, poi cambia solo il numero sopra.
+    private var deckBack: CardView? = null
+    private var deckCount: TextView? = null
+
+    private fun renderDeck() {
+        if (deckBack == null) {
+            val fl = FrameLayout(this)
+            val back = CardView(this).apply { faceUp = false }
+            fl.addView(back, FrameLayout.LayoutParams(cardW, cardH))
+            val tv = TextView(this)
+            tv.setTextColor(getColor(R.color.silver)); tv.textSize = 14f
+            tv.setTypeface(tv.typeface, Typeface.BOLD)
+            tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
+            tv.setPadding(dp(5), dp(1), dp(5), dp(1))
+            val tp = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            tp.marginEnd = dp(6)
+            fl.addView(tv, tp)
+            b.deckBox.addView(fl)
+            deckBack = back
+            deckCount = tv
+        }
+        val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
+        val left = game.deck.size + pending
+        deckBack?.let {
+            val lp = it.layoutParams as FrameLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
+            }
+        }
+        deckCount?.let {
+            it.text = left.toString()
+            // il numero da solo non dice niente a TalkBack
+            it.contentDescription =
+                if (left > 0) getString(R.string.cd_deck, left) else getString(R.string.cd_deck_empty)
+        }
+        (deckBack?.parent as? View)?.visibility = if (left > 0) View.VISIBLE else View.GONE
     }
 
     private fun render(trickOverride: List<Card>? = null) {
@@ -370,33 +475,8 @@ class TresetteActivity : AppCompatActivity() {
             if (!busy && !game.finished && game.turn == 0) game.legalMoves(0).toSet() else game.hands[0].toSet()
         addYouHand(legal)
 
-        // tallone
-        b.deckBox.removeAllViews()
-        val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
-        val left = game.deck.size + pending
-        if (left > 0) {
-            val fl = FrameLayout(this)
-            fl.addView(CardView(this).apply { faceUp = false }, FrameLayout.LayoutParams(cardW, cardH))
-            val tv = TextView(this)
-            tv.text = left.toString()
-            tv.setTextColor(getColor(R.color.silver)); tv.textSize = 14f
-            tv.setTypeface(tv.typeface, Typeface.BOLD)
-            tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
-            tv.setPadding(dp(5), dp(1), dp(5), dp(1))
-            val tp = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT)
-            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-            tp.marginEnd = dp(6)
-            fl.addView(tv, tp)
-            b.deckBox.addView(fl)
-        }
-
-        b.trickRow.removeAllViews()
-        for (c in (trickOverride ?: game.trick)) {
-            val cv = makeCard(c, true, cardW, cardH)
-            val lp = cv.layoutParams as LinearLayout.LayoutParams
-            lp.marginStart = dp(3); lp.marginEnd = dp(3)
-            b.trickRow.addView(cv, lp)
-        }
+        renderDeck()
+        renderTrick(trickOverride ?: game.trick)
 
         armWatchdog()
     }

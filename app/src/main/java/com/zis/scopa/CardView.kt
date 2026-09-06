@@ -19,48 +19,74 @@ class CardView(context: Context) : View(context) {
     /**
      * Carta disegnata, oppure null per il dorso.
      *
-     * Il setter richiama invalidate(): finora funzionava solo perche' le schermate ricreano
-     * tutte le CardView a ogni render(). Riusando una vista gia' a schermo, senza questo, la
-     * carta vecchia sarebbe rimasta disegnata.
+     * Il setter richiama invalidate() e aggiorna la descrizione per TalkBack. Serve davvero:
+     * le schermate adesso RIUSANO le viste invece di ricrearle a ogni render(), quindi senza
+     * questo la carta vecchia resterebbe disegnata.
      */
     var card: Card? = null
         set(value) {
-            if (field != value) { field = value; invalidate() }
+            if (field != value) { field = value; describe(); invalidate() }
         }
 
     /** Carta scoperta o coperta. Stesso motivo del setter qui sopra. */
     var faceUp: Boolean = true
         set(value) {
-            if (field != value) { field = value; invalidate() }
+            if (field != value) { field = value; describe(); invalidate() }
+        }
+
+    /**
+     * Falso quando la carta e' in mano ma non si puo' calare (obbligo di seme nel Tresette).
+     * Non cambia il disegno, che resta compito dell'alpha impostata dalla schermata: cambia
+     * solo quello che TalkBack legge, perche' chi non vede l'alpha non ha altro modo di
+     * sapere che quella carta e' fuori gioco.
+     */
+    var playable: Boolean = true
+        set(value) {
+            if (field != value) { field = value; describe() }
         }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val clip = Path()
 
+    init {
+        describe()
+    }
+
+    /** Descrizione letta da TalkBack: "Sette di denari", "Carta coperta", "... non giocabile". */
+    private fun describe() {
+        val c = card
+        contentDescription = when {
+            !faceUp || c == null -> context.getString(R.string.cd_card_back)
+            !playable -> context.getString(R.string.cd_card_disabled, c.italianName)
+            else -> c.italianName
+        }
+    }
+
     companion object {
         /**
          * Le immagini stanno in res/drawable-nodpi/, quindi Android non le tocca in base alla
          * densita' dello schermo. La riduzione la facciamo noi qui, alla larghezza a cui la
-         * carta viene davvero disegnata: un file sorgente da 448 o 560 px di larghezza puo'
+         * carta viene davvero disegnata: un file sorgente da 448 px di larghezza puo'
          * cosi' servire sia i telefoni sia i tablet senza sprecare memoria.
          *
          * Esempio su un telefono xxhdpi: la carta a schermo e' larga circa 230 px, la bitmap
-         * viene decodificata a 256x468 (circa 470 KB) invece che a 560x1024 (2,3 MB).
+         * viene decodificata a 256x468 (circa 470 KB) invece che a piena misura.
          *
          * La cache e' una LruCache limitata a 1/8 della heap: quando lo spazio finisce le
          * bitmap meno usate vengono buttate da sole.
          */
-        private val cache: LruCache<String, Bitmap> by lazy {
+        private val cache: LruCache<Long, Bitmap> by lazy {
             val maxKb = (Runtime.getRuntime().maxMemory() / 1024).toInt()
-            object : LruCache<String, Bitmap>(maxKb / 8) {
-                override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount / 1024
+            object : LruCache<Long, Bitmap>(maxKb / 8) {
+                override fun sizeOf(key: Long, value: Bitmap): Int =
+                    maxOf(1, value.byteCount / 1024)
             }
         }
 
         /**
-         * Mazzo in uso: e' il prefisso dei nomi dei file. Lo impostano le schermate di gioco
-         * in onResume leggendo le impostazioni. Cambiandolo la cache si svuota, altrimenti
-         * resterebbero a schermo le carte del mazzo precedente.
+         * Mazzo in uso. Lo impostano le schermate di gioco in onResume leggendo le
+         * impostazioni. Cambiandolo la cache si svuota, altrimenti resterebbero a schermo
+         * le carte del mazzo precedente.
          */
         private var deckPrefix = Prefs.DECK_ZIS
 
@@ -71,40 +97,31 @@ class CardView(context: Context) : View(context) {
             }
         }
 
-        /** Nome del file per una carta, o per il dorso se [card] e' null. */
-        fun nameFor(card: Card?): String =
-            if (card == null) "${deckPrefix}_back" else "${deckPrefix}_${card.suit}_${card.value}"
+        /** Id dell'immagine da disegnare: la carta se scoperta, altrimenti il dorso. */
+        fun resIdFor(card: Card?, faceUp: Boolean): Int =
+            if (card == null || !faceUp) Decks.backId(deckPrefix) else Decks.faceId(deckPrefix, card)
 
         /** Le larghezze si arrotondano a multipli di 32 px: piccole differenze fra una schermata
          *  e l'altra non devono far ridecodificare tutto il mazzo. */
         private fun bucket(px: Int): Int = ((px.coerceAtLeast(64) + 31) / 32) * 32
 
         /**
-         * La larghezza fa parte della chiave, non e' piu' uno stato a parte.
+         * La larghezza fa parte della chiave, non e' uno stato a parte.
          *
-         * Prima la cache teneva una sola larghezza e si svuotava tutta appena ne arrivava
-         * un'altra. Andava bene finche' a schermo c'era una misura sola, ma il Tresette tiene
-         * dieci carte piccole in mano e le carte grandi in tavola: con la vecchia logica le
-         * due misure si sarebbero buttate a vicenda a ogni disegno, ridecodificando l'intero
-         * mazzo a ogni fotogramma. Con la larghezza nella chiave convivono, e la LruCache
-         * butta da sola quello che non serve piu'.
+         * Il Tresette tiene dieci carte piccole in mano e le carte grandi in tavola: con una
+         * cache a larghezza unica le due misure si butterebbero a vicenda a ogni disegno,
+         * ridecodificando l'intero mazzo a ogni fotogramma. La chiave e' un Long che impacchetta
+         * id della risorsa e larghezza, cosi' non si costruisce una stringa a ogni disegno.
          */
-        fun bitmapFor(ctx: Context, name: String, targetW: Int): Bitmap? {
+        fun bitmapFor(ctx: Context, resId: Int, targetW: Int): Bitmap? {
+            if (resId == 0) return null
             val w = bucket(targetW)
-            val key = "$name@$w"
+            val key = (resId.toLong() shl 20) or w.toLong()
             cache.get(key)?.let { return it }
-            var id = ctx.resources.getIdentifier(name, "drawable", ctx.packageName)
-            if (id == 0 && !name.startsWith(Prefs.DECK_ZIS)) {
-                // immagine del mazzo alternativo non ancora installata: ripiego su quella ZiS,
-                // cosi' un mazzo incompleto non lascia buchi bianchi sul tavolo
-                val ripiego = Prefs.DECK_ZIS + name.substring(name.indexOf('_'))
-                id = ctx.resources.getIdentifier(ripiego, "drawable", ctx.packageName)
-            }
-            if (id == 0) return null
-            var bm = decode(ctx, id, w)
+            var bm = decode(ctx, resId, w)
             if (bm == null) {                // memoria finita: libero e riprovo una volta sola
                 cache.evictAll()
-                bm = decode(ctx, id, w)
+                bm = decode(ctx, resId, w)
             }
             if (bm != null) cache.put(key, bm)
             return bm
@@ -138,7 +155,7 @@ class CardView(context: Context) : View(context) {
             }
         }
 
-        /** Svuota la cache: l'app e' finita in background (vedi ZisApp.onTrimMemory). */
+        /** Svuota la cache: l'app non e' piu' visibile (vedi ZisApp.onTrimMemory). */
         fun clearCache() {
             cache.evictAll()
         }
@@ -149,7 +166,7 @@ class CardView(context: Context) : View(context) {
          * l'intero tavolo al fotogramma successivo.
          */
         fun trimCache() {
-            cache.trimToSize(cache.maxSize() / 2)
+            cache.trimToSize(maxOf(1, cache.maxSize() / 2))
         }
     }
 
@@ -164,7 +181,7 @@ class CardView(context: Context) : View(context) {
         canvas.save()
         canvas.clipPath(clip)
 
-        val bm = bitmapFor(context, nameFor(if (faceUp) card else null), width)
+        val bm = bitmapFor(context, resIdFor(card, faceUp), width)
         if (bm != null) {
             canvas.drawBitmap(bm, null, RectF(0f, 0f, w, h), paint)
         } else {

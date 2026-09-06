@@ -1,24 +1,67 @@
-PARTE 2 di 2 - tutte le immagini  (89 file, sotto il limite di 100 di GitHub)
-
-  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
-  41  mazzo tradizionale   trad_0_1 ... trad_3_10 + trad_back
-   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
-                           title_logo, zis_logo, velvet
+PARTE 1 di 2 - tutto il progetto tranne le immagini  (60 file, sotto il limite di 100 di GitHub)
 
 --- caricamento ---
 
 NON SERVE CANCELLARE NIENTE: i nomi sono gli stessi che ci sono gia' nel repository,
 quindi caricandoli si sovrascrivono.
 
-Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti gli 89 file di questa cartella (non la cartella: il suo contenuto).
+Vai nella pagina principale del repository, poi Add file -> Upload files, e trascina
+dentro il CONTENUTO di questa cartella (non la cartella: quello che c'e' dentro).
+Le sottocartelle vengono create da sole.
+
+NON caricare questo file ISTRUZIONI.txt: serve solo a te.
+
+Attenzione a due cartelle che iniziano con il punto e che alcuni sistemi nascondono:
+  .github/workflows/build-apk.yml   <- MODIFICATO, va caricato
+  .gitignore                        <- invariato
+Su Windows: Esplora file -> Visualizza -> spunta "Elementi nascosti".
+Su macOS: Cmd+Shift+punto nel Finder.
 
 --- cosa e' cambiato rispetto alla versione precedente ---
 
-Niente: le immagini sono identiche a quelle gia' nel repository. Se le hai gia'
-caricate puoi saltare questa parte e caricare solo la Parte 1.
+16 file modificati e 1 nuovo. Se preferisci caricare solo quelli, sono questi:
 
---- avvertenza di sempre ---
+  NUOVO   app/src/main/java/com/zis/scopa/Decks.kt
 
-Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi,
-altrimenti Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
+  MODIF.  .github/workflows/build-apk.yml
+          README.md
+          app/src/main/java/com/zis/scopa/BriscolaActivity.kt
+          app/src/main/java/com/zis/scopa/CardView.kt
+          app/src/main/java/com/zis/scopa/GameActivity.kt
+          app/src/main/java/com/zis/scopa/MainActivity.kt
+          app/src/main/java/com/zis/scopa/Prefs.kt
+          app/src/main/java/com/zis/scopa/ScopaGame.kt
+          app/src/main/java/com/zis/scopa/SettingsActivity.kt
+          app/src/main/java/com/zis/scopa/StatsDialog.kt
+          app/src/main/java/com/zis/scopa/SystemBars.kt
+          app/src/main/java/com/zis/scopa/TresetteActivity.kt
+          app/src/main/java/com/zis/scopa/ZisApp.kt
+          app/src/main/res/layout/activity_settings.xml
+          app/src/main/res/values/strings.xml
+
+In sintesi:
+
+ 1. Decks.kt: le carte non si cercano piu' per nome con getIdentifier (deprecata dall'API
+    29), ma con due tabelle di riferimenti diretti a R.drawable. Piu' veloce, e se una
+    carta manca il progetto non compila invece di mostrare un rettangolo bianco in partita.
+ 2. render() riusa le CardView invece di ricostruirle a ogni chiamata, in tutti e tre i
+    giochi. E' la modifica piu' delicata: provala con il gioco automatico attivo.
+ 3. Le carte hanno una contentDescription: TalkBack ora legge il tavolo. Nel Tresette le
+    carte non giocabili vengono lette come tali.
+ 4. capturesOn della Scopa non enumera piu' tutte le 2^n combinazioni del tavolo.
+ 5. SystemBars.kt chiede esplicitamente l'edge to edge invece di affidarsi al
+    comportamento implicito della piattaforma.
+ 6. Dialoghi: la conferma dell'azzeramento delle statistiche ora viene chiusa in onDestroy;
+    MainActivity tiene una lista invece di un campo solo.
+ 7. ZisApp: commenti corretti sui livelli di onTrimMemory, che da API 34 non arrivano
+    piu' tutti.
+ 8. Workflow: build solo sul ramo main, blocco concurrency, mv invece di cp.
+
+--- ATTENZIONE, due cose da controllare ---
+
+ A. Il workflow ora ha "branches: [main]". Se il tuo ramo principale si chiama master,
+    cambia quella riga o non partira' piu' nessuna build.
+
+ B. Le 82 immagini delle carte (card_*, trad_*) devono essere TUTTE nel repository, se no
+    la compilazione fallisce. Se hai gia' caricato la Parte 2 sei a posto. Se non l'hai
+    mai caricata, falla adesso: prima non era obbligatoria, ora si'.

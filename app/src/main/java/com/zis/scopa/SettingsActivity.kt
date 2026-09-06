@@ -61,24 +61,19 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     /**
-     * Scelta del mazzo. Se le immagini tradizionali non sono ancora nel progetto la voce
-     * resta selezionabile ma compare l'avviso: senza, l'utente la sceglierebbe e non
-     * vedrebbe cambiare niente, credendo a un difetto.
+     * Scelta del mazzo.
+     *
+     * Non c'e' piu' l'avviso "mazzo tradizionale non installato": serviva quando le carte si
+     * cercavano per nome a runtime e potevano mancare. Adesso i due mazzi sono tabelle di
+     * riferimenti a R.drawable (vedi Decks.kt), quindi se un'immagine manca il progetto non
+     * compila proprio e il caso a runtime non esiste piu'.
      */
     private fun setupDeck() {
         val trad = Prefs.deck(this) == Prefs.DECK_TRAD
         if (trad) b.radioDeckTrad.isChecked = true else b.radioDeckZis.isChecked = true
         b.groupDeck.setOnCheckedChangeListener { _, id ->
             Prefs.setDeck(this, if (id == R.id.radioDeckTrad) Prefs.DECK_TRAD else Prefs.DECK_ZIS)
-            refreshDeckInfo()
         }
-        refreshDeckInfo()
-    }
-
-    private fun refreshDeckInfo() {
-        val installato = resources.getIdentifier("${Prefs.DECK_TRAD}_0_1", "drawable", packageName) != 0
-        b.txtDeckInfo.visibility =
-            if (!installato && Prefs.deck(this) == Prefs.DECK_TRAD) View.VISIBLE else View.GONE
     }
 
     override fun onResume() {
