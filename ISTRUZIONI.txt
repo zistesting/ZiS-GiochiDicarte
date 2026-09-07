@@ -1,36 +1,54 @@
-PARTE 2 di 2 - tutte le immagini  (89 file, sotto il limite di 100 di GitHub)
+PARTE 1 di 2 - tutto il progetto tranne le immagini  (62 file, sotto il limite di 100 di GitHub)
 
-  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
-  41  mazzo tradizionale   trad_0_1 ... trad_3_10 + trad_back
-   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
-                           title_logo, zis_logo, velvet
+--- SE HAI GIA' CARICATO LA PARTE 1 ---
+
+Rispetto all'ultima volta cambia solo il README (descrive il mazzo nuovo) e c'e' in piu'
+art/estrai_carta_singola.py, che sta fuori da app/ e non entra nell'APK.
+Nessuna modifica al codice: puoi saltare la Parte 1 e caricare solo la Parte 2.
 
 --- caricamento ---
 
 NON SERVE CANCELLARE NIENTE: i nomi sono gli stessi che ci sono gia' nel repository,
 quindi caricandoli si sovrascrivono.
 
-Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti gli 89 file di questa cartella (non la cartella: il suo contenuto).
+Vai nella pagina principale del repository, poi Add file -> Upload files, e trascina
+dentro il CONTENUTO di questa cartella (non la cartella: quello che c'e' dentro).
+Le sottocartelle vengono create da sole.
 
 NON caricare questo file ISTRUZIONI.txt: serve solo a te.
 
---- cosa e' cambiato rispetto alla versione precedente ---
+Attenzione a due elementi che iniziano con il punto e che alcuni sistemi nascondono:
+  .github/workflows/build-apk.yml
+  .gitignore
+Su Windows: Esplora file -> Visualizza -> spunta "Elementi nascosti".
+Su macOS: Cmd+Shift+punto nel Finder.
 
-Le 40 CARTE DEL MAZZO ZiS sono nuove (card_0_1 ... card_3_10), ricavate dagli otto fogli
-in stile carta ritagliata. Tutto il resto e' identico a prima:
+--- se il repository e' fermo a prima della revisione del codice ---
 
-  - card_back      invariato (il dorso blu e argento disegnato in vettoriale)
-  - trad_*         invariati, tutti e 41
-  - loghi e sfondo invariati, tutti e 7
+  NUOVI   app/src/main/java/com/zis/scopa/Decks.kt
+          art/estrai_carta_singola.py   (fuori da app/, non entra nell'APK)
+          art/fogli_seme.py             (fuori da app/, non entra nell'APK)
 
-Le nuove carte sono 448x819 come le altre, in WebP q90, con il fondo portato a bianco
-pieno 255,255,255. Pesano 1,16 MB in tutto contro i 2,47 MB del set precedente, quindi
-il pacchetto dell'app cala di circa 1,3 MB.
+  MODIF.  .github/workflows/build-apk.yml
+          README.md
+          app/src/main/java/com/zis/scopa/BriscolaActivity.kt
+          app/src/main/java/com/zis/scopa/CardView.kt
+          app/src/main/java/com/zis/scopa/GameActivity.kt
+          app/src/main/java/com/zis/scopa/MainActivity.kt
+          app/src/main/java/com/zis/scopa/Prefs.kt
+          app/src/main/java/com/zis/scopa/ScopaGame.kt
+          app/src/main/java/com/zis/scopa/SettingsActivity.kt
+          app/src/main/java/com/zis/scopa/StatsDialog.kt
+          app/src/main/java/com/zis/scopa/SystemBars.kt
+          app/src/main/java/com/zis/scopa/TresetteActivity.kt
+          app/src/main/java/com/zis/scopa/ZisApp.kt
+          app/src/main/res/layout/activity_settings.xml
+          app/src/main/res/values/strings.xml
 
-I nomi dei file non cambiano, quindi NON c'e' una riga di codice da modificare.
+--- ATTENZIONE, due cose da controllare ---
 
---- avvertenza di sempre ---
+ A. Il workflow ha "branches: [main]". Se il tuo ramo principale si chiama master,
+    cambia quella riga o non partira' piu' nessuna build.
 
-Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi,
-altrimenti Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
+ B. Le 82 immagini delle carte (card_*, trad_*) devono essere TUTTE nel repository, se no
+    la compilazione fallisce. La Parte 2 le contiene tutte.

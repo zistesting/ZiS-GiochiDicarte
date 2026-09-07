@@ -141,26 +141,29 @@ Cosa resta da fare prima della pubblicazione:
 **Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
 in **WebP**.
 
-Le carte ZiS (`card_*`) sono state rifatte da otto fogli, due per seme, in stile carta
-ritagliata. Ogni foglio contiene cinque carte in fila: il foglio A ha `5 4 3 2 Asso`, il
-foglio B ha `Re Cavallo Fante 7 6`. L'estrazione e' automatica (`art/`): le cornici si
-trovano cercando le colonne e le righe in cui almeno meta' dei pixel e' scura, cioe' le linee
-piene del bordo, e la larghezza fuori scala di una carta tagliata dal confine dello slot
-viene riportata alla mediana delle altre quattro, perche' le carte di un foglio sono tutte
-uguali. Ogni carta viene poi portata a 448x819 **aggiungendo margine bianco**, mai stirando.
+Le carte ZiS (`card_*`) sono state rifatte da quaranta immagini singole a 576x1024. Il
+ritaglio e' automatico (`art/estrai_carta_singola.py`): la cornice si trova cercando le
+colonne e le righe in cui almeno il 40% dei pixel e' scuro, cioe' le linee piene del bordo.
 
-**Fondo bianco delle carte ZiS.** Il punto delicato e' capire qual e' il bianco. Nei fogli lo
-sfondo attorno alle carte e' gia' 255, ma la faccia della carta no: in tre fogli su otto e' un
-grigio chiaro attorno a 238. Un percentile sull'immagine intera pescherebbe lo sfondo del
-foglio e lascerebbe quel grigio dov'e'. Il bianco si stima quindi dalla **moda dei pixel
-chiari del ritaglio**, cioe' dal valore che ricorre di piu' sopra 200: e' la faccia della
-carta, che occupa piu' area di qualunque altra tinta chiara. Da li' il solito bilanciamento
-per canale piu' un appiattimento a rampa e non a soglia, per non lasciare aloni sui contorni
-morbidi. La rampa parte da 244, mentre il grigio piu' chiaro del disegno (le lame d'argento
-delle spade) sta sotto 235, quindi non viene toccato. Verificato su tutte e quaranta: il fondo
-e' 255 pieno.
+Un dettaglio che sembra un cavillo e non lo e': in fondo a ogni file c'e' una riga scura
+isolata, un residuo di compressione, che ha quasi tanti pixel scuri quanti il bordo vero.
+Contarli non basta a distinguerli; a separarli e' lo spessore, perche' il bordo della carta
+e' alto 5 pixel e quel residuo 1. Per questo i gruppi di righe si scartano sotto i 3 pixel di
+spessore invece che sotto una soglia di pixel scuri.
 
-Il **dorso** `card_back` non viene dai fogli: resta quello disegnato in vettoriale in `art/`.
+Ogni carta viene poi portata a 448x819 **aggiungendo margine bianco**, mai stirando, piu' un
+margine fisso del 3% su tutti i lati: senza, la cornice disegnata, che sta esattamente sul
+bordo, verrebbe tagliata dagli angoli arrotondati con cui `CardView` ritaglia la carta.
+
+**Fondo bianco delle carte ZiS.** Il punto delicato e' capire qual e' il bianco. Il bianco si
+stima dalla **moda dei pixel chiari del ritaglio**, cioe' dal valore che ricorre di piu' sopra
+200: e' la faccia della carta, che occupa piu' area di qualunque altra tinta chiara. Da li'
+un bilanciamento per canale piu' un appiattimento a rampa e non a soglia, per non lasciare
+aloni sui contorni morbidi. La rampa parte da 244, mentre il grigio piu' chiaro del disegno,
+le lame d'argento delle spade, sta sotto 235, quindi non viene toccato. Verificato su tutte e
+quaranta: il fondo e' 255 pieno, angoli esterni compresi.
+
+Il **dorso** `card_back` non viene dalle immagini delle carte: resta quello disegnato in vettoriale in `art/`.
 
 **Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
 uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
