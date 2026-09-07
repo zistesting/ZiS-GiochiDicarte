@@ -66,6 +66,47 @@ class ScopaGame {
         return true
     }
 
+    // ---------------- salvataggio della partita ----------------
+    //
+    // Si scrivono gli stessi identici campi che snapshot() fotografa, piu' quelli che
+    // snapshot() non ha bisogno di tenere (finished, e la fotografia stessa). L'ordine di
+    // save e load deve combaciare: e' l'unico vincolo, ed e' il motivo per cui i due metodi
+    // stanno attaccati invece che in punti diversi del file.
+
+    fun save(w: SavedGame.Writer) {
+        w.cards(deck); w.cards(table)
+        w.cards(hands[0]); w.cards(hands[1])
+        w.cards(captured[0]); w.cards(captured[1])
+        w.ints(listOf(scope[0], scope[1], lastCapturer, turn, if (finished) 1 else 0))
+        val s = lastDealState
+        w.bool(s != null)
+        if (s != null) {
+            w.cards(s.deck); w.cards(s.table)
+            w.cards(s.hands[0]); w.cards(s.hands[1])
+            w.cards(s.captured[0]); w.cards(s.captured[1])
+            w.ints(listOf(s.scope[0], s.scope[1], s.lastCapturer, s.turn))
+        }
+    }
+
+    fun load(r: SavedGame.Reader) {
+        deck.clear(); deck.addAll(r.cards())
+        table.clear(); table.addAll(r.cards())
+        hands[0].clear(); hands[0].addAll(r.cards())
+        hands[1].clear(); hands[1].addAll(r.cards())
+        captured[0].clear(); captured[0].addAll(r.cards())
+        captured[1].clear(); captured[1].addAll(r.cards())
+        val m = r.ints()
+        scope[0] = m[0]; scope[1] = m[1]
+        lastCapturer = m[2]; turn = m[3]; finished = m[4] == 1
+        lastDealState = if (!r.bool()) null else {
+            val d = r.cards(); val t = r.cards()
+            val h0 = r.cards(); val h1 = r.cards()
+            val c0 = r.cards(); val c1 = r.cards()
+            val q = r.ints()
+            State(d, t, listOf(h0, h1), listOf(c0, c1), intArrayOf(q[0], q[1]), q[2], q[3])
+        }
+    }
+
     fun newGame(youStart: Boolean = true) {
         captured[0].clear(); captured[1].clear()
         scope[0] = 0; scope[1] = 0

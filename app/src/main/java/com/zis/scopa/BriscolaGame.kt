@@ -77,6 +77,46 @@ class BriscolaGame {
         return true
     }
 
+    // ---------------- salvataggio della partita ----------------
+    // L'ordine di save e load deve combaciare: per questo i due metodi stanno attaccati.
+
+    fun save(w: SavedGame.Writer) {
+        w.cards(deck); w.cards(hands[0]); w.cards(hands[1])
+        w.cards(piles[0]); w.cards(piles[1]); w.cards(trick)
+        w.cardsOrNull(lastDrawn.toList())
+        // la briscola va salvata a parte: resta valorizzata anche dopo che e' stata pescata
+        w.cardsOrNull(listOf(trumpCard))
+        w.ints(listOf(briscolaSuit, leader, turn, if (finished) 1 else 0))
+        val s = lastDealState
+        w.bool(s != null)
+        if (s != null) {
+            w.cards(s.deck); w.cards(s.hands[0]); w.cards(s.hands[1])
+            w.cards(s.piles[0]); w.cards(s.piles[1]); w.cards(s.trick)
+            w.cardsOrNull(s.lastDrawn)
+            w.ints(listOf(s.leader, s.turn))
+        }
+    }
+
+    fun load(r: SavedGame.Reader) {
+        deck.clear(); deck.addAll(r.cards())
+        hands[0].clear(); hands[0].addAll(r.cards())
+        hands[1].clear(); hands[1].addAll(r.cards())
+        piles[0].clear(); piles[0].addAll(r.cards())
+        piles[1].clear(); piles[1].addAll(r.cards())
+        trick.clear(); trick.addAll(r.cards())
+        val drawn = r.cardsOrNull()
+        lastDrawn[0] = drawn[0]; lastDrawn[1] = drawn[1]
+        trumpCard = r.cardsOrNull()[0]
+        val m = r.ints()
+        briscolaSuit = m[0]; leader = m[1]; turn = m[2]; finished = m[3] == 1
+        lastDealState = if (!r.bool()) null else {
+            val d = r.cards(); val h0 = r.cards(); val h1 = r.cards()
+            val p0 = r.cards(); val p1 = r.cards(); val tr = r.cards()
+            val ld = r.cardsOrNull(); val q = r.ints()
+            State(d, listOf(h0, h1), listOf(p0, p1), tr, ld, q[0], q[1])
+        }
+    }
+
     fun points(c: Card): Int = when (c.value) {
         1 -> 11; 3 -> 10; 10 -> 4; 9 -> 3; 8 -> 2; else -> 0
     }

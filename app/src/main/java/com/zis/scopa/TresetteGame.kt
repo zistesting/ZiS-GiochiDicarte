@@ -98,6 +98,51 @@ class TresetteGame {
         return true
     }
 
+    // ---------------- salvataggio della partita ----------------
+    // L'ordine di save e load deve combaciare: per questo i due metodi stanno attaccati.
+    // Va salvato anche seenInHandOf, cioe' la memoria di quali carte ciascuno ha visto
+    // pescare all'altro: senza, il Banco riprenderebbe la mano piu' ignorante di com'era.
+
+    fun save(w: SavedGame.Writer) {
+        w.cards(deck); w.cards(hands[0]); w.cards(hands[1])
+        w.cards(piles[0]); w.cards(piles[1]); w.cards(trick)
+        w.cardsOrNull(lastDrawn.toList())
+        w.cards(seenInHandOf[0]); w.cards(seenInHandOf[1])
+        w.ints(listOf(leader, turn, lastTrickWinner, if (finished) 1 else 0))
+        val s = lastDealState
+        w.bool(s != null)
+        if (s != null) {
+            w.cards(s.deck); w.cards(s.hands[0]); w.cards(s.hands[1])
+            w.cards(s.piles[0]); w.cards(s.piles[1]); w.cards(s.trick)
+            w.cardsOrNull(s.lastDrawn)
+            w.cards(s.seen[0]); w.cards(s.seen[1])
+            w.ints(listOf(s.leader, s.turn, s.lastTrickWinner))
+        }
+    }
+
+    fun load(r: SavedGame.Reader) {
+        deck.clear(); deck.addAll(r.cards())
+        hands[0].clear(); hands[0].addAll(r.cards())
+        hands[1].clear(); hands[1].addAll(r.cards())
+        piles[0].clear(); piles[0].addAll(r.cards())
+        piles[1].clear(); piles[1].addAll(r.cards())
+        trick.clear(); trick.addAll(r.cards())
+        val drawn = r.cardsOrNull()
+        lastDrawn[0] = drawn[0]; lastDrawn[1] = drawn[1]
+        seenInHandOf[0].clear(); seenInHandOf[0].addAll(r.cards())
+        seenInHandOf[1].clear(); seenInHandOf[1].addAll(r.cards())
+        val m = r.ints()
+        leader = m[0]; turn = m[1]; lastTrickWinner = m[2]; finished = m[3] == 1
+        lastDealState = if (!r.bool()) null else {
+            val d = r.cards(); val h0 = r.cards(); val h1 = r.cards()
+            val p0 = r.cards(); val p1 = r.cards(); val tr = r.cards()
+            val ld = r.cardsOrNull()
+            val s0 = r.cards().toSet(); val s1 = r.cards().toSet()
+            val q = r.ints()
+            State(d, listOf(h0, h1), listOf(p0, p1), tr, ld, listOf(s0, s1), q[0], q[1], q[2])
+        }
+    }
+
     fun newGame(youStart: Boolean) {
         val d = shuffledDeck()
         deck.clear(); deck.addAll(d.subList(20, 40))

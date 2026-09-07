@@ -1,43 +1,73 @@
-PARTE 3 di 3 - il mazzo bergamasco  (41 file)
+PARTE 1 di 3 - tutto il progetto tranne le immagini  (63 file)
 
-  40  carte     berg_0_1 ... berg_3_10
-   1  dorso     berg_back
+ORDINE: carica PRIMA la Parte 3 (mazzo bergamasco), POI questa.
+Il codice qui dentro nomina le immagini berg_* una per una: se arriva per primo, la build
+fra i due caricamenti fallisce con "resource berg_0_1 not found". Nessun danno, ma ti
+arriva una mail di errore da GitHub per niente.
 
---- PERCHE' UNA PARTE 3 ---
-
-La Parte 2 ne aveva gia' 89. Aggiungendo qui i 41 file si arrivava a 130, sopra il limite
-di 100 file per caricamento di GitHub. Quindi il mazzo nuovo sta a parte.
-
-La Parte 2 NON va ricaricata: e' rimasta identica.
+La Parte 2 (le altre immagini) e' invariata: non va ricaricata.
 
 --- caricamento ---
 
-Sono tutti file nuovi, non sovrascrivono niente.
+NON SERVE CANCELLARE NIENTE, tranne UNA cosa (vedi sotto): i nomi sono gli stessi che
+ci sono gia' nel repository, quindi caricandoli si sovrascrivono.
 
-Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti i 41 file di questa cartella (non la cartella: il suo contenuto).
+Vai nella pagina principale del repository, poi Add file -> Upload files, e trascina
+dentro il CONTENUTO di questa cartella (non la cartella: quello che c'e' dentro).
+Le sottocartelle vengono create da sole.
 
 NON caricare questo file ISTRUZIONI.txt: serve solo a te.
 
---- ORDINE DI CARICAMENTO ---
+Attenzione a due elementi che iniziano con il punto e che alcuni sistemi nascondono:
+  .github/workflows/build-apk.yml
+  .gitignore
+Su Windows: Esplora file -> Visualizza -> spunta "Elementi nascosti".
+Su macOS: Cmd+Shift+punto nel Finder.
 
-Carica PRIMA questa Parte 3 e POI la Parte 1.
+--- >>> UN FILE VA CANCELLATO A MANO <<< ---
 
-La Parte 1 contiene il codice che nomina queste immagini una per una. Se il codice arriva
-per primo, la build fra i due caricamenti fallisce con "resource berg_0_1 not found".
-Nessun danno, ma ti ritrovi una mail di errore da GitHub senza motivo.
+  app/src/main/res/raw/keep.xml
 
---- da sapere su questo mazzo ---
+Caricare dei file non ne cancella altri, quindi questo va tolto dal repository a mano:
+apri il file su GitHub, menu ... in alto a destra, Delete file, Commit.
+Se la cartella res/raw resta vuota GitHub la fa sparire da sola.
 
-Le bergamasche sono piu' STRETTE degli altri due mazzi: il riquadro stampato ha proporzione
-1,98 contro 1,78. A schermo la carta occupa l'87% della larghezza invece del 94%. Non e'
-un errore, e' la forma vera di quelle carte: stirarle per pareggiare sarebbe stato peggio.
-I mazzi non si mescolano mai fra loro, quindi in partita non si nota.
+Non e' obbligatorio: lasciandolo l'app compila lo stesso, e' solo un file che non serve
+piu' a nessuno.
 
-L'ASSO DI DENARI E' VUOTO. In questo tipo di mazzo e' la carta su cui i fabbricanti mettono
-il proprio marchio, e nella copia usata il marchio e' stato tolto: resta l'anello
-concentrico senza niente al centro. Funziona, ma e' l'unica carta che non dice nulla.
-Se vuoi ci si puo' mettere il marchio ZiS, come sull'asso di denari del mazzo ZiS.
+--- cosa e' cambiato ---
 
-IL DORSO non viene dal foglio, che ne e' privo: e' lo stesso disegno vettoriale degli altri
-due dorsi, con una terza palette presa dai tre inchiostri del mazzo (blu, rosso e oro).
+TERZO MAZZO: "Bergamasche", accanto a ZiS e Tradizionale. Si sceglie in Impostazioni,
+sezione Mazzo. Le immagini sono nella Parte 3.
+
+  MODIF.  app/src/main/java/com/zis/scopa/Decks.kt          (terza tabella di immagini)
+          app/src/main/java/com/zis/scopa/Prefs.kt          (DECK_BERG)
+          app/src/main/java/com/zis/scopa/SettingsActivity.kt
+          app/src/main/res/layout/activity_settings.xml     (terzo pulsante)
+          app/src/main/res/values/strings.xml               (nome del mazzo, testo info)
+          art/card_back.py                                  (terza palette del dorso)
+          README.md
+  NUOVO   art/estrai_foglio_bergamasche.py                  (fuori da app/, non entra nell'APK)
+
+Se il repository e' fermo a prima delle ultime consegne, qui dentro ci sono anche il
+salvataggio della partita (SavedGame.kt e i tre motori) e il pulsante Esci che chiude
+davvero l'app: sono gia' inclusi, non serve fare altro.
+
+--- COSA PROVARE ---
+
+ 1. Impostazioni -> Mazzo -> Bergamasche. Le carte devono cambiare subito nei tre giochi.
+ 2. Guarda l'asso di denari bergamasco: e' un anello vuoto. E' cosi' anche nell'originale
+    (e' la carta del marchio del fabbricante, che e' stato tolto). Se ti da' fastidio si
+    puo' metterci il marchio ZiS.
+ 3. Le bergamasche sono piu' strette degli altri due mazzi. E' voluto: e' la loro forma
+    vera. Controlla solo che non siano tagliate ai bordi.
+ 4. Passa da un mazzo all'altro a partita in corso, tornando al menu e rientrando: le
+    carte devono cambiare senza che la partita si perda.
+
+--- ATTENZIONE, due cose di sempre ---
+
+ A. Il workflow ha "branches: [main]". Se il tuo ramo principale si chiama master,
+    cambia quella riga o non partira' piu' nessuna build.
+
+ B. Devono esserci TUTTE le immagini: 41 ZiS + 41 tradizionali + 41 bergamasche + 7 loghi.
+    Ne basta una mancante e la compilazione fallisce.

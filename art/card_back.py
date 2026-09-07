@@ -26,6 +26,9 @@ PALETTES = {
     # la stessa incisione rovesciata: ornato scuro su fondo chiaro
     "grey_light": dict(bg_outer="#E8E8E8", bg_field="#FBFBFB", lattice="#D2D2D2", ring="#9C9C9C",
                        accent="#3C3C3C", accent_hi="#1A1A1A", line="#2B2B2B", line_soft="#5E5E5E"),
+    # i tre inchiostri delle bergamasche, campionati dal foglio: blu, rosso e oro
+    "berg": dict(bg_outer="#141E3C", bg_field="#1D2C5E", lattice="#2F4487", ring="#B02F2F",
+                 accent="#D9A93C", accent_hi="#F0D68C", line="#E2CE96", line_soft="#B8973F"),
 }
 
 FX0, FY0, FX1, FY1 = 34, 34, W - 34, H - 34      # campo interno, dentro le cornici

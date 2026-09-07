@@ -69,10 +69,17 @@ class SettingsActivity : AppCompatActivity() {
      * compila proprio e il caso a runtime non esiste piu'.
      */
     private fun setupDeck() {
-        val trad = Prefs.deck(this) == Prefs.DECK_TRAD
-        if (trad) b.radioDeckTrad.isChecked = true else b.radioDeckZis.isChecked = true
+        when (Prefs.deck(this)) {
+            Prefs.DECK_TRAD -> b.radioDeckTrad.isChecked = true
+            Prefs.DECK_BERG -> b.radioDeckBerg.isChecked = true
+            else -> b.radioDeckZis.isChecked = true
+        }
         b.groupDeck.setOnCheckedChangeListener { _, id ->
-            Prefs.setDeck(this, if (id == R.id.radioDeckTrad) Prefs.DECK_TRAD else Prefs.DECK_ZIS)
+            Prefs.setDeck(this, when (id) {
+                R.id.radioDeckTrad -> Prefs.DECK_TRAD
+                R.id.radioDeckBerg -> Prefs.DECK_BERG
+                else -> Prefs.DECK_ZIS
+            })
         }
     }
 

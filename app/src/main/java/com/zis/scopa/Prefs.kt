@@ -82,11 +82,13 @@ object Prefs {
     // ---------------- mazzo ----------------
 
     /**
-     * Mazzo scelto. E' la chiave con cui Decks.kt sceglie quale delle due tabelle di immagini
-     * usare: DECK_ZIS per le illustrazioni ZiS, DECK_TRAD per le figure tradizionali.
+     * Mazzo scelto. E' la chiave con cui Decks.kt sceglie quale delle tre tabelle di immagini
+     * usare: DECK_ZIS per le illustrazioni ZiS, DECK_TRAD per le figure tradizionali,
+     * DECK_BERG per le bergamasche.
      */
     const val DECK_ZIS = "card"
     const val DECK_TRAD = "trad"
+    const val DECK_BERG = "berg"
 
     fun deck(ctx: Context): String = p(ctx).getString("deck", DECK_ZIS) ?: DECK_ZIS
 
@@ -169,5 +171,24 @@ object Prefs {
         val elapsed = System.currentTimeMillis() - last
         if (elapsed < 0) return 0                       // orologio spostato indietro
         return (PAUSE_MS - elapsed).coerceIn(0L, PAUSE_MS)
+    }
+
+    /**
+     * Forza la scrittura su disco di tutto quello che e' ancora in sospeso.
+     *
+     * Tutti i metodi qui sopra usano apply(), che aggiorna subito la memoria e rimanda il
+     * file a dopo. Va benissimo nel funzionamento normale, perche' Android completa quelle
+     * scritture quando l'ultima activity si ferma. Non va bene se il processo viene chiuso a
+     * mano: li' nessuno aspetta piu' nessuno, e l'ultima impostazione toccata potrebbe non
+     * arrivare mai al file.
+     *
+     * Il commit() a vuoto non aggiunge niente, ma scrive l'intera mappa in memoria (che
+     * contiene gia' tutte le modifiche fatte con apply) e ritorna solo a scrittura finita.
+     * Serve solo al pulsante Esci: nel resto dell'app non va chiamato, perche' bloccherebbe
+     * il thread principale sull'accesso al disco.
+     */
+    fun flush(ctx: Context) {
+        @Suppress("ApplySharedPref")
+        p(ctx).edit().commit()
     }
 }

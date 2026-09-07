@@ -37,6 +37,20 @@ class GameActivity : AppCompatActivity() {
 
     private val ui = Handler(Looper.getMainLooper())
     private var roundEnding = false
+
+    /**
+     * Vero quando i punti della mano sono gia' stati sommati all'incontro e registrati.
+     *
+     * Serve solo al ripristino, ed e' l'unico dato che non si potrebbe ricavare guardando la
+     * partita: a mano finita, lo stato del motore e' identico prima e dopo l'assegnazione dei
+     * punti. Senza questo, riprendere una partita chiusa col riepilogo aperto rifarebbe i
+     * conti una seconda volta, raddoppiando i punti dell'incontro e la vittoria registrata
+     * nelle statistiche.
+     */
+    private var roundScored = false
+
+    /** Vero da quando le carte sono in tavola: prima non c'e' niente da salvare. */
+    private var started = false
     private var destroyed = false
 
     /** Vero fra onStop e il ritorno in primo piano: vedi onStop e onResume. */
@@ -132,7 +146,8 @@ class GameActivity : AppCompatActivity() {
         t.fast = autoPlay
         CardView.setDeck(Prefs.deck(this))
         placeCards()
-        startMatch()
+        // Se c'e' una partita lasciata a meta' si riprende quella, altrimenti se ne comincia una.
+        if (!restoreState()) startMatch()
     }
 
     override fun onResume() {
@@ -189,6 +204,9 @@ class GameActivity : AppCompatActivity() {
      */
     override fun onStop() {
         stopped = true
+        // Prima di tutto il resto: onStop e' l'ultimo momento garantito prima che Android
+        // possa uccidere il processo, e lo stato qui e' ancora coerente.
+        saveState()
         ui.removeCallbacksAndMessages(null)
         b.overlay.removeAllViews()
         super.onStop()
@@ -196,9 +214,60 @@ class GameActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         destroyed = true
+        // Uscire dal Menu o col tasto indietro e' una scelta: la partita si butta. Chiudere
+        // l'app non passa di qui, quindi in quel caso il salvataggio resta.
+        if (isFinishing) SavedGame.clear(this, SavedGame.SCOPA)
         ui.removeCallbacksAndMessages(null)
         closeDialog()
         super.onDestroy()
+    }
+
+    // ---------------- salvataggio e ripristino ----------------
+
+    private fun saveState() {
+        if (!started) return
+        val w = SavedGame.Writer()
+        game.save(w)
+        w.ints(listOf(target, matchYou, matchBot, if (youStartNext) 1 else 0))
+        w.ints(listOf(matchBeforeEnd.first, matchBeforeEnd.second))
+        w.int(when (recordedWin) { true -> 1; false -> 0; null -> -1 })
+        w.long(prevMatchEnd)
+        w.bool(roundScored)
+        SavedGame.write(this, SavedGame.SCOPA, w)
+    }
+
+    /**
+     * Vero se c'era una partita da riprendere. Le sezioni si rileggono nello stesso ordine in
+     * cui saveState le ha scritte; se il testo non torna si butta il salvataggio e si
+     * ricomincia, che e' meglio che ripartire da uno stato a meta'.
+     */
+    private fun restoreState(): Boolean {
+        val r = SavedGame.read(this, SavedGame.SCOPA) ?: return false
+        try {
+            game.load(r)
+            val m = r.ints()
+            target = m[0]; matchYou = m[1]; matchBot = m[2]; youStartNext = m[3] == 1
+            val mb = r.ints(); matchBeforeEnd = Pair(mb[0], mb[1])
+            recordedWin = when (r.int()) { 1 -> true; 0 -> false; else -> null }
+            prevMatchEnd = r.long()
+            roundScored = r.bool()
+        } catch (e: Exception) {
+            SavedGame.clear(this, SavedGame.SCOPA)
+            return false
+        }
+        started = true
+        moveSeq++
+        render()
+        if (roundScored) {
+            // La mano era gia' chiusa e i punti gia' assegnati: si rimette solo il riepilogo.
+            resumeRoundDialog()
+        } else {
+            // busy a true fa prendere a recover() il ramo che ripulisce la mossa interrotta
+            // e restituisce il turno, esattamente come al ritorno da un onStop.
+            busy = true
+            recover()
+        }
+        return true
     }
 
     /** postDelayed sicuro: il blocco non viene eseguito se l'activity nel frattempo e' morta. */
@@ -243,6 +312,8 @@ class GameActivity : AppCompatActivity() {
         game.newGame(youStart = youStartNext)
         youStartNext = !youStartNext
         roundEnding = false
+        roundScored = false
+        started = true
         moveSeq++
         busy = true
         render()
@@ -686,6 +757,7 @@ class GameActivity : AppCompatActivity() {
         matchBot = matchBeforeEnd.second
         undoMatchRecord(Prefs.GAME_SCOPA)
         roundEnding = false
+        roundScored = false
         moveSeq++
         busy = true
         b.txtStatus.setText(if (game.turn == 1) R.string.bot_turn else R.string.your_turn)
@@ -695,19 +767,26 @@ class GameActivity : AppCompatActivity() {
     }
 
     // ---------- end of round / match ----------
+    /** In parita' sul traguardo non si assegna la partita: si gioca un'altra mano. */
+    private fun matchOver(): Boolean =
+        (matchYou >= target || matchBot >= target) && matchYou != matchBot
+
+    /**
+     * Fine mano: assegna i punti, li registra se l'incontro e' finito, e mostra il riepilogo.
+     *
+     * L'assegnazione e la finestra sono separate perche' il ripristino ha bisogno solo della
+     * seconda: riprendendo una partita chiusa col riepilogo aperto, i punti sono gia' stati
+     * dati e rifarli significherebbe raddoppiarli.
+     */
     private fun endRound() {
         if (roundEnding || destroyed || isFinishing) return
         roundEnding = true
         ui.removeCallbacks(watchdog)
         busy = true
-        val you = game.scoreFor(0)
-        val bot = game.scoreFor(1)
         matchBeforeEnd = Pair(matchYou, matchBot)
-        matchYou += you.total
-        matchBot += bot.total
-        render()
-        // in parita' sul traguardo non si assegna la partita: si gioca un'altra mano
-        val over = (matchYou >= target || matchBot >= target) && matchYou != matchBot
+        matchYou += game.scoreFor(0).total
+        matchBot += game.scoreFor(1).total
+        val over = matchOver()
         recordedWin = null
         if (over) {
             prevMatchEnd = Prefs.lastMatchEnd(this)
@@ -715,6 +794,29 @@ class GameActivity : AppCompatActivity() {
             recordedWin = matchYou > matchBot
             Prefs.recordMatch(this, Prefs.GAME_SCOPA, matchYou > matchBot)
         }
+        roundScored = true
+        render()
+        showRoundDialog(over)
+    }
+
+    /** Rimette il riepilogo dopo un ripristino, senza toccare il punteggio. */
+    private fun resumeRoundDialog() {
+        roundEnding = true
+        busy = true
+        render()
+        showRoundDialog(matchOver())
+    }
+
+    /**
+     * Il riepilogo della mano. I punteggi si rileggono dal motore invece di essere passati
+     * come parametri: a mano finita lo stato non cambia piu', quindi il conto e' lo stesso
+     * sia che si arrivi da endRound sia da un ripristino, e non c'e' un secondo posto in cui
+     * tenerli allineati.
+     */
+    private fun showRoundDialog(over: Boolean) {
+        if (destroyed || isFinishing) return
+        val you = game.scoreFor(0)
+        val bot = game.scoreFor(1)
 
         val v = DialogScoreBinding.inflate(layoutInflater)
         v.youCarte.text = you.carte.toString();          v.botCarte.text = bot.carte.toString()

@@ -130,15 +130,15 @@ Cosa resta da fare prima della pubblicazione:
   d'età, screenshot. L'app non raccoglie dati e non chiede permessi, quindi la dichiarazione
   "Sicurezza dei dati" è la più semplice possibile.
 - Valutare `minifyEnabled true` + `shrinkResources true` per ridurre il pacchetto. Ora che le
-  carte sono riferimenti diretti a `R.drawable` lo shrinker le vede usate da solo, quindi
-  `res/raw/keep.xml` non serve più (resta, ma è innocuo). Va comunque provato su un dispositivo
+  carte sono riferimenti diretti a `R.drawable` lo shrinker le vede usate da solo: il
+  `res/raw/keep.xml` che le proteggeva è stato tolto. Va comunque provato su un dispositivo
   prima di pubblicare.
 
 ---
 
 ## Note tecniche
 
-**Mazzo.** Due mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
+**Mazzo.** Tre mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
 in **WebP**.
 
 Le carte ZiS (`card_*`) sono state rifatte da quaranta immagini singole a 576x1024. Il
@@ -164,6 +164,30 @@ le lame d'argento delle spade, sta sotto 235, quindi non viene toccato. Verifica
 quaranta: il fondo e' 255 pieno, angoli esterni compresi.
 
 Il **dorso** `card_back` non viene dalle immagini delle carte: resta quello disegnato in vettoriale in `art/`.
+
+**Mazzo bergamasco.** Le carte `berg_*` vengono da un unico foglio 4x10 (una riga per seme,
+in ogni riga A, 2-7, Fante, Cavallo, Re) trovato su Wikimedia Commons. Il ritaglio è in
+`art/estrai_foglio_bergamasche.py` e usa lo stesso criterio degli altri: cella per cella si
+cercano le righe e le colonne in cui almeno il 40% dei pixel è scuro, cioè il bordo stampato,
+e dove il bordo del vicino sconfina la misura si riconosce da sola perché si discosta dalla
+mediana delle quaranta, che sono tutte uguali.
+
+Due cose da sapere su questo mazzo.
+
+La prima: le bergamasche sono **più strette** delle altre. Il riquadro stampato ha proporzione
+1,98 contro l'1,78 degli altri due mazzi, quindi dopo il riempimento a 448x819 la carta occupa
+l'87% della larghezza invece del 94%. Non è un errore ed è voluto: la forma è quella vera, e
+stirarla per pareggiare sarebbe stato peggio. I mazzi non si mescolano mai fra loro, quindi la
+differenza non si vede in partita.
+
+La seconda: l'**asso di denari è vuoto**. In questo tipo di mazzo è la carta su cui i
+fabbricanti mettono il proprio marchio, e nella copia usata il marchio è stato tolto: resta
+l'anello concentrico senza niente al centro. Funziona, ma è l'unica carta del mazzo che non
+dice nulla.
+
+Il dorso non viene dal foglio, che ne è privo: è lo stesso disegno vettoriale degli altri due,
+con una terza palette (`berg` in `art/card_back.py`) presa dai tre inchiostri del mazzo, blu,
+rosso e oro.
 
 **Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
 uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
@@ -243,8 +267,10 @@ WebP è supportato da Android 4.0 in su, quindi non tocca il `minSdk 24`. I nomi
 non cambiano (`card_0_1`, non `card_0_1.png`), quindi non c'è una riga di codice da modificare:
 cambia solo l'estensione del file.
 
-**Due mazzi.** I due mazzi sono due tabelle di riferimenti a `R.drawable` in `Decks.kt`,
+**Tre mazzi.** I tre mazzi sono tre tabelle di riferimenti a `R.drawable` in `Decks.kt`,
 indicizzate per seme e valore. L'impostazione **Mazzo** sceglie quale tabella usare.
+Aggiungerne un quarto vuol dire una tabella in piu', un valore in `Prefs`, un radio nelle
+impostazioni e una stringa: il resto del codice non sa quanti mazzi esistono.
 
 Prima le carte si caricavano per nome con `Resources.getIdentifier("card_0_1", ...)`. Quella
 funzione e' deprecata dall'API 29, fa un lookup per stringa **a ogni disegno** e soprattutto
@@ -253,10 +279,10 @@ runtime e' un accesso a un array, e se una carta manca il progetto **non compila
 mostrare un rettangolo bianco a partita iniziata.
 
 Il rovescio della medaglia e' che il ripiego "immagine mancante -> carta ZiS corrispondente"
-non esiste piu', e con esso e' sparito l'avviso "mazzo tradizionale non installato" nelle
-impostazioni: adesso i 41 file `trad_*` devono esserci al momento della compilazione. E' uno
-scambio conveniente, perche' un errore di compilazione si vede subito mentre una carta bianca
-si scopriva a partita in corso.
+non esiste piu', e con esso e' sparito l'avviso "mazzo non installato" nelle impostazioni:
+adesso tutti i file di tutti e tre i mazzi devono esserci al momento della compilazione. E'
+uno scambio conveniente, perche' un errore di compilazione si vede subito mentre una carta
+bianca si scopriva a partita in corso.
 
 Cambiando mazzo la cache delle bitmap si svuota, altrimenti resterebbero a schermo le carte
 del mazzo precedente.
@@ -522,6 +548,49 @@ chiudono da soli: se il sistema distruggeva l'activity a dialogo aperto restavan
 finestra (`WindowLeaked`) sia, nel caso della pausa, il `CountDownTimer`, che continuava a
 scrivere su un pulsante ormai morto tenendo in vita l'intera activity.
 
+**Pulsante Esci.** Chiude l'app per davvero: `finishAndRemoveTask` invece di
+`finishAffinity`, così sparisce anche la scheda dalle app recenti, e poi `exitProcess` per
+terminare il processo.
+
+Prima di tutto questo le preferenze vengono forzate su disco con `Prefs.flush` e
+`SavedGame.flush`. Tutti i salvataggi dell'app usano `apply()`, che aggiorna la memoria e
+rimanda il file a dopo: nel funzionamento normale Android completa quelle scritture quando
+l'ultima activity si ferma, ma chiudendo il processo a mano non le aspetta più nessuno, e si
+perderebbero l'ultima impostazione toccata, l'ultima statistica e la partita salvata.
+
+Su `exitProcess` va detto che Android non ne ha bisogno: dopo `finishAndRemoveTask` il
+processo resta in giro «vuoto», non consuma nulla di utile ed è il primo che il sistema butta
+via quando serve memoria. Ucciderlo a mano è sconsigliato in generale, perché un'app con
+servizi o lavori in sospeso può restarci male. Questa non ne ha nessuno — niente servizi,
+niente permessi, niente rete — e dopo il flush non ci sono scritture in sospeso, quindi qui è
+sicuro. **Se un domani l'app dovesse acquisire un servizio o un WorkManager, quella riga va
+tolta per prima.**
+
+**Partita ripresa.** La mano in corso si salva nelle preferenze in `onStop` e si rilegge in
+`onCreate`: chiudendo l'app a metà partita, riaprendola si riprende da dove eri. Non è
+`onSaveInstanceState`, che copre solo il caso «il sistema ha ucciso il processo mentre l'app
+era in secondo piano» e sparisce appena l'app viene tolta dalle recenti o il telefono viene
+riavviato.
+
+Il salvataggio si cancella in `onDestroy`, ma **solo se** l'activity sta davvero finendo, cioè
+se sei uscito col pulsante Menu o col tasto indietro: uscire è una scelta, e chi esce non si
+aspetta di ritrovarsi la stessa mano. Chiudere l'app non passa da `onDestroy`, e lì la partita
+resta.
+
+Il formato (`SavedGame.kt`) è volutamente elementare: sezioni separate da `|`, numeri separati
+da `,`, ogni carta è un numero da 0 a 39. Niente JSON e niente serializzazione automatica, così
+non servono plugin né dipendenze in più. Un numero di versione in testa fa buttare i
+salvataggi vecchi dopo un aggiornamento che cambi i campi, invece di leggerli storti.
+
+Il ripristino riusa `recover()`, che già guardava lo stato reale della partita per ripartire
+dopo un `onStop`: una mossa interrotta a metà si perde e si rifà, esattamente come già
+succedeva tornando dall'app in background. L'unico dato che il motore non sa ricostruire da
+solo è **se i punti della mano sono già stati assegnati**: a mano finita lo stato è identico
+prima e dopo, quindi senza un flag apposta riprendere una partita chiusa col riepilogo aperto
+rifarebbe i conti, raddoppiando i punti dell'incontro e la vittoria nelle statistiche. Per
+questo l'assegnazione dei punti e la finestra di riepilogo sono due funzioni separate, e il
+ripristino chiama solo la seconda.
+
 **Memoria.** I livelli di `onTrimMemory` non stanno su un'unica scala di gravità, e per giunta
 non arrivano più tutti. Da **API 34** il sistema non notifica più le app di `RUNNING_MODERATE`
 (5), `RUNNING_LOW` (10), `RUNNING_CRITICAL` (15), `MODERATE` (60) e `COMPLETE` (80): sono
@@ -547,11 +616,4 @@ metà incontro in Briscola, che era l'unico modo di ricominciare saltando l'atte
 
 ## Cosa manca ancora
 
-- **Salvataggio dello stato**: se Android uccide il processo, la partita in corso è persa.
-  Serve `onSaveInstanceState` (o un salvataggio in `SharedPreferences`). I cambi di
-  configurazione invece sono coperti: oltre alla rotazione, `configChanges` elenca ora anche
-  `uiMode`, `fontScale`, `locale`, `layoutDirection` e `density`, così cambiare tema scuro,
-  dimensione del carattere, lingua o aprire un pieghevole non fa più ripartire la mano da zero.
-  Il prezzo è che le scritte già a schermo non si riscalano subito cambiando la dimensione del
-  carattere: si aggiornano tornando al menu.
-- Nessun suono, nessuna statistica, nessuna modalità a 4 giocatori.
+- Nessun suono, nessuna modalità a 4 giocatori.

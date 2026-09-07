@@ -39,6 +39,20 @@ class BriscolaActivity : AppCompatActivity() {
     // watchdog (never let a turn freeze)
     private val ui = Handler(Looper.getMainLooper())
     private var ending = false
+
+    /**
+     * Vero quando i punti della mano sono gia' stati sommati all'incontro e registrati.
+     *
+     * Serve solo al ripristino, ed e' l'unico dato che non si potrebbe ricavare guardando la
+     * partita: a mano finita, lo stato del motore e' identico prima e dopo l'assegnazione dei
+     * punti. Senza questo, riprendere una partita chiusa col riepilogo aperto rifarebbe i
+     * conti una seconda volta, raddoppiando i punti dell'incontro e la vittoria registrata
+     * nelle statistiche.
+     */
+    private var roundScored = false
+
+    /** Vero da quando le carte sono in tavola: prima non c'e' niente da salvare. */
+    private var started = false
     private var destroyed = false
 
     /** Vero fra onStop e il ritorno in primo piano: vedi onStop e onResume. */
@@ -116,7 +130,8 @@ class BriscolaActivity : AppCompatActivity() {
         t.fast = autoPlay
         CardView.setDeck(Prefs.deck(this))
         placeCards()
-        startMatch()
+        // Se c'e' una partita lasciata a meta' si riprende quella, altrimenti se ne comincia una.
+        if (!restoreState()) startMatch()
     }
 
     /**
@@ -224,6 +239,9 @@ class BriscolaActivity : AppCompatActivity() {
      */
     override fun onStop() {
         stopped = true
+        // Prima di tutto il resto: onStop e' l'ultimo momento garantito prima che Android
+        // possa uccidere il processo, e lo stato qui e' ancora coerente.
+        saveState()
         ui.removeCallbacksAndMessages(null)
         b.overlay.removeAllViews()
         super.onStop()
@@ -233,9 +251,61 @@ class BriscolaActivity : AppCompatActivity() {
         // I turni avanzano con callback differiti: se l'utente esce a meta' mano, senza questa
         // pulizia il callback parte comunque e il dialogo di fine partita fa crashare l'app.
         destroyed = true
+        // Uscire dal Menu o col tasto indietro e' una scelta: la partita si butta. Chiudere
+        // l'app non passa di qui, quindi in quel caso il salvataggio resta.
+        if (isFinishing) SavedGame.clear(this, SavedGame.BRISCOLA)
         ui.removeCallbacksAndMessages(null)
         closeDialog()
         super.onDestroy()
+    }
+
+    // ---------------- salvataggio e ripristino ----------------
+
+    private fun saveState() {
+        if (!started) return
+        val w = SavedGame.Writer()
+        game.save(w)
+        w.ints(listOf(matchTarget, matchYou, matchBot, if (youStartNext) 1 else 0))
+        w.ints(listOf(matchBeforeEnd.first, matchBeforeEnd.second))
+        w.int(when (recordedWin) { true -> 1; false -> 0; null -> -1 })
+        w.long(prevMatchEnd)
+        w.bool(roundScored)
+        SavedGame.write(this, SavedGame.BRISCOLA, w)
+    }
+
+    /**
+     * Vero se c'era una partita da riprendere. Le sezioni si rileggono nello stesso ordine in
+     * cui saveState le ha scritte; se il testo non torna si butta il salvataggio e si
+     * ricomincia, che e' meglio che ripartire da uno stato a meta'.
+     */
+    private fun restoreState(): Boolean {
+        val r = SavedGame.read(this, SavedGame.BRISCOLA) ?: return false
+        try {
+            game.load(r)
+            val m = r.ints()
+            matchTarget = m[0]; matchYou = m[1]; matchBot = m[2]; youStartNext = m[3] == 1
+            val mb = r.ints(); matchBeforeEnd = Pair(mb[0], mb[1])
+            recordedWin = when (r.int()) { 1 -> true; 0 -> false; else -> null }
+            prevMatchEnd = r.long()
+            roundScored = r.bool()
+        } catch (e: Exception) {
+            SavedGame.clear(this, SavedGame.BRISCOLA)
+            return false
+        }
+        started = true
+        moveSeq++
+        hideDrawn = false
+        render()
+        if (roundScored) {
+            // La mano era gia' chiusa e i punti gia' assegnati: si rimette solo il riepilogo.
+            resumeRoundDialog()
+        } else {
+            // busy a true fa prendere a recover() il ramo che ripulisce la mossa interrotta
+            // e restituisce il turno, esattamente come al ritorno da un onStop.
+            busy = true
+            recover()
+        }
+        return true
     }
 
     /** postDelayed sicuro: il blocco non viene eseguito se l'activity nel frattempo e' morta. */
@@ -280,6 +350,8 @@ class BriscolaActivity : AppCompatActivity() {
         game.newGame(youStart = youStartNext)
         youStartNext = !youStartNext
         ending = false
+        roundScored = false
+        started = true
         hideDrawn = false
         busy = true
         render()
@@ -625,6 +697,7 @@ class BriscolaActivity : AppCompatActivity() {
         matchBot = matchBeforeEnd.second
         undoMatchRecord(Prefs.GAME_BRISCOLA)
         ending = false
+        roundScored = false
         moveSeq++
         busy = true
         b.txtStatus.setText(if (game.turn == 1) R.string.bot_turn else R.string.your_turn)
@@ -633,26 +706,58 @@ class BriscolaActivity : AppCompatActivity() {
         recover()
     }
 
+    private fun matchOver(): Boolean = matchYou >= matchTarget || matchBot >= matchTarget
+
+    /**
+     * Fine mano: assegna la partita, la registra se l'incontro e' finito, e mostra il
+     * riepilogo.
+     *
+     * L'assegnazione e la finestra sono separate perche' il ripristino ha bisogno solo della
+     * seconda: riprendendo una mano chiusa col riepilogo aperto, la partita e' gia' stata
+     * assegnata e rifarlo significherebbe contarla due volte.
+     */
     private fun endGame() {
         if (ending || destroyed || isFinishing) return
         ending = true
         ui.removeCallbacks(watchdog)
         busy = true
-        val you = game.scoreFor(0)
-        val bot = game.scoreFor(1)
         matchBeforeEnd = Pair(matchYou, matchBot)
         // award the hand to the winner (a 60-60 draw counts for no one)
+        val you = game.scoreFor(0)
+        val bot = game.scoreFor(1)
         if (you > bot) matchYou++ else if (bot > you) matchBot++
-        render()
 
-        val matchOver = matchYou >= matchTarget || matchBot >= matchTarget
+        val over = matchOver()
         recordedWin = null
-        if (matchOver) {
+        if (over) {
             prevMatchEnd = Prefs.lastMatchEnd(this)
             Prefs.markMatchEnded(this)
             recordedWin = matchYou > matchBot
             Prefs.recordMatch(this, Prefs.GAME_BRISCOLA, matchYou > matchBot)
         }
+        roundScored = true
+        render()
+        showRoundDialog(over)
+    }
+
+    /** Rimette il riepilogo dopo un ripristino, senza toccare il punteggio. */
+    private fun resumeRoundDialog() {
+        ending = true
+        busy = true
+        render()
+        showRoundDialog(matchOver())
+    }
+
+    /**
+     * Il riepilogo della mano. I punti si rileggono dal motore invece di essere passati come
+     * parametri: a mano finita lo stato non cambia piu', quindi il conto e' lo stesso sia che
+     * si arrivi da endGame sia da un ripristino, e non c'e' un secondo posto da tenere
+     * allineato.
+     */
+    private fun showRoundDialog(over: Boolean) {
+        if (destroyed || isFinishing) return
+        val you = game.scoreFor(0)
+        val bot = game.scoreFor(1)
 
         // Stessa impaginazione della Scopa: esito della mano, riga della partita, e la riga
         // del vincitore solo quando la partita e' finita. Prima era tutto nel messaggio
@@ -666,7 +771,7 @@ class BriscolaActivity : AppCompatActivity() {
         v.txtHand.tintByOutcome(you > bot)
         v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
         v.txtMatch.tintByOutcome(matchYou > matchBot)
-        if (matchOver) {
+        if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
             v.txtWinner.tintByOutcome(matchYou > matchBot)
@@ -678,7 +783,7 @@ class BriscolaActivity : AppCompatActivity() {
             .setView(v.root)
             .setCancelable(false)
             .setNegativeButton(R.string.back_home) { _, _ -> finish() }
-        if (matchOver) {
+        if (over) {
             builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
         } else {
             // Niente "Nuovo incontro" a meta' incontro: era l'unico modo di ricominciare
