@@ -53,15 +53,18 @@
             android:layout_marginBottom="4dp"
             android:background="@color/silver_dark" />
 
+        <!--
+          Nessun colore fisso: lo mette il codice. Giallo se sei avanti tu, celeste se e'
+          avanti il Banco, argento in parita'. Partita e Incontro rispondono a due conti
+          diversi, quindi possono essere di colori opposti.
+        -->
         <TableRow>
-            <TextView style="@style/ScoreLabel"
-                android:text="@string/pt_partita"
-                android:textColor="@color/gold"
-                android:textStyle="bold" />
+            <TextView android:id="@+id/lblHand" style="@style/ScoreLabel"
+                android:text="@string/pt_partita" android:textStyle="bold" />
             <TextView android:id="@+id/youHand" style="@style/ScoreValue"
-                android:textColor="@color/gold" android:textStyle="bold" />
+                android:textStyle="bold" />
             <TextView android:id="@+id/botHand" style="@style/ScoreValue"
-                android:textColor="@color/gold" android:textStyle="bold" />
+                android:textStyle="bold" />
         </TableRow>
 
         <TableRow>

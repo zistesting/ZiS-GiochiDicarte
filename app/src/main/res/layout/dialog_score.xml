@@ -85,23 +85,24 @@
             android:layout_marginBottom="4dp"
             android:background="@color/silver_dark" />
 
+        <!--
+          Totale e Incontro non hanno un colore fisso: lo mette il codice, perche' dipende da
+          chi e' avanti. Giallo se sei avanti tu, celeste se e' avanti il Banco, argento in
+          parita'. Le due righe rispondono a due conti diversi: il Totale guarda questa
+          partita, l'Incontro la serie, quindi possono benissimo essere di colori opposti.
+        -->
         <TableRow>
-            <TextView style="@style/ScoreLabel"
-                android:text="@string/pt_totale"
-                android:textColor="@color/gold"
-                android:textStyle="bold" />
+            <TextView android:id="@+id/lblTot" style="@style/ScoreLabel"
+                android:text="@string/pt_totale" android:textStyle="bold" />
             <TextView android:id="@+id/youTot" style="@style/ScoreValue"
-                android:textColor="@color/gold" android:textStyle="bold" />
+                android:textStyle="bold" />
             <TextView android:id="@+id/botTot" style="@style/ScoreValue"
-                android:textColor="@color/gold" android:textStyle="bold" />
+                android:textStyle="bold" />
         </TableRow>
 
         <!--
           L'incontro entra nella stessa tabella invece di stare su una riga a parte scritta
-          a parole. I due numeri cadono cosi' sotto quelli del totale, nelle stesse colonne:
-          si legge in verticale quanto hai fatto in questa partita e a che punto sei
-          nell'incontro, senza dover ricomporre due formati diversi.
-          Il colore lo mette il codice, perche' dipende da chi e' avanti.
+          a parole: i due numeri cadono sotto quelli del totale, nelle stesse colonne.
         -->
         <TableRow>
             <TextView android:id="@+id/lblMatch" style="@style/ScoreLabel"

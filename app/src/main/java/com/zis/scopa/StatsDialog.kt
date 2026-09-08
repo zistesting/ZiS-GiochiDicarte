@@ -83,11 +83,14 @@ object StatsDialog {
         val confirm = AlertDialog.Builder(activity)
             .setTitle(R.string.stats_reset)
             .setMessage(R.string.stats_reset_ask)
-            .setPositiveButton(R.string.stats_reset) { _, _ ->
+            // La domanda e' "Vuoi azzerare tutte le statistiche?": la risposta e' si' o no.
+            // Prima i pulsanti dicevano "Azzera" e "Annulla", cioe' un'azione e un ripensamento
+            // invece delle due risposte alla domanda appena letta.
+            .setPositiveButton(R.string.yes) { _, _ ->
                 Prefs.clearStats(activity)
                 onReset()
             }
-            .setNegativeButton(android.R.string.cancel, null)
+            .setNegativeButton(R.string.no, null)
             .create()
         confirm.show()
         onOpened(confirm)

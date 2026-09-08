@@ -1,6 +1,6 @@
 PARTE 1 di 4 - tutto il progetto tranne le immagini  (68 file)
 
-Solo codice e testi: le Parti 2, 3 e 4 (le immagini) restano come sono, non vanno ricaricate.
+Solo codice e testi: le Parti 2, 3 e 4 (le immagini) restano come sono.
 
 --- caricamento ---
 
@@ -14,39 +14,27 @@ Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascond
 
 --- cosa e' cambiato ---
 
- 1. INFO GENERALE: sotto il titolo c'e' GLOSSARIO, prima delle tre definizioni.
+ 1. FINE PARTITA, tutti e tre i giochi: le due righe riassuntive prendono il colore di chi
+    e' avanti. Giallo se sei avanti tu, celeste se e' avanti il Banco, argento in parita'.
 
- 2. SCOPA, fine partita: l'incontro non e' piu' una riga a parole sotto la tabella, e'
-    l'ULTIMA RIGA DELLA TABELLA, sotto Totale e nelle stesse colonne:
+      Scopa:              "Totale"  e  "Incontro"
+      Briscola/Tresette:  "Partita" e  "Incontro"
 
-                    Tu   Banco
-        ----------------------
-        Carte        X     X
-        Denari       X     X
-        Settebello   X     X
-        Primiera     X     X
-        Scope        X     X
-        ----------------------
-        Totale       X     X
-        Incontro     X     X
+    ATTENZIONE, non e' un difetto: le due righe possono uscire di COLORI DIVERSI, perche'
+    rispondono a due conti diversi. Il Totale (o la Partita) guarda la partita appena
+    finita, l'Incontro guarda la serie. Vincere la partita ed essere ancora sotto
+    nell'incontro e' normale, e in quel caso la prima riga e' gialla e la seconda celeste.
 
- 3. BRISCOLA e TRESETTE, fine partita: stessa tabella, due righe.
-
-                    Tu   Banco
-        ----------------------
-        Partita      X     X
-        Incontro     X     X
-
-    NOTA: nel tuo messaggio il blocco "briscola" era ripetuto due volte e il Tresette non
-    era nominato. Ho dato per scontato che il secondo fosse il Tresette, visto che i due
-    giochi condividono la stessa finestra. Se non era cosi', dimmelo.
-
- 4. La riga "Totale" resta gialla; la riga "Incontro" prende il colore di chi e' avanti:
-    giallo se sei avanti tu, celeste se e' avanti il Banco, grigio in parita'.
+ 2. STATISTICHE, conferma dell'azzeramento: i pulsanti ora dicono "Si" e "No" invece di
+    "Azzera" e "Annulla". La domanda e' "Vuoi azzerare tutte le statistiche?" e la risposta
+    a una domanda e' si' o no, non un'azione e un ripensamento.
+    I pulsanti dei dialoghi sono in maiuscolo per impostazione del tema, quindi a schermo
+    leggerai SI e NO.
 
 --- COSA PROVARE ---
 
- 1. Fine partita nei tre giochi: i numeri devono cadere incolonnati sotto Tu e Banco, e la
-    riga Incontro deve avere gli stessi numeri che vedi in alto durante la partita.
- 2. Info generale: GLOSSARIO in grassetto sotto il titolo.
- 3. Su un telefono stretto, controlla che la tabella non vada a capo.
+ 1. Vinci una partita restando sotto nell'incontro (o viceversa): le due righe devono
+    avere colori diversi. E' il caso che vale la pena guardare.
+ 2. Pareggio: in Briscola una partita 60-60, oppure un incontro in parita' (1-1, 2-2).
+    Le righe interessate devono venire argento.
+ 3. Statistiche -> Azzera: la conferma deve dire SI e NO.

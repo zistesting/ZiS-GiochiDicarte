@@ -831,13 +831,13 @@ class TresetteActivity : AppCompatActivity() {
         // Stessa tabella della Scopa e della Briscola: partita e incontro incolonnati.
         val v = DialogResultBinding.inflate(layoutInflater)
         v.youHand.text = you.toString();                 v.botHand.text = bot.toString()
-        // L'incontro e' l'ultima riga della stessa tabella, sotto il totale e nelle stesse
-        // colonne: si legge in verticale quanto hai fatto in questa partita e a che punto sei
-        // nell'incontro, senza ricomporre due formati diversi. Il colore dice chi e' avanti.
         v.youMatch.text = matchYou.toString();           v.botMatch.text = matchBot.toString()
-        v.lblMatch.tintByScore(matchYou, matchBot)
-        v.youMatch.tintByScore(matchYou, matchBot)
-        v.botMatch.tintByScore(matchYou, matchBot)
+
+        // Le due righe prendono il colore di chi e' avanti, ma su due conti diversi: la
+        // Partita guarda questa mano, l'Incontro la serie. Possono risultare di colori
+        // opposti, ed e' giusto cosi'.
+        for (t in listOf(v.lblHand, v.youHand, v.botHand)) t.tintByScore(you, bot)
+        for (t in listOf(v.lblMatch, v.youMatch, v.botMatch)) t.tintByScore(matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
