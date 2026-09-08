@@ -501,6 +501,20 @@ Nel **Tresette** la carta pescata si mostra, quindi `seenInHandOf` tiene anche t
 quali carte il Banco ha visto entrare nella mano avversaria: informazione utile prima che il
 tallone finisca, mentre dopo la mano avversaria si ricava comunque per differenza.
 
+Sempre nel Tresette, `keepValue` misura quanto costa separarsi da una carta: i punti che
+perdi più il valore di controllo, perché una carta che nessuno può più battere è una presa
+sicura più avanti. Il peso (`KEEP_WEIGHT`) è **1,3** e vale sia in apertura sia in risposta:
+la stessa carta deve valere lo stesso, se no il Banco la giudica in due modi diversi a seconda
+di chi apre.
+
+Il numero è tarato, non scelto a occhio. Sotto 1,0 il Banco esce di 3 anche quando quel seme
+non gli frutta niente: il terzo che incassa calando il 3 compensa quasi per intero il costo di
+separarsene, e a 0,9 la differenza era di un decimo di punto a favore del 3. A 1,3 esce invece
+con la carta bassa, ma continua a uscire di 3 quando in quel seme l'avversario ha solo l'asso
+e deve calarlo — lì il margine resta ampio, perché non è una regola «non uscire mai di 3» ma
+«non uscirne quando non frutta». Verso l'alto il limite è circa 2,8: oltre, il Banco terrebbe
+il 3 anche quando c'è un asso da catturare, che è il difetto opposto.
+
 In **Scopa**, a mazzo finito restano al massimo sei giocate e si cerca la migliore con un
 minimax e taglio alfa-beta (`solve` in `ScopaGame.kt`). Cosi' il Banco sa se sta regalando una
 scopa, sa che conviene fare l'ultima presa (chi la fa si porta via il tavolo) e chiude bene

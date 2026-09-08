@@ -282,14 +282,29 @@ class TresetteGame {
     /**
      * Peso di keepValue, uguale in apertura e in risposta.
      *
-     * A 0,9 il Banco, fra due prese entrambe sicure, resta quasi indifferente su quale carta
-     * bruciare: il terzo che incassa calando il 3 compensa quasi per intero il costo di
-     * separarsene, e la differenza finale e' di un decimo di punto. Alzandolo sopra 1,0 il
-     * Banco comincia a preferire la presa sicura che gli costa meno, tenendosi il 3 per
-     * catturare l'asso avversario. E' il valore da toccare se il Banco sembra sprecare le
-     * carte alte troppo presto.
+     * A 0,9 il Banco, fra due prese entrambe sicure, restava quasi indifferente su quale carta
+     * bruciare, e usciva di 3: il terzo che incassa calando il 3 compensava quasi per intero
+     * il costo di separarsene, e la differenza finale era di un decimo di punto a favore del 3.
+     *
+     * A 1,3 tiene il 3 per catturare l'asso avversario. Il valore non e' scelto a caso, e'
+     * quello che sposta il primo caso senza rompere gli altri tre:
+     *
+     *  - due prese entrambe sicure, l'avversario in quei semi non ha niente da perdere:
+     *    prima usciva col 3 (+4,30 contro +4,20), ora esce con la carta bassa (+3,10 contro
+     *    +3,40). E' il caso che volevamo cambiare.
+     *  - uscire di 3 quando in quel seme l'avversario ha SOLO l'asso e deve calarlo: resta
+     *    l'apertura giusta e con ampio margine (+6,10 contro +3,40). Non e' una regola "non
+     *    uscire mai di 3", e' "non uscirne quando non frutta niente".
+     *  - l'avversario apre con l'asso e il Banco puo' prenderlo col 3: continua a prenderlo.
+     *    Il margine tiene fino a circa 2,8, oltre il quale il Banco si terrebbe il 3 anche
+     *    quando c'e' un asso da catturare, che sarebbe il difetto opposto.
+     *  - presa persa in partenza: butta la carta piu' scarsa, e alzando il peso lo fa con
+     *    ancora piu' convinzione.
+     *
+     * In breve: sotto 1,0 il Banco spreca le carte alte, sopra 2,8 se le tiene anche quando
+     * servirebbero. 1,3 sta comodo in mezzo.
      */
-    private val KEEP_WEIGHT = 0.9
+    private val KEEP_WEIGHT = 1.3
 
     private fun keepValue(c: Card, unseen: List<Card>): Double {
         val higher = unseen.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
