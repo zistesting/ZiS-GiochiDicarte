@@ -1,13 +1,28 @@
 PARTE 1 di 4 - tutto il progetto tranne le immagini  (67 file)
 
-ORDINE: carica PRIMA la Parte 4 (mazzo napoletano), POI questa.
-Le Parti 2 e 3 sono invariate: se le hai gia' caricate, non toccarle.
+>>> CORREZIONE DELL'ERRORE DI COMPILAZIONE <<<
 
-Ogni caricamento va chiuso col suo [Commit changes]: sono due commit, uno per parte.
-In questo ordine la build che parte dopo il primo commit RIESCE, perche' le immagini
-arrivano prima del codice che le nomina.
+La consegna precedente NON compilava:
+
+  strings.xml: Failed to flatten XML for resource 'info_app'
+               Invalid unicode escape sequence in string
+
+Colpa mia. Avevo messo i quattro testi info dentro CDATA per poterci scrivere gli
+apostrofi senza proteggerli. Il CDATA mette al riparo dal parser XML, ma NON dalle
+regole di escape di Android, che vengono applicate dopo, sul testo gia' estratto:
+"Invalid unicode escape sequence" e' il modo in cui aapt2 segnala un apostrofo nudo.
+
+Ora i quattro testi usano lo stesso stile del resto del file (apostrofi protetti con
+la barra rovesciata, \n per gli a capo) e il grassetto e' fatto con tag <b> veri, che
+Android applica da solo. Il risultato a schermo e' identico a quello previsto.
+
+Se hai gia' caricato la Parte 1 precedente, questa la sostituisce: stessi file.
+Le Parti 2, 3 e 4 non c'entrano e restano come sono.
 
 --- caricamento ---
+
+Se NON hai ancora caricato la Parte 4 (mazzo napoletano), caricala PRIMA di questa.
+Se l'hai gia' caricata, qui basta questa Parte 1.
 
 Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
 questa cartella (non la cartella) -> Commit changes.
@@ -20,45 +35,25 @@ Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascond
 Se non l'hai ancora fatto, cancella a mano  app/src/main/res/raw/keep.xml
 (aprilo su GitHub, menu ... , Delete file). Non e' obbligatorio.
 
---- cosa e' cambiato ---
+--- cosa contiene ---
 
- 6. SCOPA. Il Banco ora prende col settebello appena puo'.
-    Prima la presa col settebello valeva 33 e una scopa partiva da 42, quindi il Banco
-    prendeva sempre la scopa e si teneva il settebello in mano. Quasi sempre funziona,
-    perche' il sette in tavola di solito e' ancora li' al turno dopo. Ma quando non lo e',
-    il settebello resta senza presa, va calato scoperto e lo raccogli tu.
-    Il bonus e' 25, in ScopaGame.kt, con scritto accanto cosa succede a cambiarlo:
-    sotto 10 tornano davanti le scope, sopra 25 il settebello vince sempre.
-
- 8. TRESETTE. keepValue si applica anche quando il Banco APRE, non solo quando risponde,
-    e il peso (KEEP_WEIGHT) e' passato da 0,9 a 1,3 perche' il Banco tenga il 3.
-    A 0,9 usciva di 3 anche quando non fruttava niente, per un decimo di punto.
-    A 1,3 esce con la carta bassa, MA continua a uscire di 3 quando in quel seme
-    l'avversario ha solo l'asso e deve calarlo, e continua a prendere l'asso col 3
-    quando e' l'avversario ad aprire. I quattro casi con i numeri sono nel commento
-    accanto alla costante, in TresetteGame.kt.
-
-    QUARTO MAZZO: "Napoletane". Impostazioni -> Mazzo. Le immagini sono nella Parte 4.
-
-    NON c'e' nessun selettore di difficolta': lasciato stare come hai deciso.
+ 6. SCOPA. Il Banco prende col settebello appena puo' (BONUS_SETTEBELLO = 25).
+ 8. TRESETTE. keepValue vale anche in apertura e il peso e' 1,3, cosi' il Banco tiene
+    il 3 per catturare l'asso.
+    QUARTO MAZZO: "Napoletane", in Impostazioni -> Mazzo. Immagini nella Parte 4.
+    I quattro testi info riscritti, ora nella forma che compila.
 
 --- COSA PROVARE ---
 
- 1. Scopa: quando il Banco ha il settebello e c'e' un sette in tavola, deve prenderlo
-    subito, anche rinunciando a una scopa. Se ti sembra che ora rinunci a scope troppo
-    facilmente, il numero da abbassare e' BONUS_SETTEBELLO.
-
- 2. Tresette: il Banco NON deve piu' uscire di 3 nelle prime mani senza motivo. Ma deve
-    ancora fare due cose, e sono quelle da controllare:
-      a) uscire di 3 quando in quel seme tu hai solo carte alte da calare;
-      b) prendere il tuo asso col 3 quando apri tu.
-    Se smettesse di fare la (b), KEEP_WEIGHT e' troppo alto: il limite e' circa 2,8.
-
- 3. Impostazioni -> Mazzo -> Napoletane, e controlla che nessuna carta abbia righe o
-    archetti grigi lungo i bordi (erano il bordo della carta vicina nel foglio).
+ 1. Che compili. E' la prima cosa: se passa, il resto e' verificabile con calma.
+ 2. I quattro pulsanti info: il grassetto deve vedersi come grassetto, e NON devono
+    comparire barre rovesciate o scritte tipo <b> a video.
+ 3. Scopa: il Banco prende col settebello appena c'e' un sette in tavola.
+ 4. Tresette: non esce piu' di 3 senza motivo, ma deve ancora (a) uscire di 3 se in quel
+    seme hai solo carte alte da calare e (b) prendere il tuo asso col 3 quando apri tu.
+ 5. Impostazioni -> Mazzo -> Napoletane: nessuna riga o archetto grigio sui bordi.
 
 --- ATTENZIONE ---
 
  A. Il workflow ha "branches: [main]". Se il tuo ramo si chiama master, cambia quella riga.
- B. Devono esserci TUTTE le immagini: 41 ZiS + 41 piacentine + 41 bergamasche +
-    41 napoletane + 7 loghi = 171. Ne basta una mancante e la compilazione fallisce.
+ B. Devono esserci TUTTE le immagini: 171 in tutto fra le Parti 2, 3 e 4.

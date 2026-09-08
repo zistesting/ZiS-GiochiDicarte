@@ -4,7 +4,6 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.text.HtmlCompat
 
 /**
  * Finestra di sole spiegazioni, usata dal pulsante info delle tre schermate di gioco e da
@@ -14,10 +13,15 @@ import androidx.core.text.HtmlCompat
  * AlertDialog scorre da solo su alcune versioni di Android e su altre no, e si finirebbe con
  * l'ultimo paragrafo tagliato via su meta' dei telefoni.
  *
- * I testi in strings.xml stanno dentro CDATA e possono contenere <b>: setText(bodyRes) li
- * mostrerebbe come tag scritti a video, quindi passano da HtmlCompat. Dentro il CDATA gli
- * apostrofi non vanno protetti con la barra rovesciata e i ritorni a capo sono quelli veri,
- * il che rende quei quattro testi leggibili nel file invece che una riga unica piena di \n.
+ * Le parole in grassetto sono tag <b> veri dentro le risorse, non testo da interpretare.
+ * setText(idRisorsa) legge la stringa con getText(), che restituisce un CharSequence gia'
+ * formattato: il grassetto lo applica Android, senza passare da HtmlCompat.
+ *
+ * Un tentativo precedente metteva quei testi dentro CDATA per poterci scrivere gli apostrofi
+ * senza proteggerli. NON funziona: il CDATA mette al riparo dal parser XML, ma non dalle
+ * regole di escape di Android, che vengono applicate dopo, sul testo gia' estratto. La
+ * compilazione falliva con "Invalid unicode escape sequence in string", che e' il modo in cui
+ * aapt2 segnala un apostrofo non protetto.
  */
 object InfoDialog {
 
@@ -26,7 +30,7 @@ object InfoDialog {
 
         val pad = (20 * activity.resources.displayMetrics.density).toInt()
         val text = TextView(activity).apply {
-            text = HtmlCompat.fromHtml(activity.getString(bodyRes), HtmlCompat.FROM_HTML_MODE_LEGACY)
+            setText(bodyRes)
             setTextColor(activity.getColor(R.color.silver))
             textSize = 15f
             setLineSpacing(0f, 1.15f)
