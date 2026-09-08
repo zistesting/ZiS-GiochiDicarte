@@ -1,43 +1,37 @@
-PARTE 3 di 3 - il mazzo bergamasco  (41 file)
+PARTE 4 di 4 - il mazzo napoletano  (41 file)
 
-  40  carte     berg_0_1 ... berg_3_10
-   1  dorso     berg_back
+  40  carte     nap_0_1 ... nap_3_10
+   1  dorso     nap_back
 
---- PERCHE' UNA PARTE 3 ---
-
-La Parte 2 ne aveva gia' 89. Aggiungendo qui i 41 file si arrivava a 130, sopra il limite
-di 100 file per caricamento di GitHub. Quindi il mazzo nuovo sta a parte.
-
-La Parte 2 NON va ricaricata: e' rimasta identica.
+Tutti file nuovi: non sovrascrivono niente.
+Le Parti 2 e 3 restano come sono, non vanno ricaricate.
 
 --- caricamento ---
-
-Sono tutti file nuovi, non sovrascrivono niente.
 
 Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
 dentro tutti i 41 file di questa cartella (non la cartella: il suo contenuto).
 
 NON caricare questo file ISTRUZIONI.txt: serve solo a te.
 
---- ORDINE DI CARICAMENTO ---
-
-Carica PRIMA questa Parte 3 e POI la Parte 1.
-
-La Parte 1 contiene il codice che nomina queste immagini una per una. Se il codice arriva
-per primo, la build fra i due caricamenti fallisce con "resource berg_0_1 not found".
-Nessun danno, ma ti ritrovi una mail di errore da GitHub senza motivo.
+ORDINE: carica PRIMA questa Parte 4 e POI la Parte 1.
+La Parte 1 contiene il codice che nomina queste immagini una per una: se arriva per prima,
+la build fra i due caricamenti fallisce con "resource nap_0_1 not found". Nessun danno, ma
+ti arriva una mail di errore per niente.
 
 --- da sapere su questo mazzo ---
 
-Le bergamasche sono piu' STRETTE degli altri due mazzi: il riquadro stampato ha proporzione
-1,98 contro 1,78. A schermo la carta occupa l'87% della larghezza invece del 94%. Non e'
-un errore, e' la forma vera di quelle carte: stirarle per pareggiare sarebbe stato peggio.
-I mazzi non si mescolano mai fra loro, quindi in partita non si nota.
+Il foglio era il piu' difficile dei quattro. Le napoletane non hanno cornice stampata: sono
+carte bianche su fondo bianco, e in piu' si sovrappongono fra loro. L'unica traccia del bordo
+e' una linea grigia di uno o due pixel dove una carta copre la vicina.
 
-L'ASSO DI DENARI E' VUOTO. In questo tipo di mazzo e' la carta su cui i fabbricanti mettono
-il proprio marchio, e nella copia usata il marchio e' stato tolto: resta l'anello
-concentrico senza niente al centro. Funziona, ma e' l'unica carta che non dice nulla.
-Se vuoi ci si puo' mettere il marchio ZiS, come sull'asso di denari del mazzo ZiS.
+Il ritaglio quindi non insegue i bordi uno per uno: stima la griglia regolare su cui le carte
+sono disposte e usa quella. Poi la fascia esterna di ogni carta viene riportata a bianco
+pieno, perche' dove due carte si accavallano davvero la linea della vicina entrava comunque
+dentro al ritaglio: su quaranta carte solo otto uscivano pulite.
+
+Cancellare quella fascia e' sicuro: il disegno non ci arriva mai. La figura piu' sporgente di
+tutto il mazzo si ferma a 27 pixel dal bordo, e la fascia cancellata e' di 16. Verificato su
+tutte e quaranta.
 
 IL DORSO non viene dal foglio, che ne e' privo: e' lo stesso disegno vettoriale degli altri
-due dorsi, con una terza palette presa dai tre inchiostri del mazzo (blu, rosso e oro).
+tre, con una quarta palette verde e gialla presa dagli inchiostri del mazzo.
