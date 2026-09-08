@@ -1,52 +1,24 @@
-PARTE 1 di 4 - tutto il progetto tranne le immagini  (64 file)
+PARTE 2 di 2 - tutte le immagini  (89 file, sotto il limite di 100 di GitHub)
 
-ORDINE: carica PRIMA la Parte 4 (mazzo napoletano), POI questa.
-Le Parti 2 e 3 sono invariate: se le hai gia' caricate, non toccarle.
+  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
+  41  mazzo tradizionale   trad_0_1 ... trad_3_10 + trad_back
+   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
+                           title_logo, zis_logo, velvet
 
 --- caricamento ---
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
-questa cartella (non la cartella).  NON caricare questo ISTRUZIONI.txt.
+NON SERVE CANCELLARE NIENTE: i nomi sono gli stessi che ci sono gia' nel repository,
+quindi caricandoli si sovrascrivono.
 
-Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascondono:
-  .github/workflows/build-apk.yml
-  .gitignore
+Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
+dentro tutti gli 89 file di questa cartella (non la cartella: il suo contenuto).
 
-Se non l'hai ancora fatto, cancella a mano  app/src/main/res/raw/keep.xml
-(aprilo su GitHub, menu ... , Delete file). Non e' obbligatorio.
+--- cosa e' cambiato rispetto alla versione precedente ---
 
---- cosa e' cambiato ---
+Niente: le immagini sono identiche a quelle gia' nel repository. Se le hai gia'
+caricate puoi saltare questa parte e caricare solo la Parte 1.
 
- 6. SCOPA. Il Banco ora prende col settebello appena puo'.
-    Prima la presa col settebello valeva 33 e una scopa partiva da 42, quindi il Banco
-    prendeva sempre la scopa e si teneva il settebello in mano. Quasi sempre funziona,
-    perche' il sette in tavola di solito e' ancora li' al turno dopo. Ma quando non lo e',
-    il settebello resta senza presa, va calato scoperto e lo raccogli tu.
-    Il bonus e' 25, in ScopaGame.kt, con scritto accanto cosa succede a cambiarlo:
-    sotto 10 tornano davanti le scope, sopra 25 il settebello vince sempre.
+--- avvertenza di sempre ---
 
- 8. TRESETTE. keepValue si applica anche quando il Banco APRE, non solo quando risponde.
-    Prima, aprendo, guardava solo quanto rendeva la presa di quel giro e non teneva conto
-    che una carta imbattibile, giocata adesso, non c'e' piu' per catturare l'asso dopo.
-    Il peso e' 0,9, lo stesso della risposta, e ora ha un nome: KEEP_WEIGHT.
-    ONESTAMENTE: sul "3 giocato presto" l'effetto e' piccolo, un decimo di punto.
-    Il motivo e' nel commento accanto alla costante. Se vuoi che il Banco tenga davvero
-    le carte alte, alza KEEP_WEIGHT sopra 1,0 e riprova.
-
-    QUARTO MAZZO: "Napoletane". Impostazioni -> Mazzo. Le immagini sono nella Parte 4.
-
---- COSA PROVARE ---
-
- 1. Scopa: quando il Banco ha il settebello e c'e' un sette in tavola, deve prenderlo
-    subito, anche rinunciando a una scopa. Se ti sembra che ora rinunci a scope troppo
-    facilmente, il numero da abbassare e' BONUS_SETTEBELLO.
- 2. Tresette: guarda se il Banco continua a uscire di 3 nelle prime mani. Se si', il
-    valore da alzare e' KEEP_WEIGHT.
- 3. Impostazioni -> Mazzo -> Napoletane, e controlla che nessuna carta abbia righe o
-    archetti grigi lungo i bordi (erano il bordo della carta vicina nel foglio).
-
---- ATTENZIONE ---
-
- A. Il workflow ha "branches: [main]". Se il tuo ramo si chiama master, cambia quella riga.
- B. Devono esserci TUTTE le immagini: 41 ZiS + 41 piacentine + 41 bergamasche +
-    41 napoletane + 7 loghi = 171. Ne basta una mancante e la compilazione fallisce.
+Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi,
+altrimenti Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
