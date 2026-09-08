@@ -1,40 +1,62 @@
-PARTE 1 di 4 - tutto il progetto tranne le immagini  (68 file)
+PARTE 5 - il mazzo francese  (54 file)
 
-Solo codice e testi: le Parti 2, 3 e 4 (le immagini) restano come sono.
+  53  immagini  ->  app/src/main/res/drawable-nodpi/
+                    fr_0_1 ... fr_3_13  piu'  fr_back
+   1  script    ->  art/carte_francesi.py   (fuori da app/, non entra nell'APK)
+
+Sono tutti file nuovi: non sovrascrivono niente e non tolgono niente.
+Le Parti 1, 2, 3 e 4 restano come sono.
 
 --- caricamento ---
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
-questa cartella (non la cartella) -> Commit changes.
+Le due cartelle stanno in punti diversi del progetto, ma si caricano in una volta sola:
+pagina principale del repository -> Add file -> Upload files -> trascina TUTTO il contenuto
+di questa cartella (cioe' sia app/ sia art/) -> Commit changes.
+GitHub ricostruisce i percorsi da solo.
+
 NON caricare questo ISTRUZIONI.txt.
 
-Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascondono:
-  .github/workflows/build-apk.yml
-  .gitignore
+--- QUANDO CARICARLE ---
 
---- cosa e' cambiato ---
+Puoi farlo subito. Non serve nessuna modifica al codice: le immagini restano li' ferme
+finche' non c'e' il Klondike che le usa, e nel frattempo l'app compila e funziona
+esattamente come adesso.
 
- 1. FINE PARTITA, tutti e tre i giochi: le due righe riassuntive prendono il colore di chi
-    e' avanti. Giallo se sei avanti tu, celeste se e' avanti il Banco, argento in parita'.
+L'unico costo e' che l'APK cresce di circa 900 KB per qualcosa che ancora non si vede.
+Se preferisci, tieni lo zip da parte e caricalo quando arriva il codice del Klondike.
+Il consiglio e' di caricarle subito: quando arrivera' la prima versione del gioco sara'
+gia' tutto in casa e potrai provarla senza altri passaggi.
 
-      Scopa:              "Totale"  e  "Incontro"
-      Briscola/Tresette:  "Partita" e  "Incontro"
+--- come sono fatte ---
 
-    ATTENZIONE, non e' un difetto: le due righe possono uscire di COLORI DIVERSI, perche'
-    rispondono a due conti diversi. Il Totale (o la Partita) guarda la partita appena
-    finita, l'Incontro guarda la serie. Vincere la partita ed essere ancora sotto
-    nell'incontro e' normale, e in quel caso la prima riga e' gialla e la seconda celeste.
+  fr_<seme>_<valore>     semi:   0 cuori, 1 quadri, 2 fiori, 3 picche
+                         valori: 1 = Asso, 2..10, 11 = Fante, 12 = Donna, 13 = Re
 
- 2. STATISTICHE, conferma dell'azzeramento: i pulsanti ora dicono "Si" e "No" invece di
-    "Azzera" e "Annulla". La domanda e' "Vuoi azzerare tutte le statistiche?" e la risposta
-    a una domanda e' si' o no, non un'azione e un ripensamento.
-    I pulsanti dei dialoghi sono in maiuscolo per impostazione del tema, quindi a schermo
-    leggerai SI e NO.
+Misura 600x840, cioe' proporzione 1,4 e NON 1,829 come le carte italiane. Le carte
+francesi sono piu' tozze, ed e' la loro proporzione vera; nel Klondike, dove le colonne
+si sfogliano a ventaglio, ogni pixel di altezza sprecato e' una carta in meno che entra
+nello schermo. Questo vuol dire che quando faremo il gioco servira' una proporzione per
+mazzo, perche' oggi 448x819 e' cablata nei layout.
 
---- COSA PROVARE ---
+Tutte e 53 sono generate in vettoriale da art/carte_francesi.py: niente scansioni, niente
+questioni di licenza, e si rigenerano alla misura che si vuole. Pesano 893 KB in tutto,
+16,8 KB a carta, contro i 30-40 KB delle carte italiane.
 
- 1. Vinci una partita restando sotto nell'incontro (o viceversa): le due righe devono
-    avere colori diversi. E' il caso che vale la pena guardare.
- 2. Pareggio: in Briscola una partita 60-60, oppure un incontro in parita' (1-1, 2-2).
-    Le righe interessate devono venire argento.
- 3. Statistiche -> Azzera: la conferma deve dire SI e NO.
+INDICI AGLI ANGOLI, grandi, su tutte e 52. E' la scelta piu' importante del mazzo e non e'
+estetica: in una colonna del Klondike di ogni carta si vede solo la fascia in alto, e
+quello che si legge e' l'angolo, non il disegno al centro.
+
+--- LE FIGURE SONO PROVVISORIE ---
+
+Le 12 figure (J, Q, K) sono leggibili ma non belle: riconosci al volo chi e' chi, e alla
+dimensione a cui si usano nel Klondike fanno il loro lavoro, ma non reggono il confronto
+con le figure del mazzo ZiS.
+
+Sono 12 file con nomi fissi:
+  fr_0_11 fr_0_12 fr_0_13   cuori   (Fante, Donna, Re)
+  fr_1_11 fr_1_12 fr_1_13   quadri
+  fr_2_11 fr_2_12 fr_2_13   fiori
+  fr_3_11 fr_3_12 fr_3_13   picche
+
+Sostituirli con versioni migliori NON tocca una riga di codice: basta ricaricarli con gli
+stessi nomi, in 600x840. I 40 numerali e il dorso invece sono a posto e non vanno rifatti.
