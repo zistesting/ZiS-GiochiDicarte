@@ -535,7 +535,7 @@ class TresetteActivity : AppCompatActivity() {
 
     private fun render(trickOverride: List<Card>? = null) {
         b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        b.txtMatch.tintByOutcome(matchYou > matchBot)
+        b.txtMatch.tintByScore(matchYou, matchBot)
         b.botScore.text = getString(R.string.bot_points, formatThirds(game.thirdsFor(1)))
         b.youScore.text = getString(R.string.you_points, formatThirds(game.thirdsFor(0)))
 
@@ -828,14 +828,13 @@ class TresetteActivity : AppCompatActivity() {
         val you = game.scoreFor(0)
         val bot = game.scoreFor(1)
 
-        // Stessa impaginazione della Scopa e della Briscola. Il totale della mano e' sempre
-        // 11, quindi qui il pareggio di mano non esiste e bastano i due casi.
+        // Stessa impaginazione della Scopa e della Briscola: una riga sola, il primo numero
+        // e' sempre il tuo, e a dire com'e' andata e' il colore invece delle parole.
         val v = DialogResultBinding.inflate(layoutInflater)
-        v.txtHand.text = if (you > bot) getString(R.string.hand_you, you, bot)
-                         else getString(R.string.hand_bot, bot, you)
-        v.txtHand.tintByOutcome(you > bot)
+        v.txtHand.text = getString(R.string.hand_line, you, bot)
+        v.txtHand.tintByScore(you, bot)
         v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        v.txtMatch.tintByOutcome(matchYou > matchBot)
+        v.txtMatch.tintByScore(matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
@@ -854,9 +853,15 @@ class TresetteActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startHand() }
         }
         if (game.lastDealState != null) {
-            builder.setNeutralButton(getString(R.string.replay_last_deal, game.lastDealCards)) { _, _ -> replayLastDeal() }
+            builder.setNeutralButton(R.string.replay_last_deal) { _, _ -> replayLastDeal() }
         }
-        track(builder.show())
+        val dialog = builder.show()
+        // I pulsanti dei dialoghi sono in maiuscolo per impostazione del tema, e "RIGIOCA
+        // L'ULTIMA MANO" tutto maiuscolo non ci sta: veniva troncato in "RIGIOCA L'ULTIMA
+        // MA...". Spegnendo il maiuscolo solo su questo pulsante il testo entra per intero e
+        // resta la parola RIGIOCA in evidenza, che e' quella che conta.
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.isAllCaps = false
+        track(dialog)
     }
 
     // ---------------- coordinate ----------------

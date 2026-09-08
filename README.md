@@ -152,8 +152,18 @@ e' alto 5 pixel e quel residuo 1. Per questo i gruppi di righe si scartano sotto
 spessore invece che sotto una soglia di pixel scuri.
 
 Ogni carta viene poi portata a 448x819 **aggiungendo margine bianco**, mai stirando, piu' un
-margine fisso del 3% su tutti i lati: senza, la cornice disegnata, che sta esattamente sul
-bordo, verrebbe tagliata dagli angoli arrotondati con cui `CardView` ritaglia la carta.
+margine fisso del 3% su tutti i lati: senza, la cornice disegnata verrebbe tagliata dagli
+angoli arrotondati con cui `CardView` ritaglia la carta.
+
+**Quale delle due cornici.** Queste carte ne hanno due, una a filo dell'immagine e una piu'
+dentro. Prendendo quella esterna il disegno e' 574x1022, cioe' proporzione 1,78, mentre la
+carta dell'app e' 1,829: piu' stretta. Per pareggiare bisognava aggiungere altezza, e
+venivano fuori due fasce bianche di 33 pixel sopra e sotto, per giunta **fuori da una cornice
+ben visibile**, che e' esattamente cio' che si notava a schermo. Tenendo invece la cornice
+interna il disegno e' 490x933, cioe' 1,90: piu' largo della carta dell'app, quindi il
+riempimento va sui fianchi, come gia' fanno gli altri due mazzi. Il bianco passa a 13 pixel
+sopra e sotto. Si perde la cornice esterna, che era una linea sottile a filo del bordo che
+gli angoli arrotondati tagliavano comunque in parte.
 
 **Fondo bianco delle carte ZiS.** Il punto delicato e' capire qual e' il bianco. Il bianco si
 stima dalla **moda dei pixel chiari del ritaglio**, cioe' dal valore che ricorre di piu' sopra
@@ -189,7 +199,9 @@ Il dorso non viene dal foglio, che ne è privo: è lo stesso disegno vettoriale 
 con una terza palette (`berg` in `art/card_back.py`) presa dai tre inchiostri del mazzo, blu,
 rosso e oro.
 
-**Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
+**Mazzo piacentino.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
+(il prefisso dei file e' rimasto `trad_`: rinominare 41 immagini per una voce di menu non
+valeva il rischio di sbagliarne una)
 uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
 sull'asso di denari). Hanno sostituito le scansioni precedenti, che erano coperte da
 copyright. Ogni foglio contiene dieci carte su due file: `5 4 3 2 A` sopra, `Re Cavallo

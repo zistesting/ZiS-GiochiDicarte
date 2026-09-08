@@ -493,7 +493,7 @@ class GameActivity : AppCompatActivity() {
 
     private fun render() {
         b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        b.txtMatch.tintByOutcome(matchYou > matchBot)
+        b.txtMatch.tintByScore(matchYou, matchBot)
         b.botScore.text = getString(R.string.bot_points, scopeText(game.scope[1]))
         b.youScore.text = getString(R.string.you_points, scopeText(game.scope[0]))
 
@@ -826,7 +826,7 @@ class GameActivity : AppCompatActivity() {
         v.youScope.text = you.scope.toString();          v.botScope.text = bot.scope.toString()
         v.youTot.text = you.total.toString();            v.botTot.text = bot.total.toString()
         v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        v.txtMatch.tintByOutcome(matchYou > matchBot)
+        v.txtMatch.tintByScore(matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
@@ -845,8 +845,14 @@ class GameActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startRound() }
         }
         if (game.lastDealState != null) {
-            builder.setNeutralButton(getString(R.string.replay_last_deal, game.lastDealCards)) { _, _ -> replayLastDeal() }
+            builder.setNeutralButton(R.string.replay_last_deal) { _, _ -> replayLastDeal() }
         }
-        track(builder.show())
+        val dialog = builder.show()
+        // I pulsanti dei dialoghi sono in maiuscolo per impostazione del tema, e "RIGIOCA
+        // L'ULTIMA MANO" tutto maiuscolo non ci sta: veniva troncato in "RIGIOCA L'ULTIMA
+        // MA...". Spegnendo il maiuscolo solo su questo pulsante il testo entra per intero e
+        // resta la parola RIGIOCA in evidenza, che e' quella che conta.
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.isAllCaps = false
+        track(dialog)
     }
 }

@@ -14,3 +14,19 @@ import android.widget.TextView
 fun TextView.tintByOutcome(youAhead: Boolean) {
     setTextColor(context.getColor(if (youAhead) R.color.gold else R.color.celeste))
 }
+
+/**
+ * Come sopra, ma con il pareggio distinto dallo svantaggio.
+ *
+ * Serve alla riga del punteggio mostrata durante l'incontro. Con la versione a due colori un
+ * incontro in parita' si tingeva di celeste, cioe' esattamente come stare sotto: chi guardava
+ * di sfuggita leggeva un vantaggio del Banco che non c'era. In parita' il testo resta neutro
+ * e non dice niente, che e' la cosa giusta da dire.
+ */
+fun TextView.tintByScore(you: Int, bot: Int) {
+    setTextColor(context.getColor(when {
+        you > bot -> R.color.gold
+        bot > you -> R.color.celeste
+        else -> R.color.silver
+    }))
+}

@@ -457,7 +457,7 @@ class BriscolaActivity : AppCompatActivity() {
 
     private fun render(trickOverride: List<Card>? = null) {
         b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        b.txtMatch.tintByOutcome(matchYou > matchBot)
+        b.txtMatch.tintByScore(matchYou, matchBot)
         b.botScore.text = getString(R.string.bot_points, game.scoreFor(1).toString())
         b.youScore.text = getString(R.string.you_points, game.scoreFor(0).toString())
 
@@ -763,14 +763,13 @@ class BriscolaActivity : AppCompatActivity() {
         // del vincitore solo quando la partita e' finita. Prima era tutto nel messaggio
         // dell'AlertDialog, e le singole righe non si potevano colorare.
         val v = DialogResultBinding.inflate(layoutInflater)
-        v.txtHand.text = when {
-            you > bot -> getString(R.string.hand_you, you, bot)
-            bot > you -> getString(R.string.hand_bot, bot, you)
-            else -> getString(R.string.hand_draw, you, bot)
-        }
-        v.txtHand.tintByOutcome(you > bot)
+        // Una riga sola, sempre nello stesso formato di quella dell'incontro: il primo numero
+        // e' il tuo. A dire com'e' andata e' il colore, non le parole, cosi' non c'e' da
+        // leggere una frase diversa a seconda dell'esito.
+        v.txtHand.text = getString(R.string.hand_line, you, bot)
+        v.txtHand.tintByScore(you, bot)
         v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        v.txtMatch.tintByOutcome(matchYou > matchBot)
+        v.txtMatch.tintByScore(matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
@@ -791,9 +790,15 @@ class BriscolaActivity : AppCompatActivity() {
             builder.setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
         }
         if (game.lastDealState != null) {
-            builder.setNeutralButton(getString(R.string.replay_last_deal, game.lastDealCards)) { _, _ -> replayLastDeal() }
+            builder.setNeutralButton(R.string.replay_last_deal) { _, _ -> replayLastDeal() }
         }
-        track(builder.show())
+        val dialog = builder.show()
+        // I pulsanti dei dialoghi sono in maiuscolo per impostazione del tema, e "RIGIOCA
+        // L'ULTIMA MANO" tutto maiuscolo non ci sta: veniva troncato in "RIGIOCA L'ULTIMA
+        // MA...". Spegnendo il maiuscolo solo su questo pulsante il testo entra per intero e
+        // resta la parola RIGIOCA in evidenza, che e' quella che conta.
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.isAllCaps = false
+        track(dialog)
     }
 
     // ---- animation helpers ----
