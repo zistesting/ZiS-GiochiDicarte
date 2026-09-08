@@ -1,0 +1,87 @@
+# Cancella le build vecchie dall'elenco della scheda Actions.
+#
+# GitHub non ha un "seleziona tutto ed elimina": dall'interfaccia si cancella una run alla
+# volta, e nemmeno l'API sa cancellarne piu' d'una per chiamata. Quindi il ciclo lo fa questo
+# workflow, che gira su GitHub: non serve installare niente sul computer.
+#
+# ATTENZIONE alla voce "Artifact and log retention" in Settings -> Actions -> General:
+# NON fa questo lavoro. Cancella log e artefatti ma lascia le righe nell'elenco, che restano
+# li' vuote. Se vuoi che spariscano le righe, serve cancellare le run, cioe' questo.
+#
+# COME SI USA
+#   Actions -> "Pulisci lo storico delle build" -> Run workflow -> scegli quante tenerne.
+#
+# La cancellazione NON si annulla: le build eliminate spariscono per sempre, insieme ai loro
+# APK. Per questo il valore predefinito e' una prova a vuoto: la prima volta ti dice cosa
+# farebbe senza fare niente. Quando i numeri ti tornano, rilancialo mettendo "prova" su false.
+
+name: Pulisci lo storico delle build
+
+on:
+  workflow_dispatch:
+    inputs:
+      tieni:
+        description: "Quante build recenti tenere"
+        required: true
+        default: "10"
+      prova:
+        description: "Prova a vuoto: elenca soltanto, non cancella"
+        type: boolean
+        required: true
+        default: true
+
+# senza questo il token non ha il diritto di cancellare le run
+permissions:
+  actions: write
+
+jobs:
+  pulizia:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancella le build piu' vecchie
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TIENI: ${{ inputs.tieni }}
+          PROVA: ${{ inputs.prova }}
+        run: |
+          set -euo pipefail
+
+          # Solo le build concluse: una ancora in corso non si puo' cancellare, e fra queste
+          # c'e' sempre almeno questa stessa esecuzione. --paginate perche' l'API ne restituisce
+          # cento per volta e lo storico ne ha quasi sempre di piu'.
+          gh api --paginate "repos/$REPO/actions/runs?status=completed&per_page=100" \
+                 --jq '.workflow_runs[] | "\(.id)|\(.created_at)|\(.name)"' > tutte.txt
+
+          totali=$(wc -l < tutte.txt)
+          # l'elenco arriva dalla piu' recente alla piu' vecchia: le prime TIENI si saltano
+          tail -n +"$((TIENI + 1))" tutte.txt > vecchie.txt || true
+          da_cancellare=$(wc -l < vecchie.txt)
+
+          echo "Build concluse in archivio: $totali"
+          echo "Ne tengo le $TIENI piu' recenti, ne cancello $da_cancellare."
+          echo
+
+          if [ "$PROVA" = "true" ]; then
+            echo "PROVA A VUOTO: non cancello niente. Queste sarebbero eliminate:"
+            cut -d'|' -f2,3 vecchie.txt | sed 's/^/  /'
+            echo
+            echo "Se i numeri ti tornano, rilancia il workflow togliendo la spunta a \"prova\"."
+            exit 0
+          fi
+
+          fatte=0
+          saltate=0
+          while IFS='|' read -r id data nome; do
+            # questa stessa esecuzione non e' fra le concluse, ma il controllo non costa nulla
+            if [ "$id" = "$GITHUB_RUN_ID" ]; then continue; fi
+            if gh api -X DELETE "repos/$REPO/actions/runs/$id" --silent 2>/dev/null; then
+              fatte=$((fatte + 1))
+            else
+              saltate=$((saltate + 1))
+              echo "  non cancellata: $data $nome (id $id)"
+            fi
+          done < vecchie.txt
+
+          echo
+          echo "Cancellate: $fatte. Saltate: $saltate."
