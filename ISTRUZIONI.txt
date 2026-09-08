@@ -1,57 +1,37 @@
-PARTE 1 di 3 - tutto il progetto tranne le immagini  (63 file)
+PARTE 4 di 4 - il mazzo napoletano  (41 file)
 
-Vanno caricate tutte e tre le parti. ORDINE: prima la 3, poi la 2, poi questa.
-La Parte 1 nomina le immagini una per una: se arriva per prima, la build che parte fra un
-caricamento e l'altro fallisce. Nessun danno, ma ti arriva una mail di errore per niente.
+  40  carte     nap_0_1 ... nap_3_10
+   1  dorso     nap_back
+
+Tutti file nuovi: non sovrascrivono niente.
+Le Parti 2 e 3 restano come sono, non vanno ricaricate.
 
 --- caricamento ---
 
-NON SERVE CANCELLARE NIENTE, tranne UNA cosa (vedi sotto).
+Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
+dentro tutti i 41 file di questa cartella (non la cartella: il suo contenuto).
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
-questa cartella (non la cartella).  NON caricare questo ISTRUZIONI.txt.
+NON caricare questo file ISTRUZIONI.txt: serve solo a te.
 
-Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascondono:
-  .github/workflows/build-apk.yml
-  .gitignore
+ORDINE: carica PRIMA questa Parte 4 e POI la Parte 1.
+La Parte 1 contiene il codice che nomina queste immagini una per una: se arriva per prima,
+la build fra i due caricamenti fallisce con "resource nap_0_1 not found". Nessun danno, ma
+ti arriva una mail di errore per niente.
 
---- >>> UN FILE VA CANCELLATO A MANO <<< ---
+--- da sapere su questo mazzo ---
 
-  app/src/main/res/raw/keep.xml
+Il foglio era il piu' difficile dei quattro. Le napoletane non hanno cornice stampata: sono
+carte bianche su fondo bianco, e in piu' si sovrappongono fra loro. L'unica traccia del bordo
+e' una linea grigia di uno o due pixel dove una carta copre la vicina.
 
-Caricare file non ne cancella altri. Aprilo su GitHub, menu ... in alto a destra,
-Delete file, Commit. Non e' obbligatorio, e' solo un file che non serve piu' a nessuno.
+Il ritaglio quindi non insegue i bordi uno per uno: stima la griglia regolare su cui le carte
+sono disposte e usa quella. Poi la fascia esterna di ogni carta viene riportata a bianco
+pieno, perche' dove due carte si accavallano davvero la linea della vicina entrava comunque
+dentro al ritaglio: su quaranta carte solo otto uscivano pulite.
 
---- cosa e' cambiato ---
+Cancellare quella fascia e' sicuro: il disegno non ci arriva mai. La figura piu' sporgente di
+tutto il mazzo si ferma a 27 pixel dal bordo, e la fascia cancellata e' di 16. Verificato su
+tutte e quaranta.
 
- 3. Impostazioni: il mazzo "Tradizionale" ora si chiama "Piacentine".
-    I file restano trad_*: rinominare 41 immagini per una voce di menu non valeva il rischio.
- 5. Versione 3.1 -> 3.3, sia in build.gradle sia nella schermata iniziale.
-    ATTENZIONE: nel mio pacchetto la versione era 3.1, tu ne vedevi 3.2. Se avevi cambiato
-    tu il numero direttamente su GitHub, questo file lo sovrascrive: controlla che dopo il
-    caricamento build.gradle dica 3.3.
- 7. Briscola, fine partita: una riga sola "Partita: Tu XX - XX Banco", celeste se vince il
-    Banco, gialla se vinci tu. Stessa riga anche nel Tresette, per uniformita'.
- 9. Fine partita: "Il Banco vince" in celeste, "Hai vinto l'incontro!" in giallo.
-    Il punteggio dell'incontro durante il gioco e' giallo se sei avanti, celeste se e'
-    avanti il Banco, GRIGIO in parita' (prima la parita' si tingeva di celeste, cioe' come
-    stare sotto: sembrava che il Banco fosse in vantaggio quando non lo era).
-    Il pulsante troncato ora dice "RIGIOCA l'ultima mano" per intero.
-10. Tresette, impostazioni: "Punteggio per vincere l'incontro".
-11-14. I quattro testi info riscritti come li hai mandati, con le parti in *asterischi*
-    rese in grassetto vero.
-
---- COSA CONTROLLARE ---
-
- 1. La finestra info dei quattro pulsanti: il grassetto deve vedersi come grassetto, NON
-    come la scritta <b> a video. Se vedi i tag, dimmelo.
- 2. Fine partita in Briscola e Tresette: una riga sola col tuo punteggio per primo.
- 3. Il pulsante "RIGIOCA l'ultima mano" deve entrare tutto. Ha perso il conteggio delle
-    carte fra parentesi: non ci stava.
- 4. Incontro in parita' (per esempio 1-1): il punteggio in alto deve essere grigio.
- 5. Le carte ZiS non devono piu' avere la fascia bianca sopra e sotto (serve la Parte 2).
-
---- ATTENZIONE, due cose di sempre ---
-
- A. Il workflow ha "branches: [main]". Se il tuo ramo si chiama master, cambia quella riga.
- B. Devono esserci TUTTE le immagini: 41 ZiS + 41 piacentine + 41 bergamasche + 7 loghi.
+IL DORSO non viene dal foglio, che ne e' privo: e' lo stesso disegno vettoriale degli altri
+tre, con una quarta palette verde e gialla presa dagli inchiostri del mazzo.
