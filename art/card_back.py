@@ -29,6 +29,9 @@ PALETTES = {
     # i tre inchiostri delle bergamasche, campionati dal foglio: blu, rosso e oro
     "berg": dict(bg_outer="#141E3C", bg_field="#1D2C5E", lattice="#2F4487", ring="#B02F2F",
                  accent="#D9A93C", accent_hi="#F0D68C", line="#E2CE96", line_soft="#B8973F"),
+    # napoletane: il verde scuro e il giallo delle carte, su fondo caldo
+    "nap": dict(bg_outer="#12291B", bg_field="#1B3A25", lattice="#2C5B3A", ring="#B23A2A",
+                accent="#E8C33A", accent_hi="#F6E389", line="#EBD98F", line_soft="#A98B34"),
 }
 
 FX0, FY0, FX1, FY1 = 34, 34, W - 34, H - 34      # campo interno, dentro le cornici

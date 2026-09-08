@@ -16,7 +16,7 @@ package com.zis.scopa
  *    tolto, e minifyEnabled/shrinkResources si possono accendere senza rete di sicurezza.
  *
  * Indice: seme * 10 + (valore - 1). Semi: 0 denari, 1 coppe, 2 spade, 3 bastoni.
- * Tre mazzi: le illustrazioni ZiS, le figure tradizionali e le bergamasche.
+ * Quattro mazzi: le illustrazioni ZiS, le piacentine, le bergamasche e le napoletane.
  */
 object Decks {
 
@@ -41,9 +41,17 @@ object Decks {
         R.drawable.berg_3_1, R.drawable.berg_3_2, R.drawable.berg_3_3, R.drawable.berg_3_4, R.drawable.berg_3_5, R.drawable.berg_3_6, R.drawable.berg_3_7, R.drawable.berg_3_8, R.drawable.berg_3_9, R.drawable.berg_3_10
     )
 
+    private val nap = intArrayOf(
+        R.drawable.nap_0_1, R.drawable.nap_0_2, R.drawable.nap_0_3, R.drawable.nap_0_4, R.drawable.nap_0_5, R.drawable.nap_0_6, R.drawable.nap_0_7, R.drawable.nap_0_8, R.drawable.nap_0_9, R.drawable.nap_0_10,
+        R.drawable.nap_1_1, R.drawable.nap_1_2, R.drawable.nap_1_3, R.drawable.nap_1_4, R.drawable.nap_1_5, R.drawable.nap_1_6, R.drawable.nap_1_7, R.drawable.nap_1_8, R.drawable.nap_1_9, R.drawable.nap_1_10,
+        R.drawable.nap_2_1, R.drawable.nap_2_2, R.drawable.nap_2_3, R.drawable.nap_2_4, R.drawable.nap_2_5, R.drawable.nap_2_6, R.drawable.nap_2_7, R.drawable.nap_2_8, R.drawable.nap_2_9, R.drawable.nap_2_10,
+        R.drawable.nap_3_1, R.drawable.nap_3_2, R.drawable.nap_3_3, R.drawable.nap_3_4, R.drawable.nap_3_5, R.drawable.nap_3_6, R.drawable.nap_3_7, R.drawable.nap_3_8, R.drawable.nap_3_9, R.drawable.nap_3_10
+    )
+
     private fun table(prefix: String): IntArray = when (prefix) {
         Prefs.DECK_TRAD -> trad
         Prefs.DECK_BERG -> berg
+        Prefs.DECK_NAP -> nap
         else -> zis
     }
 
@@ -54,6 +62,7 @@ object Decks {
     fun backId(prefix: String): Int = when (prefix) {
         Prefs.DECK_TRAD -> R.drawable.trad_back
         Prefs.DECK_BERG -> R.drawable.berg_back
+        Prefs.DECK_NAP -> R.drawable.nap_back
         else -> R.drawable.card_back
     }
 }

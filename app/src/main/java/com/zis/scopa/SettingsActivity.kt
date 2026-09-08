@@ -72,12 +72,14 @@ class SettingsActivity : AppCompatActivity() {
         when (Prefs.deck(this)) {
             Prefs.DECK_TRAD -> b.radioDeckTrad.isChecked = true
             Prefs.DECK_BERG -> b.radioDeckBerg.isChecked = true
+            Prefs.DECK_NAP -> b.radioDeckNap.isChecked = true
             else -> b.radioDeckZis.isChecked = true
         }
         b.groupDeck.setOnCheckedChangeListener { _, id ->
             Prefs.setDeck(this, when (id) {
                 R.id.radioDeckTrad -> Prefs.DECK_TRAD
                 R.id.radioDeckBerg -> Prefs.DECK_BERG
+                R.id.radioDeckNap -> Prefs.DECK_NAP
                 else -> Prefs.DECK_ZIS
             })
         }

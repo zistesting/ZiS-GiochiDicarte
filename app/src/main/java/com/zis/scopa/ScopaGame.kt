@@ -363,9 +363,28 @@ class ScopaGame {
         return best
     }
 
+    /**
+     * Quanto vale mettere al sicuro il settebello calandolo su una presa.
+     *
+     * Senza questo bonus, prendere col settebello vale circa 33, mentre una scopa parte da
+     * 42: il Banco preferiva sempre la scopa e si teneva il settebello in mano. Quasi sempre
+     * funziona, perche' il sette in tavola di solito e' ancora li' al turno dopo. Ma quando
+     * non lo e', il settebello resta in mano senza presa, va calato scoperto e lo raccoglie
+     * l'avversario: un punto certo regalato, piu' la primiera, perche' il 7 di denari vale 21
+     * su un massimo di 84.
+     *
+     * Con 25 la presa col settebello arriva a 58 e passa davanti a quasi tutte le scope. E'
+     * una scelta, non un teorema: si rinuncia a un punto sicuro adesso per non rischiarne uno
+     * piu' pesante dopo. Chi preferisse l'altro compromesso puo' abbassare il numero: sotto
+     * 10 le scope tornano davanti, sopra 25 il settebello vince sempre.
+     */
+    private val BONUS_SETTEBELLO = 25
+
     private fun evalCapture(card: Card, cap: List<Card>): Int {
         var s = 0
         if (cap.size == table.size) s += 40 // clears the table (likely a scopa)
+        // la presa col settebello e' l'unica occasione che potrebbe non ripresentarsi
+        if (card.isSettebello) s += BONUS_SETTEBELLO
         for (c in cap + card) {
             if (c.isSettebello) s += 20
             if (c.isDenari) s += 3

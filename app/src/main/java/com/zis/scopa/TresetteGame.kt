@@ -279,6 +279,18 @@ class TresetteGame {
     }
 
     /** Quanto vale tenersi una carta invece di calarla. */
+    /**
+     * Peso di keepValue, uguale in apertura e in risposta.
+     *
+     * A 0,9 il Banco, fra due prese entrambe sicure, resta quasi indifferente su quale carta
+     * bruciare: il terzo che incassa calando il 3 compensa quasi per intero il costo di
+     * separarsene, e la differenza finale e' di un decimo di punto. Alzandolo sopra 1,0 il
+     * Banco comincia a preferire la presa sicura che gli costa meno, tenendosi il 3 per
+     * catturare l'asso avversario. E' il valore da toccare se il Banco sembra sprecare le
+     * carte alte troppo presto.
+     */
+    private val KEEP_WEIGHT = 0.9
+
     private fun keepValue(c: Card, unseen: List<Card>): Double {
         val higher = unseen.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
         // il valore in punti che perderei, piu' il valore di controllo: una carta che nessuno
@@ -312,7 +324,7 @@ class TresetteGame {
             for (c in legal) {
                 val pot = thirds(lead) + thirds(c) + bonus
                 val swing = if (followWins(lead, c)) pot.toDouble() else -pot.toDouble()
-                val s = swing - keepValue(c, unseen) * 0.9 - strength(c.value) * 0.02
+                val s = swing - keepValue(c, unseen) * KEEP_WEIGHT - strength(c.value) * 0.02
                 if (s > bestScore) { bestScore = s; best = c }
             }
             return best
@@ -320,11 +332,19 @@ class TresetteGame {
 
         // Apro io. Se ho una carta che nessuno puo' battere, esco di li': prendo di sicuro e
         // resto di mano. Altrimenti esco con la carta che rischia di costarmi meno.
+        //
+        // In entrambi i casi si sottrae keepValue, cioe' quanto costa separarsi da quella
+        // carta. Prima era applicato solo quando il Banco RISPONDEVA: aprendo, guardava
+        // soltanto quanto rendeva la presa di questo giro e non teneva conto del fatto che
+        // una carta imbattibile, giocata adesso, non e' piu' disponibile per catturare l'asso
+        // avversario piu' avanti. E' lo stesso peso usato nel ramo della risposta: la regola
+        // deve essere una sola, se no il Banco valuta la stessa carta in due modi diversi a
+        // seconda che tocchi a lui aprire o rispondere.
         var best = legal.first(); var bestScore = -1e9
         for (c in legal) {
             val higherKnown = known.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
             val higherUnknown = unknown.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
-            val s = if (higherKnown == 0 && higherUnknown == 0) {
+            val base = if (higherKnown == 0 && higherUnknown == 0) {
                 // presa sicura: prendo la mia carta piu' quella che l'avversario deve calare.
                 // Se so che ha carte di questo seme, calera' la piu' economica fra quelle;
                 // altrimenti stimo con la piu' economica fra le ignote del seme.
@@ -338,6 +358,7 @@ class TresetteGame {
                            else minOf(1.0, higherUnknown.toDouble() * hiddenSlots / maxOf(1, unknown.size))
                 -(thirds(c) * 2.0 + 0.5) * risk - 0.03 * strength(c.value)
             }
+            val s = base - keepValue(c, unseen) * KEEP_WEIGHT
             if (s > bestScore) { bestScore = s; best = c }
         }
         return best

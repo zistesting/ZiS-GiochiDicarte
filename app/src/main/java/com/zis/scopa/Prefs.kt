@@ -83,12 +83,13 @@ object Prefs {
 
     /**
      * Mazzo scelto. E' la chiave con cui Decks.kt sceglie quale delle tre tabelle di immagini
-     * usare: DECK_ZIS per le illustrazioni ZiS, DECK_TRAD per le figure tradizionali,
-     * DECK_BERG per le bergamasche.
+     * usare: DECK_ZIS per le illustrazioni ZiS, DECK_TRAD per le piacentine, DECK_BERG per
+     * le bergamasche, DECK_NAP per le napoletane.
      */
     const val DECK_ZIS = "card"
     const val DECK_TRAD = "trad"
     const val DECK_BERG = "berg"
+    const val DECK_NAP = "nap"
 
     fun deck(ctx: Context): String = p(ctx).getString("deck", DECK_ZIS) ?: DECK_ZIS
 

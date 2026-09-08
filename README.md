@@ -138,7 +138,7 @@ Cosa resta da fare prima della pubblicazione:
 
 ## Note tecniche
 
-**Mazzo.** Tre mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
+**Mazzo.** Quattro mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,
 in **WebP**.
 
 Le carte ZiS (`card_*`) sono state rifatte da quaranta immagini singole a 576x1024. Il
@@ -152,18 +152,8 @@ e' alto 5 pixel e quel residuo 1. Per questo i gruppi di righe si scartano sotto
 spessore invece che sotto una soglia di pixel scuri.
 
 Ogni carta viene poi portata a 448x819 **aggiungendo margine bianco**, mai stirando, piu' un
-margine fisso del 3% su tutti i lati: senza, la cornice disegnata verrebbe tagliata dagli
-angoli arrotondati con cui `CardView` ritaglia la carta.
-
-**Quale delle due cornici.** Queste carte ne hanno due, una a filo dell'immagine e una piu'
-dentro. Prendendo quella esterna il disegno e' 574x1022, cioe' proporzione 1,78, mentre la
-carta dell'app e' 1,829: piu' stretta. Per pareggiare bisognava aggiungere altezza, e
-venivano fuori due fasce bianche di 33 pixel sopra e sotto, per giunta **fuori da una cornice
-ben visibile**, che e' esattamente cio' che si notava a schermo. Tenendo invece la cornice
-interna il disegno e' 490x933, cioe' 1,90: piu' largo della carta dell'app, quindi il
-riempimento va sui fianchi, come gia' fanno gli altri due mazzi. Il bianco passa a 13 pixel
-sopra e sotto. Si perde la cornice esterna, che era una linea sottile a filo del bordo che
-gli angoli arrotondati tagliavano comunque in parte.
+margine fisso del 3% su tutti i lati: senza, la cornice disegnata, che sta esattamente sul
+bordo, verrebbe tagliata dagli angoli arrotondati con cui `CardView` ritaglia la carta.
 
 **Fondo bianco delle carte ZiS.** Il punto delicato e' capire qual e' il bianco. Il bianco si
 stima dalla **moda dei pixel chiari del ritaglio**, cioe' dal valore che ricorre di piu' sopra
@@ -174,6 +164,30 @@ le lame d'argento delle spade, sta sotto 235, quindi non viene toccato. Verifica
 quaranta: il fondo e' 255 pieno, angoli esterni compresi.
 
 Il **dorso** `card_back` non viene dalle immagini delle carte: resta quello disegnato in vettoriale in `art/`.
+
+**Mazzo napoletano.** Le carte `nap_*` vengono da un foglio 4x10 (una riga per seme: denari,
+coppe, bastoni, spade). Qui non funzionava niente di quello che funzionava per gli altri
+mazzi: le napoletane **non hanno cornice stampata**, sono carte bianche su fondo bianco, e per
+giunta si sovrappongono fra loro, quindi manca anche il corridoio di sfondo che separava le
+bergamasche. Cercare le righe in cui almeno il 40% dei pixel è scuro trova il disegno, non il
+bordo.
+
+L'unica traccia del bordo è una linea grigia di uno o due pixel dove una carta copre quella
+accanto, debole e interrotta agli angoli arrotondati: presa da sola non basta. Le carte però
+sono disposte con passo regolare, quindi invece di inseguire ogni bordo si stima **una
+griglia**: si prova ogni passo e ogni fase plausibile e si tiene la combinazione su cui cade
+il segnale più forte. Così i bordi deboli non si perdono, perché a decidere è la somma di
+tutti e undici e non il singolo. Il passo trovato è 352,8 in orizzontale e 600,8 in verticale,
+e cade sui bordi osservati entro pochi pixel.
+
+Il ritaglio viene poi rientrato di otto pixel e la fascia esterna del 3,5% riportata a bianco
+pieno. Rientrare non bastava: dove due carte si accavallano davvero la linea della vicina
+entra più dentro, e su quaranta carte solo otto uscivano pulite. Cancellare quella fascia è
+sicuro perché il disegno non ci arriva mai — la figura più sporgente si ferma a 27 pixel dal
+bordo contro i 16 cancellati, verificato su tutte e quaranta.
+
+Il dorso è la quarta palette di `art/card_back.py`, verde e giallo come gli inchiostri del
+mazzo.
 
 **Mazzo bergamasco.** Le carte `berg_*` vengono da un unico foglio 4x10 (una riga per seme,
 in ogni riga A, 2-7, Fante, Cavallo, Re) trovato su Wikimedia Commons. Il ritaglio è in
@@ -199,9 +213,7 @@ Il dorso non viene dal foglio, che ne è privo: è lo stesso disegno vettoriale 
 con una terza palette (`berg` in `art/card_back.py`) presa dai tre inchiostri del mazzo, blu,
 rosso e oro.
 
-**Mazzo piacentino.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
-(il prefisso dei file e' rimasto `trad_`: rinominare 41 immagini per una voce di menu non
-valeva il rischio di sbagliarne una)
+**Mazzo tradizionale.** Le carte `trad_*` vengono da scansioni di quattro fogli d'epoca,
 uno per seme, di un mazzo piacentino stampato da *Succ. Armanino - Roma* (il nome compare
 sull'asso di denari). Hanno sostituito le scansioni precedenti, che erano coperte da
 copyright. Ogni foglio contiene dieci carte su due file: `5 4 3 2 A` sopra, `Re Cavallo
@@ -279,7 +291,7 @@ WebP è supportato da Android 4.0 in su, quindi non tocca il `minSdk 24`. I nomi
 non cambiano (`card_0_1`, non `card_0_1.png`), quindi non c'è una riga di codice da modificare:
 cambia solo l'estensione del file.
 
-**Tre mazzi.** I tre mazzi sono tre tabelle di riferimenti a `R.drawable` in `Decks.kt`,
+**Quattro mazzi.** I quattro mazzi sono quattro tabelle di riferimenti a `R.drawable` in `Decks.kt`,
 indicizzate per seme e valore. L'impostazione **Mazzo** sceglie quale tabella usare.
 Aggiungerne un quarto vuol dire una tabella in piu', un valore in `Prefs`, un radio nelle
 impostazioni e una stringa: il resto del codice non sa quanti mazzi esistono.

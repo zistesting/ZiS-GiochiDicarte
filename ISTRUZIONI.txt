@@ -1,37 +1,52 @@
-PARTE 4 di 4 - il mazzo napoletano  (41 file)
+PARTE 1 di 4 - tutto il progetto tranne le immagini  (64 file)
 
-  40  carte     nap_0_1 ... nap_3_10
-   1  dorso     nap_back
-
-Tutti file nuovi: non sovrascrivono niente.
-Le Parti 2 e 3 restano come sono, non vanno ricaricate.
+ORDINE: carica PRIMA la Parte 4 (mazzo napoletano), POI questa.
+Le Parti 2 e 3 sono invariate: se le hai gia' caricate, non toccarle.
 
 --- caricamento ---
 
-Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti i 41 file di questa cartella (non la cartella: il suo contenuto).
+Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
+questa cartella (non la cartella).  NON caricare questo ISTRUZIONI.txt.
 
-NON caricare questo file ISTRUZIONI.txt: serve solo a te.
+Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascondono:
+  .github/workflows/build-apk.yml
+  .gitignore
 
-ORDINE: carica PRIMA questa Parte 4 e POI la Parte 1.
-La Parte 1 contiene il codice che nomina queste immagini una per una: se arriva per prima,
-la build fra i due caricamenti fallisce con "resource nap_0_1 not found". Nessun danno, ma
-ti arriva una mail di errore per niente.
+Se non l'hai ancora fatto, cancella a mano  app/src/main/res/raw/keep.xml
+(aprilo su GitHub, menu ... , Delete file). Non e' obbligatorio.
 
---- da sapere su questo mazzo ---
+--- cosa e' cambiato ---
 
-Il foglio era il piu' difficile dei quattro. Le napoletane non hanno cornice stampata: sono
-carte bianche su fondo bianco, e in piu' si sovrappongono fra loro. L'unica traccia del bordo
-e' una linea grigia di uno o due pixel dove una carta copre la vicina.
+ 6. SCOPA. Il Banco ora prende col settebello appena puo'.
+    Prima la presa col settebello valeva 33 e una scopa partiva da 42, quindi il Banco
+    prendeva sempre la scopa e si teneva il settebello in mano. Quasi sempre funziona,
+    perche' il sette in tavola di solito e' ancora li' al turno dopo. Ma quando non lo e',
+    il settebello resta senza presa, va calato scoperto e lo raccogli tu.
+    Il bonus e' 25, in ScopaGame.kt, con scritto accanto cosa succede a cambiarlo:
+    sotto 10 tornano davanti le scope, sopra 25 il settebello vince sempre.
 
-Il ritaglio quindi non insegue i bordi uno per uno: stima la griglia regolare su cui le carte
-sono disposte e usa quella. Poi la fascia esterna di ogni carta viene riportata a bianco
-pieno, perche' dove due carte si accavallano davvero la linea della vicina entrava comunque
-dentro al ritaglio: su quaranta carte solo otto uscivano pulite.
+ 8. TRESETTE. keepValue si applica anche quando il Banco APRE, non solo quando risponde.
+    Prima, aprendo, guardava solo quanto rendeva la presa di quel giro e non teneva conto
+    che una carta imbattibile, giocata adesso, non c'e' piu' per catturare l'asso dopo.
+    Il peso e' 0,9, lo stesso della risposta, e ora ha un nome: KEEP_WEIGHT.
+    ONESTAMENTE: sul "3 giocato presto" l'effetto e' piccolo, un decimo di punto.
+    Il motivo e' nel commento accanto alla costante. Se vuoi che il Banco tenga davvero
+    le carte alte, alza KEEP_WEIGHT sopra 1,0 e riprova.
 
-Cancellare quella fascia e' sicuro: il disegno non ci arriva mai. La figura piu' sporgente di
-tutto il mazzo si ferma a 27 pixel dal bordo, e la fascia cancellata e' di 16. Verificato su
-tutte e quaranta.
+    QUARTO MAZZO: "Napoletane". Impostazioni -> Mazzo. Le immagini sono nella Parte 4.
 
-IL DORSO non viene dal foglio, che ne e' privo: e' lo stesso disegno vettoriale degli altri
-tre, con una quarta palette verde e gialla presa dagli inchiostri del mazzo.
+--- COSA PROVARE ---
+
+ 1. Scopa: quando il Banco ha il settebello e c'e' un sette in tavola, deve prenderlo
+    subito, anche rinunciando a una scopa. Se ti sembra che ora rinunci a scope troppo
+    facilmente, il numero da abbassare e' BONUS_SETTEBELLO.
+ 2. Tresette: guarda se il Banco continua a uscire di 3 nelle prime mani. Se si', il
+    valore da alzare e' KEEP_WEIGHT.
+ 3. Impostazioni -> Mazzo -> Napoletane, e controlla che nessuna carta abbia righe o
+    archetti grigi lungo i bordi (erano il bordo della carta vicina nel foglio).
+
+--- ATTENZIONE ---
+
+ A. Il workflow ha "branches: [main]". Se il tuo ramo si chiama master, cambia quella riga.
+ B. Devono esserci TUTTE le immagini: 41 ZiS + 41 piacentine + 41 bergamasche +
+    41 napoletane + 7 loghi = 171. Ne basta una mancante e la compilazione fallisce.
