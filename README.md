@@ -410,6 +410,50 @@ spazi e un carattere a larghezza fissa: 27 caratteri che sui telefoni stretti an
 e mandavano tutto fuori squadra. Con la tabella le colonne le tiene il layout e si usa il
 carattere normale dell'app.
 
+## Klondike
+
+Il primo gioco dell'app senza avversario, e questo cambia piu' cose di quante sembri. Non c'e'
+nessuna euristica, nessuna ricerca, nessun budget di nodi: meta' del lavoro fatto per gli
+altri tre non si applica. In compenso servono due cose che gli altri non hanno mai avuto:
+l'**annulla**, perche' un solitario senza annulla e' una punizione, e il **movimento di
+gruppo**, perche' si spostano sequenze e non una carta per volta.
+
+**Le colonne.** Ogni colonna e' divisa in due liste, coperte e scoperte, invece di una lista
+piu' un contatore di quante sono girate. Evita l'errore piu' facile del gioco: sbagliare
+l'indice che separa le due parti e spostare una carta che il giocatore non ha ancora visto.
+
+Le carte scoperte formano **sempre** una sequenza valida a scendere e a colori alternati. Non
+e' una speranza, e' una conseguenza: una carta ci arriva solo se ci sta, e quando se ne scopre
+una nuova quella diventa l'unica scoperta. Per questo un gruppo da spostare e' semplicemente
+una parte finale delle scoperte, senza doverla ricontrollare.
+
+**L'annulla tiene una fotografia per mossa**, non la mossa da rifare al contrario. Rifare al
+contrario costa meno memoria ma ha una trappola: una mossa che scopre una carta non e'
+reversibile da sola, perche' rimettendo giu' la carta bisogna anche ricordarsi di ricoprire
+quella sotto. Con le fotografie il problema non esiste, e cento mosse di storia stanno in
+pochi chilobyte. La storia non viene salvata chiudendo l'app: si riprende la partita dov'era,
+ma non si torna indietro a prima della chiusura.
+
+**Pescare a una o a tre non e' un dettaglio estetico.** Pescando a tre, due terzi del tallone
+non passano mai in cima nel giro in corso, e le smazzate impossibili passano da circa una su
+undici a circa una su cinque. Sta nel costruttore proprio perche' e' il parametro che decide
+quanto e' duro il gioco.
+
+**Come e' stato verificato.** Il motore e' in Kotlin e qui non si esegue, quindi le stesse
+regole sono state riscritte in Python (`verifica/`) e messe alla prova in due modi. Mille
+partite a caso con un controllo dopo **ogni mossa** su conservazione delle 52 carte, validita'
+delle sequenze, ordine delle fondazioni e scopertura: 400.000 mosse, nessuna violazione. E un
+solutore che misura quante smazzate sono vincibili, per confrontarlo con la letteratura: sale
+da 52% a 68% a 76% alzando il budget di nodi, quindi il limite e' il solutore e non le regole,
+e il divario fra pesca da uno e da tre e' dello stesso ordine dei nove punti pubblicati.
+
+**Una trappola evitata.** Il motore non usa `removeLast()` sulle liste. Kotlin ha da sempre
+quell'estensione, ma Java 21 ha aggiunto un metodo omonimo a `java.util.List`, arrivato su
+Android solo con l'API 35: compilando contro l'SDK 36 il compilatore risolve sul metodo Java,
+il codice compila senza un fiato e poi si pianta con `NoSuchMethodError` su qualunque telefono
+sotto Android 15 — che con `minSdk 24` vuol dire quasi tutti. Gli altri tre giochi non ne
+soffrono perche' usano `ArrayDeque`, che ha metodi propri con quel nome.
+
 ## Tresette
 
 Terzo gioco: **tresette in due con il tallone**. Dieci carte a testa, venti nel tallone. Chi

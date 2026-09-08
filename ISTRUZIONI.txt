@@ -1,62 +1,63 @@
-PARTE 5 - il mazzo francese  (54 file)
+PARTE 1 di 5 - tutto il progetto tranne le immagini  (72 file)
 
-  53  immagini  ->  app/src/main/res/drawable-nodpi/
-                    fr_0_1 ... fr_3_13  piu'  fr_back
-   1  script    ->  art/carte_francesi.py   (fuori da app/, non entra nell'APK)
+Solo codice: le immagini (Parti 2, 3, 4 e 5) restano come sono.
 
-Sono tutti file nuovi: non sovrascrivono niente e non tolgono niente.
-Le Parti 1, 2, 3 e 4 restano come sono.
+>>> DOPO QUESTO AGGIORNAMENTO LE PARTITE SALVATE VENGONO SCARTATE <<<
+
+Il salvataggio codificava ogni carta come "seme x 10 + valore". Con il mazzo francese, che
+ha tredici valori per seme, quella formula sballa: e' passata a base 13. I salvataggi
+scritti con la formula vecchia verrebbero riletti storti, quindi il numero di versione e'
+salito a 2 e quelli vecchi vengono buttati.
+
+In pratica: se hai una partita a meta', finiscila PRIMA di caricare, oppure sappi che
+riaprendo il gioco ne comincera' una nuova. Le statistiche NON si perdono: stanno da
+un'altra parte.
 
 --- caricamento ---
 
-Le due cartelle stanno in punti diversi del progetto, ma si caricano in una volta sola:
-pagina principale del repository -> Add file -> Upload files -> trascina TUTTO il contenuto
-di questa cartella (cioe' sia app/ sia art/) -> Commit changes.
-GitHub ricostruisce i percorsi da solo.
+Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
+questa cartella -> Commit changes.  NON caricare questo ISTRUZIONI.txt.
 
-NON caricare questo ISTRUZIONI.txt.
+Attenzione ai due elementi che iniziano con il punto:
+  .github/workflows/build-apk.yml
+  .gitignore
 
---- QUANDO CARICARLE ---
+--- cosa c'e' dentro ---
 
-Puoi farlo subito. Non serve nessuna modifica al codice: le immagini restano li' ferme
-finche' non c'e' il Klondike che le usa, e nel frattempo l'app compila e funziona
-esattamente come adesso.
+NUOVO  app/src/main/java/com/zis/scopa/KlondikeGame.kt   il motore del solitario
+NUOVO  verifica/                                          4 file, fuori da app/, non entrano
+                                                          nell'APK: sono le prove del motore
+MODIF. app/src/main/java/com/zis/scopa/Card.kt            13 valori, rosso/nero, nomi francesi
+MODIF. app/src/main/java/com/zis/scopa/SavedGame.kt       codifica in base 13, versione 2
+MODIF. README.md
 
-L'unico costo e' che l'APK cresce di circa 900 KB per qualcosa che ancora non si vede.
-Se preferisci, tieni lo zip da parte e caricalo quando arriva il codice del Klondike.
-Il consiglio e' di caricarle subito: quando arrivera' la prima versione del gioco sara'
-gia' tutto in casa e potrai provarla senza altri passaggi.
+NON C'E' ANCORA NIENTE DA VEDERE NELL'APP. Il motore conosce le regole ma non ha uno
+schermo: nessuna voce nuova nel menu, nessun cambiamento nei tre giochi esistenti.
+L'unica cosa da controllare in questa consegna e' CHE COMPILI e che Scopa, Briscola e
+Tresette continuino a funzionare come prima.
 
---- come sono fatte ---
+--- come e' stato verificato il motore ---
 
-  fr_<seme>_<valore>     semi:   0 cuori, 1 quadri, 2 fiori, 3 picche
-                         valori: 1 = Asso, 2..10, 11 = Fante, 12 = Donna, 13 = Re
+Il Kotlin qui non si puo' eseguire, quindi le stesse regole sono state riscritte in Python
+(cartella verifica/) e messe alla prova in due modi.
 
-Misura 600x840, cioe' proporzione 1,4 e NON 1,829 come le carte italiane. Le carte
-francesi sono piu' tozze, ed e' la loro proporzione vera; nel Klondike, dove le colonne
-si sfogliano a ventaglio, ogni pixel di altezza sprecato e' una carta in meno che entra
-nello schermo. Questo vuol dire che quando faremo il gioco servira' una proporzione per
-mazzo, perche' oggi 448x819 e' cablata nei layout.
+1. Mille partite giocate a caso, con un controllo dopo OGNI mossa: le 52 carte ci sono
+   tutte una volta sola, le colonne restano sequenze valide a colori alternati, le
+   fondazioni salgono in ordine, il tallone rigirato ripete lo stesso ordine.
+   400.000 mosse controllate, nessuna violazione.
 
-Tutte e 53 sono generate in vettoriale da art/carte_francesi.py: niente scansioni, niente
-questioni di licenza, e si rigenerano alla misura che si vuole. Pesano 893 KB in tutto,
-16,8 KB a carta, contro i 30-40 KB delle carte italiane.
+2. Un solutore che misura quante smazzate sono vincibili, da confrontare con i valori
+   pubblicati (circa 82% pescando a tre). Alzando il budget di nodi il risultato sale:
+   52% -> 68% -> 76%. Sale e non si ferma, quindi il limite e' il solutore e non le regole.
 
-INDICI AGLI ANGOLI, grandi, su tutte e 52. E' la scelta piu' importante del mazzo e non e'
-estetica: in una colonna del Klondike di ogni carta si vede solo la fascia in alto, e
-quello che si legge e' l'angolo, non il disegno al centro.
+--- una trappola che ho evitato, per memoria ---
 
---- LE FIGURE SONO PROVVISORIE ---
+Il motore NON usa removeLast() sulle liste. Kotlin ha quell'estensione da sempre, ma Java 21
+ha aggiunto un metodo con lo stesso nome a java.util.List, arrivato su Android solo con
+l'API 35. Compilando contro l'SDK 36 il compilatore sceglie il metodo Java: il codice
+compila senza un fiato e poi si pianta con NoSuchMethodError su ogni telefono sotto
+Android 15. Con minSdk 24 sarebbero quasi tutti.
 
-Le 12 figure (J, Q, K) sono leggibili ma non belle: riconosci al volo chi e' chi, e alla
-dimensione a cui si usano nel Klondike fanno il loro lavoro, ma non reggono il confronto
-con le figure del mazzo ZiS.
-
-Sono 12 file con nomi fissi:
-  fr_0_11 fr_0_12 fr_0_13   cuori   (Fante, Donna, Re)
-  fr_1_11 fr_1_12 fr_1_13   quadri
-  fr_2_11 fr_2_12 fr_2_13   fiori
-  fr_3_11 fr_3_12 fr_3_13   picche
-
-Sostituirli con versioni migliori NON tocca una riga di codice: basta ricaricarli con gli
-stessi nomi, in 600x840. I 40 numerali e il dorso invece sono a posto e non vanno rifatti.
+Se in futuro scrivi removeLast() o removeFirst() su una MutableList, e' questo il motivo
+per cui non va fatto. Gli altri tre giochi non ne soffrono: usano ArrayDeque, che ha metodi
+propri con quel nome.

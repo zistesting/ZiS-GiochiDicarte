@@ -19,8 +19,13 @@ import android.content.Context
  *    passa da `onDestroy`, e li' la partita resta.
  *
  * Il formato e' volutamente elementare: sezioni separate da `|`, numeri separati da `,`
- * dentro ogni sezione. Ogni carta e' un numero da 0 a 39 (`seme * 10 + valore - 1`), i
- * posti vuoti sono -1. Niente JSON e niente serializzazione automatica: cosi' non serve
+ * dentro ogni sezione. Ogni carta e' un numero da 0 a 51 (`seme * 13 + valore - 1`), i
+ * posti vuoti sono -1.
+ *
+ * Il moltiplicatore e' 13 e non 10 perche' deve bastare anche al mazzo francese, che ha
+ * tredici valori per seme. Le carte italiane arrivano al 10 e lasciano dei buchi nella
+ * numerazione: non e' un problema, i numeri non devono essere contigui, devono solo essere
+ * univoci e riconvertibili. Niente JSON e niente serializzazione automatica: cosi' non serve
  * aggiungere plugin o dipendenze, e il formato resta leggibile a occhio se qualcosa non
  * torna.
  *
@@ -31,15 +36,18 @@ import android.content.Context
  */
 object SavedGame {
 
-    private const val VERSION = 1
+    // Alzato a 2 quando la codifica delle carte e' passata da base 10 a base 13 per fare
+    // posto al mazzo francese: i salvataggi scritti con la versione 1 verrebbero riletti
+    // storti, quindi vanno scartati. Si perde una partita a meta', non si va in errore.
+    private const val VERSION = 2
     private const val FILE = "zis_partite"
 
     const val SCOPA = "scopa"
     const val BRISCOLA = "briscola"
     const val TRESETTE = "tresette"
 
-    private fun code(c: Card) = c.suit * 10 + (c.value - 1)
-    private fun card(n: Int) = Card(n / 10, n % 10 + 1)
+    private fun code(c: Card) = c.suit * 13 + (c.value - 1)
+    private fun card(n: Int) = Card(n / 13, n % 13 + 1)
 
     class Writer {
         private val sb = StringBuilder().append(VERSION)
