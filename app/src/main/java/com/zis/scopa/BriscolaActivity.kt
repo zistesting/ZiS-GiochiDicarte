@@ -759,17 +759,19 @@ class BriscolaActivity : AppCompatActivity() {
         val you = game.scoreFor(0)
         val bot = game.scoreFor(1)
 
-        // Stessa impaginazione della Scopa: esito della mano, riga della partita, e la riga
-        // del vincitore solo quando la partita e' finita. Prima era tutto nel messaggio
-        // dell'AlertDialog, e le singole righe non si potevano colorare.
+        // Stessa tabella della Scopa, con due righe invece di sette: qui la partita e' un
+        // numero solo, non una somma di quattro punti. Colonne, caratteri e allineamento sono
+        // gli stessi, cosi' passando da un gioco all'altro il riepilogo sta sempre allo
+        // stesso posto.
         val v = DialogResultBinding.inflate(layoutInflater)
-        // Una riga sola, sempre nello stesso formato di quella dell'incontro: il primo numero
-        // e' il tuo. A dire com'e' andata e' il colore, non le parole, cosi' non c'e' da
-        // leggere una frase diversa a seconda dell'esito.
-        v.txtHand.text = getString(R.string.hand_line, you, bot)
-        v.txtHand.tintByScore(you, bot)
-        v.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        v.txtMatch.tintByScore(matchYou, matchBot)
+        v.youHand.text = you.toString();                 v.botHand.text = bot.toString()
+        // L'incontro e' l'ultima riga della stessa tabella, sotto il totale e nelle stesse
+        // colonne: si legge in verticale quanto hai fatto in questa partita e a che punto sei
+        // nell'incontro, senza ricomporre due formati diversi. Il colore dice chi e' avanti.
+        v.youMatch.text = matchYou.toString();           v.botMatch.text = matchBot.toString()
+        v.lblMatch.tintByScore(matchYou, matchBot)
+        v.youMatch.tintByScore(matchYou, matchBot)
+        v.botMatch.tintByScore(matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Riepilogo di fine mano per Briscola e Tresette. E' la stessa struttura di dialog_score.xml
-  (che la Scopa usa con in piu' la tabella dei quattro punti): esito della mano, riga della
-  partita, e la riga del vincitore che compare solo quando la partita e' finita. Prima questi
-  due giochi mettevano tutto nel messaggio dell'AlertDialog, quindi non si potevano colorare
-  le singole righe e la disposizione non somigliava a quella della Scopa.
+  Riepilogo di fine mano per Briscola e Tresette. Stessa tabella della Scopa, con due righe
+  invece di sette: qui la partita e' un numero solo, non una somma di quattro punti.
+  Le colonne, i caratteri e l'allineamento sono gli stessi, cosi' passando da un gioco
+  all'altro il riepilogo si legge sempre nello stesso posto.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -15,27 +14,71 @@
     android:paddingTop="10dp"
     android:paddingBottom="6dp">
 
-    <TextView
-        android:id="@+id/txtHand"
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/celeste"
-        android:textSize="17sp"
-        android:textStyle="bold" />
+        android:stretchColumns="0">
 
-    <TextView
-        android:id="@+id/txtMatch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:textColor="@color/celeste"
-        android:textSize="15sp" />
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="56dp"
+                android:gravity="end"
+                android:paddingStart="10dp"
+                android:paddingEnd="0dp"
+                android:text="@string/you"
+                android:textColor="@color/celeste"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="56dp"
+                android:gravity="end"
+                android:paddingStart="10dp"
+                android:paddingEnd="0dp"
+                android:text="@string/bot"
+                android:textColor="@color/celeste"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/silver_dark" />
+
+        <TableRow>
+            <TextView style="@style/ScoreLabel"
+                android:text="@string/pt_partita"
+                android:textColor="@color/gold"
+                android:textStyle="bold" />
+            <TextView android:id="@+id/youHand" style="@style/ScoreValue"
+                android:textColor="@color/gold" android:textStyle="bold" />
+            <TextView android:id="@+id/botHand" style="@style/ScoreValue"
+                android:textColor="@color/gold" android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow>
+            <TextView android:id="@+id/lblMatch" style="@style/ScoreLabel"
+                android:text="@string/pt_incontro" android:textStyle="bold" />
+            <TextView android:id="@+id/youMatch" style="@style/ScoreValue"
+                android:textStyle="bold" />
+            <TextView android:id="@+id/botMatch" style="@style/ScoreValue"
+                android:textStyle="bold" />
+        </TableRow>
+    </TableLayout>
 
     <TextView
         android:id="@+id/txtWinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="12dp"
         android:textColor="@color/celeste"
         android:textSize="16sp"
         android:textStyle="bold"

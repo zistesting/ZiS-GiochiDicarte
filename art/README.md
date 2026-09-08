@@ -54,4 +54,17 @@ python3 fogli_seme.py
 Il foglio esce 3960x2376 px con i dpi impostati a 300: in stampa sono 33,5 x 20,1 cm e la
 singola carta misura 5,1 x 9,4 cm, cioe' quasi esattamente una carta vera.
 
+`fogli_mazzo.py` compone un foglio per mazzo: le quaranta carte in quattro righe da dieci,
+una riga per seme, piu' il dorso da solo in una quinta riga. A differenza di `fogli_seme.py`
+parte dalle immagini gia' pronte a 448x819, cioe' quelle che finiscono nell'app: quaranta
+carte affiancate alla misura nativa farebbero un'immagine da centoventi milioni di pixel per
+un dettaglio che a schermo non si vedrebbe comunque.
+
+```bash
+python3 fogli_mazzo.py
+```
+
+Il foglio esce 4880x4335 px con i dpi a 300: in stampa 41,3 x 36,7 cm, e la singola carta
+3,8 x 6,9 cm.
+
 Questa cartella sta fuori da `app/`, quindi non entra nella compilazione ne' nell'APK.

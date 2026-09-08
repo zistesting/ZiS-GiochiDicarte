@@ -95,15 +95,23 @@
             <TextView android:id="@+id/botTot" style="@style/ScoreValue"
                 android:textColor="@color/gold" android:textStyle="bold" />
         </TableRow>
-    </TableLayout>
 
-    <TextView
-        android:id="@+id/txtMatch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:textColor="@color/silver"
-        android:textSize="15sp" />
+        <!--
+          L'incontro entra nella stessa tabella invece di stare su una riga a parte scritta
+          a parole. I due numeri cadono cosi' sotto quelli del totale, nelle stesse colonne:
+          si legge in verticale quanto hai fatto in questa partita e a che punto sei
+          nell'incontro, senza dover ricomporre due formati diversi.
+          Il colore lo mette il codice, perche' dipende da chi e' avanti.
+        -->
+        <TableRow>
+            <TextView android:id="@+id/lblMatch" style="@style/ScoreLabel"
+                android:text="@string/pt_incontro" android:textStyle="bold" />
+            <TextView android:id="@+id/youMatch" style="@style/ScoreValue"
+                android:textStyle="bold" />
+            <TextView android:id="@+id/botMatch" style="@style/ScoreValue"
+                android:textStyle="bold" />
+        </TableRow>
+    </TableLayout>
 
     <TextView
         android:id="@+id/txtWinner"

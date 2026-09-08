@@ -1,28 +1,8 @@
-PARTE 1 di 4 - tutto il progetto tranne le immagini  (67 file)
+PARTE 1 di 4 - tutto il progetto tranne le immagini  (68 file)
 
->>> CORREZIONE DELL'ERRORE DI COMPILAZIONE <<<
-
-La consegna precedente NON compilava:
-
-  strings.xml: Failed to flatten XML for resource 'info_app'
-               Invalid unicode escape sequence in string
-
-Colpa mia. Avevo messo i quattro testi info dentro CDATA per poterci scrivere gli
-apostrofi senza proteggerli. Il CDATA mette al riparo dal parser XML, ma NON dalle
-regole di escape di Android, che vengono applicate dopo, sul testo gia' estratto:
-"Invalid unicode escape sequence" e' il modo in cui aapt2 segnala un apostrofo nudo.
-
-Ora i quattro testi usano lo stesso stile del resto del file (apostrofi protetti con
-la barra rovesciata, \n per gli a capo) e il grassetto e' fatto con tag <b> veri, che
-Android applica da solo. Il risultato a schermo e' identico a quello previsto.
-
-Se hai gia' caricato la Parte 1 precedente, questa la sostituisce: stessi file.
-Le Parti 2, 3 e 4 non c'entrano e restano come sono.
+Solo codice e testi: le Parti 2, 3 e 4 (le immagini) restano come sono, non vanno ricaricate.
 
 --- caricamento ---
-
-Se NON hai ancora caricato la Parte 4 (mazzo napoletano), caricala PRIMA di questa.
-Se l'hai gia' caricata, qui basta questa Parte 1.
 
 Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
 questa cartella (non la cartella) -> Commit changes.
@@ -32,28 +12,41 @@ Attenzione ai due elementi che iniziano con il punto, che alcuni sistemi nascond
   .github/workflows/build-apk.yml
   .gitignore
 
-Se non l'hai ancora fatto, cancella a mano  app/src/main/res/raw/keep.xml
-(aprilo su GitHub, menu ... , Delete file). Non e' obbligatorio.
+--- cosa e' cambiato ---
 
---- cosa contiene ---
+ 1. INFO GENERALE: sotto il titolo c'e' GLOSSARIO, prima delle tre definizioni.
 
- 6. SCOPA. Il Banco prende col settebello appena puo' (BONUS_SETTEBELLO = 25).
- 8. TRESETTE. keepValue vale anche in apertura e il peso e' 1,3, cosi' il Banco tiene
-    il 3 per catturare l'asso.
-    QUARTO MAZZO: "Napoletane", in Impostazioni -> Mazzo. Immagini nella Parte 4.
-    I quattro testi info riscritti, ora nella forma che compila.
+ 2. SCOPA, fine partita: l'incontro non e' piu' una riga a parole sotto la tabella, e'
+    l'ULTIMA RIGA DELLA TABELLA, sotto Totale e nelle stesse colonne:
+
+                    Tu   Banco
+        ----------------------
+        Carte        X     X
+        Denari       X     X
+        Settebello   X     X
+        Primiera     X     X
+        Scope        X     X
+        ----------------------
+        Totale       X     X
+        Incontro     X     X
+
+ 3. BRISCOLA e TRESETTE, fine partita: stessa tabella, due righe.
+
+                    Tu   Banco
+        ----------------------
+        Partita      X     X
+        Incontro     X     X
+
+    NOTA: nel tuo messaggio il blocco "briscola" era ripetuto due volte e il Tresette non
+    era nominato. Ho dato per scontato che il secondo fosse il Tresette, visto che i due
+    giochi condividono la stessa finestra. Se non era cosi', dimmelo.
+
+ 4. La riga "Totale" resta gialla; la riga "Incontro" prende il colore di chi e' avanti:
+    giallo se sei avanti tu, celeste se e' avanti il Banco, grigio in parita'.
 
 --- COSA PROVARE ---
 
- 1. Che compili. E' la prima cosa: se passa, il resto e' verificabile con calma.
- 2. I quattro pulsanti info: il grassetto deve vedersi come grassetto, e NON devono
-    comparire barre rovesciate o scritte tipo <b> a video.
- 3. Scopa: il Banco prende col settebello appena c'e' un sette in tavola.
- 4. Tresette: non esce piu' di 3 senza motivo, ma deve ancora (a) uscire di 3 se in quel
-    seme hai solo carte alte da calare e (b) prendere il tuo asso col 3 quando apri tu.
- 5. Impostazioni -> Mazzo -> Napoletane: nessuna riga o archetto grigio sui bordi.
-
---- ATTENZIONE ---
-
- A. Il workflow ha "branches: [main]". Se il tuo ramo si chiama master, cambia quella riga.
- B. Devono esserci TUTTE le immagini: 171 in tutto fra le Parti 2, 3 e 4.
+ 1. Fine partita nei tre giochi: i numeri devono cadere incolonnati sotto Tu e Banco, e la
+    riga Incontro deve avere gli stessi numeri che vedi in alto durante la partita.
+ 2. Info generale: GLOSSARIO in grassetto sotto il titolo.
+ 3. Su un telefono stretto, controlla che la tabella non vada a capo.
