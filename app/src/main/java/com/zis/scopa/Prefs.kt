@@ -91,6 +91,14 @@ object Prefs {
     const val DECK_BERG = "berg"
     const val DECK_NAP = "nap"
 
+    /**
+     * Il mazzo francese non e' una scelta: e' l'unico che il Klondike puo' usare, e i tre
+     * giochi italiani non possono usarlo. Per questo non compare fra i pulsanti delle
+     * impostazioni, dove starebbe come un'opzione che a seconda del gioco non fa niente o
+     * rompe tutto.
+     */
+    const val DECK_FR = "fr"
+
     fun deck(ctx: Context): String = p(ctx).getString("deck", DECK_ZIS) ?: DECK_ZIS
 
     fun setDeck(ctx: Context, value: String) {
@@ -191,5 +199,22 @@ object Prefs {
     fun flush(ctx: Context) {
         @Suppress("ApplySharedPref")
         p(ctx).edit().commit()
+    }
+
+    // ---------------- Klondike ----------------
+
+    /**
+     * Quante carte si voltano dal tallone: una o tre.
+     *
+     * Non e' un dettaglio, e' il parametro che decide quanto e' duro il gioco. Pescando a
+     * tre, due terzi del tallone non passano mai in cima nel giro in corso, e le smazzate
+     * impossibili passano da circa una su undici a circa una su cinque. Il valore
+     * predefinito e' UNA proprio per questo: e' la regola piu' gentile, e chi vuole quella
+     * classica del solitario di Windows la sceglie.
+     */
+    fun klondikeDraw(ctx: Context): Int = p(ctx).getInt("klondike_draw", 1)
+
+    fun setKlondikeDraw(ctx: Context, n: Int) {
+        p(ctx).edit().putInt("klondike_draw", n).apply()
     }
 }

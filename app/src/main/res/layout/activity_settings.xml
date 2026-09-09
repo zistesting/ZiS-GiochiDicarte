@@ -29,6 +29,70 @@
                 android:textStyle="bold"
                 android:shadowColor="#000000" android:shadowDy="3" android:shadowRadius="6" />
 
+            <!--
+              Il solitario sta per primo perche' e' l'unica impostazione che cambia le regole
+              del gioco invece dell'aspetto o dei tempi.
+            -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/panel_bg"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/kl_section"
+                    android:textColor="@color/silver"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/kl_draw_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <RadioGroup
+                    android:id="@+id/groupDraw3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/radioKl1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/kl_draw_1"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <RadioButton
+                        android:id="@+id/radioKl3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/kl_draw_3"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+                </RadioGroup>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/kl_draw_info"
+                    android:textColor="@color/silver_dark"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
             <!-- Mazzo -->
             <LinearLayout
                 android:layout_width="match_parent"

@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         b.btnScopa.setOnClickListener { startActivity(Intent(this, GameActivity::class.java)) }
         b.btnBriscola.setOnClickListener { startActivity(Intent(this, BriscolaActivity::class.java)) }
         b.btnTresette.setOnClickListener { startActivity(Intent(this, TresetteActivity::class.java)) }
+        b.btnKlondike.setOnClickListener { startActivity(Intent(this, KlondikeActivity::class.java)) }
         b.btnQuit.setOnClickListener { quitApp() }
         b.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         b.btnStats.setOnClickListener { showStats() }

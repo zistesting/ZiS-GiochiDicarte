@@ -256,6 +256,19 @@ class KlondikeGame(val drawCount: Int = 1) {
     }
 
     /**
+     * Dove torna la carta in cima alla fondazione [suit], se la tocchi.
+     *
+     * Riportarla giu' e' legale e ogni tanto e' l'unica mossa che salva la partita: a volte
+     * quel 5 rosso e' il solo appoggio possibile per un 4 nero. E' anche l'unica mossa che
+     * fa tornare indietro il punteggio, quindi si propone solo se una colonna la accetta
+     * davvero.
+     */
+    fun autoTargetFromFoundation(suit: Int): Move? {
+        val c = foundations[suit].lastOrNull() ?: return null
+        return miglioreColonna(c, -1)?.let { Move.FoundationToColumn(suit, it) }
+    }
+
+    /**
      * Fra le colonne dove la carta ci sta, la migliore.
      *
      * L'ordine di preferenza non e' arbitrario. Prima una colonna con carte sopra, perche'

@@ -16,7 +16,8 @@ package com.zis.scopa
  *    tolto, e minifyEnabled/shrinkResources si possono accendere senza rete di sicurezza.
  *
  * Indice: seme * 10 + (valore - 1). Semi: 0 denari, 1 coppe, 2 spade, 3 bastoni.
- * Quattro mazzi: le illustrazioni ZiS, le piacentine, le bergamasche e le napoletane.
+ * Cinque mazzi: le illustrazioni ZiS, le piacentine, le bergamasche, le napoletane e il
+ * mazzo francese, che e' l'unico da 52 carte e serve solo al Klondike.
  */
 object Decks {
 
@@ -48,6 +49,23 @@ object Decks {
         R.drawable.nap_3_1, R.drawable.nap_3_2, R.drawable.nap_3_3, R.drawable.nap_3_4, R.drawable.nap_3_5, R.drawable.nap_3_6, R.drawable.nap_3_7, R.drawable.nap_3_8, R.drawable.nap_3_9, R.drawable.nap_3_10
     )
 
+    /**
+     * Il mazzo francese: 52 carte, tredici valori per seme invece di dieci.
+     *
+     * Sta in una tabella a parte e non nella stessa delle altre perche' cambia l'indice:
+     * qui e' seme * 13 + (valore - 1). Mescolarli in un'unica tabella significherebbe
+     * lasciare tre buchi per seme nei mazzi italiani, cioe' dodici caselle vuote in cui
+     * prima o poi qualcuno finirebbe per sbaglio.
+     *
+     * Semi: 0 cuori, 1 quadri, 2 fiori, 3 picche. Valori 1..13 (11 Fante, 12 Donna, 13 Re).
+     */
+    private val fr = intArrayOf(
+        R.drawable.fr_0_1, R.drawable.fr_0_2, R.drawable.fr_0_3, R.drawable.fr_0_4, R.drawable.fr_0_5, R.drawable.fr_0_6, R.drawable.fr_0_7, R.drawable.fr_0_8, R.drawable.fr_0_9, R.drawable.fr_0_10, R.drawable.fr_0_11, R.drawable.fr_0_12, R.drawable.fr_0_13,
+        R.drawable.fr_1_1, R.drawable.fr_1_2, R.drawable.fr_1_3, R.drawable.fr_1_4, R.drawable.fr_1_5, R.drawable.fr_1_6, R.drawable.fr_1_7, R.drawable.fr_1_8, R.drawable.fr_1_9, R.drawable.fr_1_10, R.drawable.fr_1_11, R.drawable.fr_1_12, R.drawable.fr_1_13,
+        R.drawable.fr_2_1, R.drawable.fr_2_2, R.drawable.fr_2_3, R.drawable.fr_2_4, R.drawable.fr_2_5, R.drawable.fr_2_6, R.drawable.fr_2_7, R.drawable.fr_2_8, R.drawable.fr_2_9, R.drawable.fr_2_10, R.drawable.fr_2_11, R.drawable.fr_2_12, R.drawable.fr_2_13,
+        R.drawable.fr_3_1, R.drawable.fr_3_2, R.drawable.fr_3_3, R.drawable.fr_3_4, R.drawable.fr_3_5, R.drawable.fr_3_6, R.drawable.fr_3_7, R.drawable.fr_3_8, R.drawable.fr_3_9, R.drawable.fr_3_10, R.drawable.fr_3_11, R.drawable.fr_3_12, R.drawable.fr_3_13
+    )
+
     private fun table(prefix: String): IntArray = when (prefix) {
         Prefs.DECK_TRAD -> trad
         Prefs.DECK_BERG -> berg
@@ -56,10 +74,13 @@ object Decks {
     }
 
     /** Id dell'immagine di una carta nel mazzo indicato. */
-    fun faceId(prefix: String, card: Card): Int = table(prefix)[card.suit * 10 + (card.value - 1)]
+    fun faceId(prefix: String, card: Card): Int =
+        if (prefix == Prefs.DECK_FR) fr[card.suit * 13 + (card.value - 1)]
+        else table(prefix)[card.suit * 10 + (card.value - 1)]
 
     /** Id del dorso del mazzo indicato. */
     fun backId(prefix: String): Int = when (prefix) {
+        Prefs.DECK_FR -> R.drawable.fr_back
         Prefs.DECK_TRAD -> R.drawable.trad_back
         Prefs.DECK_BERG -> R.drawable.berg_back
         Prefs.DECK_NAP -> R.drawable.nap_back

@@ -45,6 +45,7 @@ object SavedGame {
     const val SCOPA = "scopa"
     const val BRISCOLA = "briscola"
     const val TRESETTE = "tresette"
+    const val KLONDIKE = "klondike"
 
     private fun code(c: Card) = c.suit * 13 + (c.value - 1)
     private fun card(n: Int) = Card(n / 13, n % 13 + 1)

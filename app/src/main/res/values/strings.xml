@@ -125,4 +125,20 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <string name="deck_trad">Piacentine</string>
     <string name="deck_berg">Bergamasche</string>
     <string name="deck_nap">Napoletane</string>
+
+    <!-- Klondike -->
+    <string name="play_klondike">Solitario</string>
+    <string name="kl_undo">Annulla</string>
+    <string name="kl_deal">Nuova partita</string>
+    <string name="kl_deal_ask">Vuoi abbandonare questa partita e distribuire di nuovo?</string>
+    <string name="kl_finish">Completa</string>
+    <string name="kl_status">Mosse: %1$d • mancano %2$d carte</string>
+    <string name="kl_won_title">Solitario riuscito</string>
+    <string name="kl_won">Hai messo a posto tutte e 52 le carte in %1$d mosse.</string>
+    <string name="kl_section">Solitario</string>
+    <string name="kl_draw_label">Carte da voltare dal tallone</string>
+    <string name="kl_draw_1">Una alla volta</string>
+    <string name="kl_draw_3">Tre alla volta</string>
+    <string name="rules_klondike">Si gioca da soli con il mazzo francese da 52 carte. Lo scopo e\' portare tutte e quattro le fondazioni, in alto a destra, dall\'Asso al Re.\n\nSette colonne: la prima con una carta, la settima con sette. Di ogni colonna e\' scoperta solo l\'ultima. Le 24 che restano formano il tallone, in alto a sinistra.\n\n<b>Le colonne</b> si costruiscono a scendere e a colori alternati: sul 9 rosso va l\'8 nero. Si puo\' spostare una carta sola oppure un gruppo gia\' in ordine.\n\n<b>Una colonna vuota accetta solo il Re.</b> E\' la regola piu\' severa del gioco: lo spazio libero e\' la cosa piu\' preziosa che hai, e possono usarlo quattro carte su cinquantadue.\n\n<b>Le fondazioni</b> si costruiscono a salire, un seme ciascuna, dall\'Asso al Re. Una carta gia\' salita puo\' tornare in gioco, se serve come appoggio: basta toccarla.\n\n<b>Il tallone</b> si volta toccandolo. Quando finisce, toccare il posto vuoto lo rigira: le carte tornano nello stesso ordine di prima. Quante se ne voltano per volta, una o tre, si sceglie nelle impostazioni.\n\n<b>Si gioca a tocchi</b>, senza trascinare. Tocchi una carta e va dove ha senso: prima la fondazione, poi una colonna. Se la destinazione non e\' quella che volevi, c\'e\' Annulla.\n\nQuando non restano piu\' carte coperte e il tallone e\' finito, compare <b>Completa</b>: da li\' in poi non ci sono piu\' scelte da fare, solo carte da far salire.\n\nNon tutte le smazzate si possono vincere, e non e\' colpa tua: circa una su undici e\' persa in partenza voltando una carta per volta, circa una su cinque voltandone tre.</string>
+    <string name="kl_draw_info">A tre alla volta e\' molto piu\' difficile: due terzi del tallone non passano mai in cima nel giro in corso, e le smazzate impossibili passano da circa una su undici a circa una su cinque.</string>
 </resources>

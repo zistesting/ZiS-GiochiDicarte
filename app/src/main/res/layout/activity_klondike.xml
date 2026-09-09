@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il tavolo del Klondike.
+
+  Le carte NON stanno nel layout: c'e' un solo contenitore, "board", e dentro le posiziona il
+  codice. E' l'opposto di come sono fatti gli altri tre giochi, dove le mani sono LinearLayout
+  e le carte figli in fila, ed e' una scelta obbligata: qui le carte si sovrappongono a
+  ventaglio con scarti diversi per le coperte e per le scoperte, e la sovrapposizione va
+  compressa quando la colonna diventa troppo lunga. Un LinearLayout non sa fare niente di
+  tutto questo; una posizione calcolata in pixel si'.
+
+  La barra dei comandi sta in ALTO, non in basso. Nel Klondike la settima colonna puo'
+  arrivare molto in giu', e dei pulsanti in fondo verrebbero coperti proprio nelle partite
+  piu' avanzate, cioe' quando servono di piu'.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_velvet">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="4dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/txtStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/silver"
+            android:textSize="14sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnUndo"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:minWidth="0dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:background="@drawable/btn_cartiglio"
+            android:text="@string/kl_undo"
+            android:textAllCaps="false"
+            android:textColor="@color/silver"
+            android:textSize="14sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDeal"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
+            android:minWidth="0dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:background="@drawable/btn_cartiglio"
+            android:text="@string/kl_deal"
+            android:textAllCaps="false"
+            android:textColor="@color/silver"
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/btnInfo"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_info"
+            android:src="@drawable/btn_info" />
+    </LinearLayout>
+
+    <!--
+      Il pulsante del completamento automatico compare solo quando la partita e' ormai vinta
+      e resta solo da salire. Sta sopra al tavolo, sovrapposto, perche' e' momentaneo: dargli
+      uno spazio fisso vorrebbe dire togliere altezza alle colonne per tutta la partita.
+    -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnFinish"
+        android:layout_width="wrap_content"
+        android:layout_height="46dp"
+        android:layout_marginBottom="22dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:background="@drawable/btn_cartiglio"
+        android:text="@string/kl_finish"
+        android:textAllCaps="false"
+        android:textColor="@color/gold"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/board"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

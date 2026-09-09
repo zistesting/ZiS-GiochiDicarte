@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il segnaposto di una pila vuota nel Klondike: un rettangolo arrotondato di solo contorno.
+
+  Serve a due cose. Fa vedere dove le carte possono andare anche quando non ce n'e' nessuna,
+  che nel Klondike e' informazione vera: una colonna vuota e' la risorsa piu' preziosa del
+  gioco. E da' qualcosa da toccare al tallone quando e' finito, per rigirarlo.
+
+  Il raggio e' lo stesso che CardView usa per ritagliare le carte (il 10% della larghezza,
+  qui approssimato in dp), cosi' il buco e la carta che ci finira' dentro hanno lo stesso
+  profilo invece di somigliarsi e basta.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#18FFFFFF" />
+    <stroke
+        android:width="1.5dp"
+        android:color="#4DFFFFFF" />
+    <corners android:radius="6dp" />
+</shape>

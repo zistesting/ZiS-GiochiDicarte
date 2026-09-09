@@ -15,6 +15,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(b.root)
         applySystemBars(b.root)
 
+        setupKlondike()
         setupDeck()
 
         if (Prefs.scoreTarget(this) == 21) b.radio21.isChecked = true else b.radio11.isChecked = true
@@ -68,6 +69,20 @@ class SettingsActivity : AppCompatActivity() {
      * riferimenti a R.drawable (vedi Decks.kt), quindi se un'immagine manca il progetto non
      * compila proprio e il caso a runtime non esiste piu'.
      */
+    /**
+     * Quante carte si voltano dal tallone nel solitario.
+     *
+     * Cambiarlo NON tocca una partita gia' cominciata: quella continua con la regola con cui
+     * e' stata distribuita, perche' a meta' strada il tallone e' gia' stato consumato in un
+     * certo modo e cambiargli la regola sotto renderebbe la smazzata un'altra cosa.
+     */
+    private fun setupKlondike() {
+        if (Prefs.klondikeDraw(this) == 3) b.radioKl3.isChecked = true else b.radioKl1.isChecked = true
+        b.groupDraw3.setOnCheckedChangeListener { _, id ->
+            Prefs.setKlondikeDraw(this, if (id == R.id.radioKl3) 3 else 1)
+        }
+    }
+
     private fun setupDeck() {
         when (Prefs.deck(this)) {
             Prefs.DECK_TRAD -> b.radioDeckTrad.isChecked = true

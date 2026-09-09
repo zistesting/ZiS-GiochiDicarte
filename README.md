@@ -447,6 +447,32 @@ solutore che misura quante smazzate sono vincibili, per confrontarlo con la lett
 da 52% a 68% a 76% alzando il budget di nodi, quindi il limite e' il solutore e non le regole,
 e il divario fra pesca da uno e da tre e' dello stesso ordine dei nove punti pubblicati.
 
+**Lo schermo.** Le carte non stanno nel layout: c'e' un contenitore solo e dentro le
+posiziona il codice, alla coordinata calcolata. E' l'opposto degli altri tre giochi, dove le
+mani sono `LinearLayout` e le carte figli in fila, ed e' una scelta obbligata: qui le carte si
+sovrappongono a ventaglio con scarti diversi fra coperte e scoperte, e quello scarto va
+compresso quando la colonna si allunga. Un `LinearLayout` non sa fare niente di tutto questo.
+
+Sette colonne devono stare in larghezza, e questo decide tutto: la carta e' larga quanto resta
+diviso sette. Su un telefono comune viene 140 px per 196, con la proporzione 1,4 del mazzo
+francese invece dell'1,829 delle carte italiane — che e' il motivo per cui la misura non passa
+da `CardSize`, che quella proporzione ce l'ha cablata.
+
+Le coperte si sfalsano del 16% dell'altezza, le scoperte del 30%: di una coperta basta vedere
+che c'e', di una scoperta bisogna leggere l'angolo. Se la colonna sfora, i due scarti si
+comprimono insieme. Verificato simulando il tavolo con le carte vere: una colonna da diciannove
+carte ci sta ancora senza comprimere niente.
+
+**Si gioca a tocchi**, non trascinando. Tocchi una carta e va dove ha senso: prima la
+fondazione, poi una colonna, preferendo quella che non consuma uno spazio vuoto. Su un telefono
+e' anche piu' preciso del trascinamento, perche' una carta larga quaranta punti si prende male
+con un dito. Il prezzo e' che quando una carta potrebbe andare in due colonne diverse la scelta
+la fa il gioco: l'annulla e' li' apposta.
+
+**Le viste si riusano e non si rimuovono, si nascondono.** Toglierle per posizione sarebbe
+sbagliato: l'ordine dei figli viene rimescolato da `bringToFront`, che e' quello che impila i
+ventagli nel verso giusto, e si finirebbe per rimuovere una carta ancora in uso.
+
 **Una trappola evitata.** Il motore non usa `removeLast()` sulle liste. Kotlin ha da sempre
 quell'estensione, ma Java 21 ha aggiunto un metodo omonimo a `java.util.List`, arrivato su
 Android solo con l'API 35: compilando contro l'SDK 36 il compilatore risolve sul metodo Java,
