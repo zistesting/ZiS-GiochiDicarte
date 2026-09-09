@@ -165,8 +165,8 @@ def carta(i_seme, valore):
     # Valore e seme stanno AFFIANCATI, non incolonnati: nella fascia alta lo spazio scarseggia
     # in verticale e abbonda in orizzontale, e mettendoli uno sopra l'altro si finiva per
     # rimpicciolire entrambi. Il valore e' alto il 22% della carta, il seme il 15%.
-    rh = H*0.22                      # altezza del valore
-    sh = H*0.150                     # altezza del simbolo del seme
+    rh = H*0.33                      # altezza del valore
+    sh = H*0.225                     # altezza del simbolo del seme
     stretto = (valore == "10")       # il 10 e' l'unico a due cifre: un filo piu' compatto
     for ruota in (False, True):
         g = f'<g transform="rotate(180 {W/2} {H/2})">' if ruota else '<g>'
@@ -185,10 +185,12 @@ def carta(i_seme, valore):
         # affiancati diventano una macchia: per capire quale carta e' bisogna contarli, e a
         # quella misura non si contano. Il valore lo dice l'indice, che ora e' grande; il
         # simbolo al centro serve solo a far riconoscere il seme con la coda dell'occhio.
+        # Il simbolo centrale si e' dovuto stringere: gli indici, cresciuti di meta', occupano
+        # ora la fascia alta e quella bassa, e in mezzo resta meno spazio.
         out.append(f'<g fill="{colore}">'
-                   + seme_path(i_seme, bx+bw/2, by+bh*0.56, bh*0.30) + '</g>')
+                   + seme_path(i_seme, bx+bw/2, by+bh*0.50, bh*0.24) + '</g>')
     else:
-        out.append(figura(SEMI[i_seme], colore, valore, bx+bw*0.17, by+bh*0.135, bw*0.66, bh*0.73))
+        out.append(figura(SEMI[i_seme], colore, valore, bx+bw*0.20, by+bh*0.285, bw*0.60, bh*0.43))
     out.append('</svg>')
     return "".join(out)
 
