@@ -1,64 +1,62 @@
-PARTE 1 di 5 - tutto il progetto tranne le immagini  (78 file)   -   versione 3.4
+PARTE 5 - il mazzo francese  (54 file)
 
->>> SERVE ANCHE LA PARTE 5 <<<
+  53  immagini  ->  app/src/main/res/drawable-nodpi/
+                    fr_0_1 ... fr_3_13  piu'  fr_back
+   1  script    ->  art/carte_francesi.py   (fuori da app/, non entra nell'APK)
 
-Il solitario usa le carte francesi. Se non hai ancora caricato la Parte 5 (le 53 immagini
-fr_*), FALLO PRIMA di questa: il codice le nomina una per una e senza quelle la
-compilazione fallisce con "resource fr_0_1 not found".
-
-Le Parti 2, 3 e 4 restano come sono.
+Sono tutti file nuovi: non sovrascrivono niente e non tolgono niente.
+Le Parti 1, 2, 3 e 4 restano come sono.
 
 --- caricamento ---
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO di
-questa cartella -> Commit changes.  NON caricare questo ISTRUZIONI.txt.
+Le due cartelle stanno in punti diversi del progetto, ma si caricano in una volta sola:
+pagina principale del repository -> Add file -> Upload files -> trascina TUTTO il contenuto
+di questa cartella (cioe' sia app/ sia art/) -> Commit changes.
+GitHub ricostruisce i percorsi da solo.
 
-Attenzione ai due elementi che iniziano con il punto:
-  .github/workflows/build-apk.yml
-  .gitignore
+NON caricare questo ISTRUZIONI.txt.
 
---- IL SOLITARIO C'E' ---
+--- QUANDO CARICARLE ---
 
-Nuova voce "Solitario" nel menu. Klondike completo: sette colonne, quattro fondazioni,
-tallone, annulla, completamento automatico, partita che riprende dove l'avevi lasciata.
+Puoi farlo subito. Non serve nessuna modifica al codice: le immagini restano li' ferme
+finche' non c'e' il Klondike che le usa, e nel frattempo l'app compila e funziona
+esattamente come adesso.
 
-SI GIOCA A TOCCHI, non trascinando. Tocchi una carta e va dove ha senso: prima la
-fondazione, poi una colonna. Se sbaglia destinazione, c'e' Annulla.
+L'unico costo e' che l'APK cresce di circa 900 KB per qualcosa che ancora non si vede.
+Se preferisci, tieni lo zip da parte e caricalo quando arriva il codice del Klondike.
+Il consiglio e' di caricarle subito: quando arrivera' la prima versione del gioco sara'
+gia' tutto in casa e potrai provarla senza altri passaggi.
 
-  - tocca il TALLONE (in alto a sinistra) per voltare le carte
-  - quando e' finito, tocca il posto vuoto per rigirarlo
-  - tocca una carta scoperta per mandarla dove puo' andare
-  - tocca una carta in FONDAZIONE per riportarla giu', se serve come appoggio
-  - il pulsante COMPLETA compare solo quando la partita e' ormai vinta
+--- come sono fatte ---
 
-IMPOSTAZIONI: nuova sezione "Solitario", per scegliere se voltare una carta o tre.
-Il valore predefinito e' UNA: a tre e' molto piu' difficile, perche' due terzi del tallone
-non passano mai in cima nel giro in corso. Le smazzate impossibili passano da circa una su
-undici a circa una su cinque.
-Cambiando l'impostazione NON cambia la partita in corso: la nuova regola vale dalla
-smazzata successiva.
+  fr_<seme>_<valore>     semi:   0 cuori, 1 quadri, 2 fiori, 3 picche
+                         valori: 1 = Asso, 2..10, 11 = Fante, 12 = Donna, 13 = Re
 
---- COSA PROVARE ---
+Misura 600x840, cioe' proporzione 1,4 e NON 1,829 come le carte italiane. Le carte
+francesi sono piu' tozze, ed e' la loro proporzione vera; nel Klondike, dove le colonne
+si sfogliano a ventaglio, ogni pixel di altezza sprecato e' una carta in meno che entra
+nello schermo. Questo vuol dire che quando faremo il gioco servira' una proporzione per
+mazzo, perche' oggi 448x819 e' cablata nei layout.
 
- 1. Che le sette colonne ci stiano in larghezza senza tagli, e che gli angoli delle carte
-    (il numero e il seme) si leggano. E' la cosa che conta di piu': in colonna di ogni
-    carta si vede solo la fascia in alto.
- 2. Una colonna molto lunga: le carte devono stringersi da sole invece di uscire dallo
-    schermo. Ho simulato fino a diciannove carte e ci stava senza nemmeno stringere.
- 3. Annulla, anche piu' volte di fila.
- 4. Chiudi l'app a meta' partita e riaprila: deve riprendere da dove eri.
-    Esci col tasto indietro e rientra: deve distribuire una partita nuova.
- 5. Porta a termine un solitario e guarda che compaia COMPLETA quando non restano piu'
-    carte coperte.
- 6. Che Scopa, Briscola e Tresette continuino a funzionare: hanno in comune Card, Prefs,
-    SavedGame e Decks, tutti toccati.
+Tutte e 53 sono generate in vettoriale da art/carte_francesi.py: niente scansioni, niente
+questioni di licenza, e si rigenerano alla misura che si vuole. Pesano 893 KB in tutto,
+16,8 KB a carta, contro i 30-40 KB delle carte italiane.
 
---- COSA NON C'E' ANCORA ---
+INDICI AGLI ANGOLI, grandi, su tutte e 52. E' la scelta piu' importante del mazzo e non e'
+estetica: in una colonna del Klondike di ogni carta si vede solo la fascia in alto, e
+quello che si legge e' l'angolo, non il disegno al centro.
 
- - Le partite del solitario NON entrano nelle statistiche. La tabella ha le colonne
-   "Tu" e "Banco", e qui il Banco non esiste: infilarcelo vorrebbe dire dare a quella
-   colonna un significato diverso dagli altri tre giochi. Va deciso come mostrarlo.
- - Nessuna animazione: le carte si spostano di scatto.
- - Nessun suggerimento e nessun rilevamento della partita persa. Sapere se una smazzata di
-   Klondike e' ancora vincibile costa una ricerca esaustiva, e dire "hai perso" a chi
-   invece poteva vincere e' l'errore da non fare.
+--- LE FIGURE SONO PROVVISORIE ---
+
+Le 12 figure (J, Q, K) sono leggibili ma non belle: riconosci al volo chi e' chi, e alla
+dimensione a cui si usano nel Klondike fanno il loro lavoro, ma non reggono il confronto
+con le figure del mazzo ZiS.
+
+Sono 12 file con nomi fissi:
+  fr_0_11 fr_0_12 fr_0_13   cuori   (Fante, Donna, Re)
+  fr_1_11 fr_1_12 fr_1_13   quadri
+  fr_2_11 fr_2_12 fr_2_13   fiori
+  fr_3_11 fr_3_12 fr_3_13   picche
+
+Sostituirli con versioni migliori NON tocca una riga di codice: basta ricaricarli con gli
+stessi nomi, in 600x840. I 40 numerali e il dorso invece sono a posto e non vanno rifatti.
