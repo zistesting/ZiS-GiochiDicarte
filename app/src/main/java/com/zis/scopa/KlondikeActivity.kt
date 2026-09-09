@@ -136,11 +136,17 @@ class KlondikeActivity : AppCompatActivity() {
         topY = gap
         tableauY = topY + cardH + gap * 5
         passoScarti = cardW / 4
-        // Il prelievo sta a destra ed e' allineato al bordo, non a una delle sette colonne:
-        // gli scarti si aprono a ventaglio verso destra e devono finire esattamente sul
-        // margine, se no le carte piu' recenti uscirebbero dallo schermo.
-        wasteX = boardW - gap - cardW - 2 * passoScarti
-        stockX = wasteX - gap - cardW
+        // Il MAZZO sta all'estrema destra, gli SCARTI subito alla sua sinistra.
+        //
+        // wasteX e' la posizione della carta IN CIMA agli scarti, non della prima del
+        // ventaglio: le piu' vecchie si dispongono verso sinistra, a scalare. Il motivo e'
+        // che la carta in cima e' l'unica giocabile, e con l'ancoraggio sulla prima si
+        // spostava ogni volta che il numero di carte visibili cambiava da tre a due a una.
+        // Ancorando quella in cima, sta sempre nello stesso punto: la si prende senza
+        // guardare, ed e' esattamente quello che serve in un gioco fatto di raffiche di
+        // tocchi.
+        stockX = boardW - gap - cardW
+        wasteX = stockX - gap - cardW
     }
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
@@ -175,7 +181,9 @@ class KlondikeActivity : AppCompatActivity() {
         for (k in 0 until visibili) {
             val c = game.waste[game.waste.size - visibili + k]
             val ultima = (k == visibili - 1)
-            carte = piazzaCarta(carte, c, true, wasteX + k * passoScarti, topY) {
+            // la carta in cima cade su wasteX, le piu' vecchie a scalare verso sinistra
+            val x = wasteX - (visibili - 1 - k) * passoScarti
+            carte = piazzaCarta(carte, c, true, x, topY) {
                 if (ultima) muovi(game.autoTargetFromWaste())
             }
         }
@@ -233,11 +241,26 @@ class KlondikeActivity : AppCompatActivity() {
             val da = prima[carta] ?: continue
             if (da == ora) continue
             val v = vistaDi[carta] ?: continue
-            v.bringToFront()          // la carta che si muove passa sopra a tutte
+            // translationZ e NON bringToFront.
+            //
+            // bringToFront riordina i figli del contenitore, e l'ordine dei figli e' proprio
+            // quello che impila i ventagli. Animando piu' carte insieme - un gruppo, o le
+            // ventiquattro del rigiro - l'ordine in cui venivano portate avanti era quello
+            // casuale della mappa, e dopo qualche mossa il ventaglio degli scarti si
+            // ritrovava impilato al contrario: si vedeva sfalsato, e soprattutto una carta
+            // vecchia, che non ha il tocco, finiva sopra a quella in cima, che ce l'ha.
+            // Sembrava che le carte non si potessero piu' prendere; in realta' il tocco
+            // arrivava alla carta sbagliata.
+            //
+            // translationZ alza la carta solo per il disegno, senza toccare l'ordine dei
+            // figli, e si azzera appena l'animazione finisce.
+            v.translationZ = 1f
             v.translationX = da.first
             v.translationY = da.second
             v.animate().translationX(ora.first).translationY(ora.second)
-                .setDuration(DURATA_MOSSA).start()
+                .setDuration(DURATA_MOSSA)
+                .withEndAction { v.translationZ = 0f }
+                .start()
         }
     }
 
@@ -279,6 +302,7 @@ class KlondikeActivity : AppCompatActivity() {
      */
     private fun sistema(v: View, x: Int, y: Int, onTap: (() -> Unit)?) {
         v.animate().cancel()      // una vista riusata puo' avere un'animazione ancora in corso
+        v.translationZ = 0f       // e puo' essere rimasta sollevata da un'animazione interrotta
         if (v.parent == null) b.board.addView(v)
         v.bringToFront()
         val lp = (v.layoutParams as? FrameLayout.LayoutParams) ?: FrameLayout.LayoutParams(cardW, cardH)

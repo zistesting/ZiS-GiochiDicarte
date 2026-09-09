@@ -1,21 +1,44 @@
-PARTE 5 - il mazzo francese, indici piu' grandi  (54 file)
+PARTE 1 di 5 - tutto il progetto tranne le immagini  (78 file)   -   versione 3.4
 
-  53  immagini  ->  app/src/main/res/drawable-nodpi/   (sovrascrivono le precedenti)
-   1  script    ->  art/carte_francesi.py
+>>> VA RICARICATA ANCHE LA PARTE 5 <<<  (le carte hanno gli indici piu' grandi)
+Ordine: prima la Parte 5, poi questa. Le Parti 2, 3 e 4 restano come sono.
 
-VA RICARICATA: tutte e 53 sono cambiate. Stessi nomi, si sovrascrivono.
+--- caricamento ---
+
+Pagina principale -> Add file -> Upload files -> trascina il CONTENUTO -> Commit changes.
+NON caricare questo ISTRUZIONI.txt.  Attenzione a .github e .gitignore, che sono nascosti.
 
 --- cosa e' cambiato ---
 
-Valore e seme agli angoli sono cresciuti di META', come chiesto:
-  valore   dal 22% al 33% dell'altezza della carta
-  seme     dal 15% al 22,5%
+ 1. Il pulsante "Nuova partita" ora dice RIGIOCA.
 
-Per fargli posto si sono dovute stringere due cose:
-  - il simbolo grande al centro, dal 30% al 24%
-  - le figure di J, Q e K, che ora stanno nella fascia centrale fra i due indici
+ 2. MAZZO A DESTRA, SCARTI ALLA SUA SINISTRA: posizioni invertite.
+    Gli scarti pero' non sono semplicemente specchiati. Il ventaglio e' ancorato alla carta
+    IN CIMA, non alla prima: le piu' vecchie si dispongono a scalare verso sinistra. La
+    carta in cima e' l'unica giocabile, e ancorando la prima si spostava ogni volta che il
+    numero di carte visibili passava da tre a due a una. Cosi' invece sta sempre nello
+    stesso punto, subito a sinistra del mazzo, e la si prende senza guardare.
 
-Sulle figure: erano gia' provvisorie, ora sono anche piccole. Ma nel Klondike a contare e'
-la lettera J/Q/K agli angoli, che e' grande e si legge; la figura al centro resta comunque
-coperta appena la carta finisce in colonna. Sono sempre 12 file con nomi fissi
-(fr_0_11 ... fr_3_13): sostituirli con versioni migliori non tocca una riga di codice.
+ 3. IL DIFETTO DEGLI SCARTI: TROVATO E RISOLTO.
+    Non erano le carte a disallinearsi, era l'ordine con cui venivano impilate.
+    L'animazione portava avanti la carta in movimento con bringToFront, che riordina i figli
+    del contenitore. Ma l'ordine dei figli e' esattamente quello che impila i ventagli:
+    animando piu' carte insieme, l'ordine in cui venivano portate avanti era quello casuale
+    della mappa, e dopo qualche mossa il ventaglio si ritrovava impilato al contrario. Si
+    vedeva sfalsato, e soprattutto una carta VECCHIA, che non ha il tocco, finiva sopra a
+    quella in cima, che ce l'ha: il tocco arrivava alla carta sbagliata e sembrava che le
+    carte non si potessero piu' prendere.
+    Ora la carta in movimento si alza con translationZ, che agisce solo sul disegno e non
+    tocca l'ordine dei figli.
+
+ 4. Indici delle carte piu' grandi di meta' (sta nella Parte 5).
+
+--- COSA PROVARE ---
+
+ 1. Pesca a tre finche' non hai il ventaglio pieno, poi gioca la carta in cima e ripeti,
+    parecchie volte di fila. E' il caso che prima si rompeva: le carte devono restare
+    impilate nello stesso verso e quella in cima deve essere sempre prendibile.
+ 2. Rigira il tallone piu' volte: ventiquattro carte si animano insieme, ed e' l'altro caso
+    che scatenava il problema.
+ 3. Che il mazzo sia a destra e gli scarti alla sua sinistra.
+ 4. Che i valori si leggano ancora meglio di prima in colonna.

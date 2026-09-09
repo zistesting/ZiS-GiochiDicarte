@@ -471,6 +471,11 @@ di pip e' stata sostituita da un simbolo unico grande: dieci quadri affiancati s
 larga 140 pixel diventano una macchia da contare, e a quella misura non si contano. Il valore
 lo dice l'indice; il simbolo serve solo a far riconoscere il seme con la coda dell'occhio.
 
+**Il ventaglio degli scarti e' ancorato alla carta IN CIMA**, non alla prima. Le piu' vecchie
+si dispongono a scalare verso sinistra. La carta in cima e' l'unica giocabile, e ancorando la
+prima si spostava ogni volta che il numero di carte visibili passava da tre a due a una:
+ancorando quella in cima, sta sempre nello stesso punto e la si prende senza guardare.
+
 **Le carte scivolano** dalla posizione vecchia a quella nuova. L'animazione non sa quale mossa
 e' stata fatta: prima di muovere si fotografa dove si trovava ogni carta, dopo il disegno si
 confrontano le posizioni e si anima tutto quello che si e' spostato. Cosi' funziona da sola
@@ -478,6 +483,16 @@ anche per le mosse che spostano un gruppo, o per il rigiro del tallone che ne sp
 ventiquattro insieme, senza un caso per ogni tipo di mossa. E la vista e' gia' al posto giusto
 prima di partire: si riporta indietro e la si lascia tornare, quindi l'animazione non puo'
 finire in un punto sbagliato, e se viene interrotta la carta al massimo salta in posizione.
+
+**translationZ e non bringToFront.** La prima versione dell'animazione portava avanti la carta
+in movimento con `bringToFront`, che riordina i figli del contenitore. Ma l'ordine dei figli e'
+esattamente cio' che impila i ventagli: animando piu' carte insieme - un gruppo, o le
+ventiquattro del rigiro del tallone - l'ordine in cui venivano portate avanti era quello
+casuale della mappa, e dopo qualche mossa il ventaglio degli scarti si ritrovava impilato al
+contrario. Si vedeva sfalsato, e soprattutto una carta vecchia, che non ha il tocco, finiva
+sopra a quella in cima, che ce l'ha: sembrava che le carte non si potessero piu' prendere,
+mentre il tocco arrivava alla carta sbagliata. `translationZ` alza la carta solo per il
+disegno, senza toccare l'ordine dei figli.
 
 **Un difetto di larghezza che sembrava un difetto di altezza.** Nella prima versione la scritta
 con le mosse divideva la riga con i pulsanti: su un telefono stretto i pulsanti si prendevano
