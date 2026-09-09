@@ -75,9 +75,11 @@
     <string name="cd_stats">Statistiche</string>
     <string name="stats_title">Statistiche</string>
     <string name="stat_played">Giocati</string>
+    <string name="stat_won">Vinte</string>
+    <string name="stat_lost">Perse</string>
     <string name="stat_total">Totale</string>
-    <string name="stats_empty">Nessun incontro concluso: gli incontri si contano solo quando arrivano al traguardo di vittoria.</string>
-    <string name="stats_note">Incontri vinti da te in giallo. Gli incontri lasciati a metà non vengono contati.</string>
+    <string name="stats_empty">Ancora niente da contare: gli incontri contro il Banco si contano quando arrivano al traguardo, le partite di Klondike quando le vinci o le abbandoni.</string>
+    <string name="stats_note">Le partite vinte sono in giallo. Negli incontri contro il Banco si conta solo chi arriva al traguardo: quelli lasciati a metà non contano. Nel Klondike una partita si conta persa solo se la abbandoni distribuendo di nuovo.</string>
     <string name="stats_reset">Azzera</string>
     <string name="stats_reset_ask">Vuoi azzerare tutte le statistiche? L\'operazione non si può annullare.</string>
 
@@ -127,15 +129,15 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <string name="deck_nap">Napoletane</string>
 
     <!-- Klondike -->
-    <string name="play_klondike">Solitario</string>
+    <string name="play_klondike">Klondike</string>
     <string name="kl_undo">Annulla</string>
     <string name="kl_deal">Nuova partita</string>
     <string name="kl_deal_ask">Vuoi abbandonare questa partita e distribuire di nuovo?</string>
     <string name="kl_finish">Completa</string>
     <string name="kl_status">Mosse: %1$d • mancano %2$d carte</string>
-    <string name="kl_won_title">Solitario riuscito</string>
+    <string name="kl_won_title">Klondike riuscito</string>
     <string name="kl_won">Hai messo a posto tutte e 52 le carte in %1$d mosse.</string>
-    <string name="kl_section">Solitario</string>
+    <string name="kl_section">Klondike</string>
     <string name="kl_draw_label">Carte da voltare dal tallone</string>
     <string name="kl_draw_1">Una alla volta</string>
     <string name="kl_draw_3">Tre alla volta</string>

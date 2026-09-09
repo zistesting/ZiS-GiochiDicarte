@@ -33,12 +33,12 @@
                 android:textStyle="bold" />
             <TextView
                 style="@style/StatsValue"
-                android:text="@string/bot"
+                android:text="@string/stat_won"
                 android:textColor="@color/celeste"
                 android:textStyle="bold" />
             <TextView
                 style="@style/StatsValue"
-                android:text="@string/you"
+                android:text="@string/stat_lost"
                 android:textColor="@color/celeste"
                 android:textStyle="bold" />
         </TableRow>
@@ -52,20 +52,27 @@
         <TableRow>
             <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_scopa" />
             <TextView android:id="@+id/scopaPlayed" style="@style/StatsValue" />
-            <TextView android:id="@+id/scopaBot" style="@style/StatsValue" />
             <TextView android:id="@+id/scopaYou" style="@style/StatsValue" android:textColor="@color/gold" />
+            <TextView android:id="@+id/scopaBot" style="@style/StatsValue" />
         </TableRow>
         <TableRow>
             <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_briscola" />
             <TextView android:id="@+id/briscPlayed" style="@style/StatsValue" />
-            <TextView android:id="@+id/briscBot" style="@style/StatsValue" />
             <TextView android:id="@+id/briscYou" style="@style/StatsValue" android:textColor="@color/gold" />
+            <TextView android:id="@+id/briscBot" style="@style/StatsValue" />
         </TableRow>
         <TableRow>
             <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_tresette" />
             <TextView android:id="@+id/trePlayed" style="@style/StatsValue" />
-            <TextView android:id="@+id/treBot" style="@style/StatsValue" />
             <TextView android:id="@+id/treYou" style="@style/StatsValue" android:textColor="@color/gold" />
+            <TextView android:id="@+id/treBot" style="@style/StatsValue" />
+        </TableRow>
+
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_klondike" />
+            <TextView android:id="@+id/klonPlayed" style="@style/StatsValue" />
+            <TextView android:id="@+id/klonYou" style="@style/StatsValue" android:textColor="@color/gold" />
+            <TextView android:id="@+id/klonBot" style="@style/StatsValue" />
         </TableRow>
 
         <View
@@ -77,8 +84,8 @@
         <TableRow>
             <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/stat_total" android:textStyle="bold" />
             <TextView android:id="@+id/totPlayed" style="@style/StatsValue" android:textStyle="bold" />
-            <TextView android:id="@+id/totBot" style="@style/StatsValue" android:textStyle="bold" />
             <TextView android:id="@+id/totYou" style="@style/StatsValue" android:textColor="@color/gold" android:textStyle="bold" />
+            <TextView android:id="@+id/totBot" style="@style/StatsValue" android:textStyle="bold" />
         </TableRow>
     </TableLayout>
 

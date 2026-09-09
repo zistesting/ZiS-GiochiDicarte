@@ -39,8 +39,12 @@ class KlondikeActivity : AppCompatActivity() {
     private var cardW = 0
     private var cardH = 0
     private var gap = 0
+    private var boardW = 0
     private var topY = 0
     private var tableauY = 0
+    private var stockX = 0
+    private var wasteX = 0
+    private var passoScarti = 0
 
     /**
      * Le viste in gioco, riusate fra un disegno e l'altro.
@@ -52,6 +56,18 @@ class KlondikeActivity : AppCompatActivity() {
     private val cardPool = mutableListOf<CardView>()
     private val slotPool = mutableListOf<View>()
 
+    /**
+     * Dove si trovava ogni carta all'ultimo disegno, e quale vista la sta mostrando.
+     *
+     * E' quello che rende possibile l'animazione senza dover sapere quale mossa e' stata
+     * fatta. Prima di muovere si mette da parte questa mappa; dopo aver ridisegnato si
+     * confrontano le posizioni e si anima tutto quello che si e' spostato. Cosi' funziona da
+     * sola anche per le mosse che spostano UN GRUPPO di carte, o per il rigiro del tallone
+     * che ne sposta ventiquattro insieme, senza un caso per ogni tipo di mossa.
+     */
+    private val posizioni = HashMap<Card, Pair<Float, Float>>()
+    private val vistaDi = HashMap<Card, CardView>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         b = ActivityKlondikeBinding.inflate(layoutInflater)
@@ -59,7 +75,10 @@ class KlondikeActivity : AppCompatActivity() {
         applySystemBars(b.root)
 
         game = KlondikeGame(Prefs.klondikeDraw(this))
-        b.btnUndo.setOnClickListener { if (game.undo()) render() }
+        b.btnUndo.setOnClickListener {
+            val prima = HashMap(posizioni)
+            if (game.undo()) render(prima)
+        }
         b.btnDeal.setOnClickListener { chiediNuovaPartita() }
         b.btnFinish.setOnClickListener { completaDaSolo() }
         b.btnInfo.setOnClickListener {
@@ -111,11 +130,17 @@ class KlondikeActivity : AppCompatActivity() {
      */
     private fun misura() {
         gap = dp(4)
-        val w = b.board.width
-        cardW = (w - 8 * gap) / 7
+        boardW = b.board.width
+        cardW = (boardW - 8 * gap) / 7
         cardH = (cardW * RAPPORTO_FRANCESE).toInt()
         topY = gap
-        tableauY = topY + cardH + gap * 4
+        tableauY = topY + cardH + gap * 5
+        passoScarti = cardW / 4
+        // Il prelievo sta a destra ed e' allineato al bordo, non a una delle sette colonne:
+        // gli scarti si aprono a ventaglio verso destra e devono finire esattamente sul
+        // margine, se no le carte piu' recenti uscirebbero dallo schermo.
+        wasteX = boardW - gap - cardW - 2 * passoScarti
+        stockX = wasteX - gap - cardW
     }
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
@@ -124,32 +149,33 @@ class KlondikeActivity : AppCompatActivity() {
 
     // ---------------------------------------------------------------- disegno
 
-    private fun render() {
+    private fun render(daAnimare: Map<Card, Pair<Float, Float>>? = null) {
         if (destroyed || cardW == 0) return
         var carte = 0
         var slot = 0
+        posizioni.clear(); vistaDi.clear()
 
-        // --- segnaposti: tallone, scarti, quattro fondazioni ---
+        // --- segnaposti ---
+        // Le quattro fondazioni a sinistra, sotto la scritta; il prelievo a destra.
         // Quello del tallone resta toccabile anche da vuoto: e' cosi' che si rigira.
-        slot = piazzaSlot(slot, slotX(0), topY) { pesca() }
+        for (s in 0..3) slot = piazzaSlot(slot, slotX(s), topY, null)
+        slot = piazzaSlot(slot, stockX, topY) { pesca() }
         // anche gli scarti hanno il loro posto disegnato: a inizio partita e' vuoto, e senza
         // segnaposto non si capirebbe dove vanno a finire le carte che si voltano
-        slot = piazzaSlot(slot, slotX(1), topY, null)
-        for (s in 0..3) slot = piazzaSlot(slot, slotX(3 + s), topY, null)
+        slot = piazzaSlot(slot, wasteX, topY, null)
 
         // --- tallone ---
         if (game.stock.isNotEmpty()) {
-            carte = piazzaCarta(carte, null, false, slotX(0), topY) { pesca() }
+            carte = piazzaCarta(carte, null, false, stockX, topY) { pesca() }
         }
 
         // --- scarti: si vedono le ultime tre, sfalsate, cosi' pescando a tre si sa che c'e'
         //     sotto invece di vedere una carta sola comparire dal nulla ---
         val visibili = min(3, game.waste.size)
-        val passo = cardW / 4
         for (k in 0 until visibili) {
             val c = game.waste[game.waste.size - visibili + k]
             val ultima = (k == visibili - 1)
-            carte = piazzaCarta(carte, c, true, slotX(1) + k * passo, topY) {
+            carte = piazzaCarta(carte, c, true, wasteX + k * passoScarti, topY) {
                 if (ultima) muovi(game.autoTargetFromWaste())
             }
         }
@@ -158,7 +184,7 @@ class KlondikeActivity : AppCompatActivity() {
         for (s in 0..3) {
             val f = game.foundations[s]
             if (f.isEmpty()) continue
-            carte = piazzaCarta(carte, f.last(), true, slotX(3 + s), topY) {
+            carte = piazzaCarta(carte, f.last(), true, slotX(s), topY) {
                 muovi(game.autoTargetFromFoundation(s))
             }
         }
@@ -190,6 +216,29 @@ class KlondikeActivity : AppCompatActivity() {
         for (i in carte until cardPool.size) spegni(cardPool[i])
         for (i in slot until slotPool.size) spegni(slotPool[i])
         aggiornaBarra()
+        if (daAnimare != null) animaSpostate(daAnimare)
+    }
+
+    /**
+     * Fa scivolare ogni carta dalla posizione di prima a quella di adesso.
+     *
+     * La vista e' gia' al posto giusto: si riporta indietro con una traslazione e la si
+     * lascia tornare. Cosi' l'animazione non puo' mai finire in un punto sbagliato, perche'
+     * non e' l'animazione a decidere dove va la carta: quando finisce, la carta e' dove il
+     * disegno l'ha messa comunque. Se l'animazione viene interrotta, al massimo la carta
+     * salta in posizione, che e' esattamente il comportamento di prima.
+     */
+    private fun animaSpostate(prima: Map<Card, Pair<Float, Float>>) {
+        for ((carta, ora) in posizioni) {
+            val da = prima[carta] ?: continue
+            if (da == ora) continue
+            val v = vistaDi[carta] ?: continue
+            v.bringToFront()          // la carta che si muove passa sopra a tutte
+            v.translationX = da.first
+            v.translationY = da.second
+            v.animate().translationX(ora.first).translationY(ora.second)
+                .setDuration(DURATA_MOSSA).start()
+        }
     }
 
     /**
@@ -229,6 +278,7 @@ class KlondikeActivity : AppCompatActivity() {
      * volta, che dopo qualche mossa non vuol piu' dire niente.
      */
     private fun sistema(v: View, x: Int, y: Int, onTap: (() -> Unit)?) {
+        v.animate().cancel()      // una vista riusata puo' avere un'animazione ancora in corso
         if (v.parent == null) b.board.addView(v)
         v.bringToFront()
         val lp = (v.layoutParams as? FrameLayout.LayoutParams) ?: FrameLayout.LayoutParams(cardW, cardH)
@@ -259,6 +309,12 @@ class KlondikeActivity : AppCompatActivity() {
         v.card = c
         v.faceUp = faceUp
         sistema(v, x, y, onTap)
+        // Solo le scoperte: una coperta e' indistinguibile da un'altra, e animarle
+        // significherebbe far volare dorsi che a occhio non si sono mossi.
+        if (c != null && faceUp) {
+            posizioni[c] = Pair(x.toFloat(), y.toFloat())
+            vistaDi[c] = v
+        }
         return indice + 1
     }
 
@@ -279,8 +335,9 @@ class KlondikeActivity : AppCompatActivity() {
 
     private fun muovi(m: KlondikeGame.Move?) {
         if (m == null || destroyed) return
+        val prima = HashMap(posizioni)
         if (!game.play(m)) return
-        render()
+        render(prima)
         if (game.finished) vinta()
     }
 
@@ -294,17 +351,28 @@ class KlondikeActivity : AppCompatActivity() {
     private fun completaDaSolo() {
         val m = game.nextAutoMove()
         if (m == null || destroyed) { render(); return }
+        val prima = HashMap(posizioni)
         game.play(m)
-        render()
-        if (game.finished) vinta() else ui.postDelayed({ completaDaSolo() }, 90)
+        render(prima)
+        // il passo aspetta un filo piu' della durata dell'animazione, se no le carte
+        // partirebbero l'una sopra l'altra e si vedrebbe un ingorgo invece di una salita
+        if (game.finished) vinta() else ui.postDelayed({ completaDaSolo() }, DURATA_MOSSA + 30)
     }
 
     // ---------------------------------------------------------------- partita
 
     private fun nuovaPartita() {
+        // Abbandonare una partita gia' cominciata la conta come persa. E' l'unico momento in
+        // cui ha senso farlo: uscire dal gioco non conta niente, perche' la partita resta
+        // salvata e la riprendi, e una smazzata bloccata non si puo' riconoscere in modo
+        // affidabile. Distribuire di nuovo, invece, e' una rinuncia dichiarata.
+        if (started && !game.finished && game.moves > 0) {
+            Prefs.recordMatch(this, Prefs.GAME_KLONDIKE, false)
+        }
         game = KlondikeGame(Prefs.klondikeDraw(this))
         game.newGame()
         started = true
+        vittoriaContata = false
         render()
     }
 
@@ -326,8 +394,15 @@ class KlondikeActivity : AppCompatActivity() {
             .show()
     }
 
+    private var vittoriaContata = false
+
     private fun vinta() {
         if (destroyed || isFinishing) return
+        // il controllo evita di contarla due volte se la finestra viene riaperta
+        if (!vittoriaContata) {
+            vittoriaContata = true
+            Prefs.recordMatch(this, Prefs.GAME_KLONDIKE, true)
+        }
         openDialog?.dismiss()
         openDialog = AlertDialog.Builder(this)
             .setTitle(R.string.kl_won_title)
@@ -366,6 +441,7 @@ class KlondikeActivity : AppCompatActivity() {
             return false
         }
         started = true
+        vittoriaContata = game.finished
         render()
         return true
     }
@@ -373,5 +449,16 @@ class KlondikeActivity : AppCompatActivity() {
     companion object {
         /** 840/600: le carte francesi sono piu' tozze delle italiane, che stanno a 1,829. */
         const val RAPPORTO_FRANCESE = 1.4f
+
+        /**
+         * Quanto dura lo scivolamento di una carta.
+         *
+         * Centosessanta millesimi: abbastanza da far vedere DA DOVE arriva la carta, che nel
+         * Klondike e' l'informazione che serve, perche' i tocchi sono tanti e ravvicinati e
+         * senza il movimento si perde il filo di cosa e' appena successo. Piu' lunga
+         * rallenterebbe il gioco, che qui e' fatto di raffiche di mosse e non di una giocata
+         * ogni tanto come negli altri tre.
+         */
+        const val DURATA_MOSSA = 160L
     }
 }

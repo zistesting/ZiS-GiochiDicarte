@@ -1,27 +1,73 @@
-PARTE 5 - il mazzo francese, RIFATTO  (54 file)
+PARTE 1 di 5 - tutto il progetto tranne le immagini  (78 file)   -   versione 3.4
 
-  53  immagini  ->  app/src/main/res/drawable-nodpi/   (sovrascrivono le precedenti)
-   1  script    ->  art/carte_francesi.py
+>>> VA RICARICATA ANCHE LA PARTE 5 <<<
 
-VA RICARICATA: le 53 immagini sono cambiate tutte. Stessi nomi, quindi si sovrascrivono.
+Le 53 carte francesi sono state RIFATTE: erano illeggibili. Stessi nomi, si sovrascrivono.
+Le Parti 2, 3 e 4 restano come sono.
+Ordine: prima la Parte 5, poi questa.
 
---- cosa e' cambiato e perche' ---
+--- caricamento ---
 
-Le carte erano illeggibili al Klondike. Non era colpa della risoluzione: era il disegno.
+Pagina principale -> Add file -> Upload files -> trascina il CONTENUTO -> Commit changes.
+NON caricare questo ISTRUZIONI.txt.  Attenzione a .github e .gitignore, che sono nascosti.
 
- 1. INDICI MOLTO PIU' GRANDI. Il valore ora e' alto il 22% della carta invece dell'8,5%, e
-    il seme gli sta ACCANTO invece che sotto: nella fascia in alto lo spazio scarseggia in
-    verticale e abbonda in orizzontale, e incolonnandoli si finiva per rimpicciolire
-    entrambi.
+--- LE CARTE (punto 6) ---
 
- 2. UN SOLO SIMBOLO GRANDE AL CENTRO, al posto della griglia di pip. Su una carta larga 140
-    pixel dieci quadri affiancati diventano una macchia: per capire quale carta e' bisogna
-    contarli, e a quella misura non si contano. Il valore lo dice l'indice, che ora si legge;
-    il simbolo al centro serve solo a riconoscere il seme con la coda dell'occhio.
+Il problema non era la risoluzione, era il disegno.
+  - il valore agli angoli e' passato dall'8,5% al 22% dell'altezza della carta, e il seme
+    ora gli sta ACCANTO invece che sotto
+  - al centro c'e' UN SOLO simbolo grande al posto della griglia di pip: dieci quadri su
+    una carta larga 140 pixel sono una macchia da contare, e a quella misura non si contano
+Come nell'esempio che hai mandato. In colonna di ogni carta si vede solo la fascia in alto:
+se il valore non si legge li', non si legge da nessuna parte.
 
-Il motivo di fondo e' che nel Klondike, in colonna, di ogni carta si vede SOLO la fascia in
-alto. Il disegno al centro non lo guarda nessuno tranne che sulla carta in cima a ogni pila.
+--- LA SCHERMATA (punti 1, 2, 3, 4, 5, 7) ---
 
-Le figure J, Q e K restano quelle provvisorie di prima, solo rimpicciolite per far posto
-agli indici. Sono sempre 12 file con nomi fissi (fr_0_11 ... fr_3_13): sostituirli con
-versioni migliori non tocca una riga di codice.
+I punti 1 e 7 erano LO STESSO DIFETTO. La scritta divideva la riga con i pulsanti: su un
+telefono stretto ai pulsanti andava quasi tutta la larghezza, alla scritta una ventina di
+punti, e andava a capo una lettera per riga. La barra diventava alta mezzo schermo; il
+tavolo prende l'altezza che avanza, quindi le colonne restavano senza spazio e si
+schiacciavano fino a mostrare una carta sola. Sistemata la scritta, si sistemano tutt'e due.
+
+Ora:
+  1. la scritta "Mosse ... mancano ... carte" e' in alto al centro, su una riga sua,
+     con maxLines a 1: non puo' piu' andare a capo in nessun caso
+  2. il pulsante info e' in alto a sinistra, 44dp con scaleType fitCenter: non si ritaglia
+  3. le 4 fondazioni in alto a sinistra, sotto la scritta; tallone e scarti a destra,
+     allineati al bordo perche' gli scarti si aprono a ventaglio verso destra
+  4. le 7 colonne sotto
+  5. Annulla e Nuova partita in fondo, mezza riga ciascuno
+
+--- ANIMAZIONE (punto 2 della lista) ---
+
+Le carte scivolano dalla partenza all'arrivo, 160 millesimi. Funziona anche per le mosse
+che spostano un gruppo e per il rigiro del tallone, che ne sposta ventiquattro insieme:
+l'animazione non sa quale mossa e' stata fatta, confronta dove stavano le carte prima e
+dove stanno dopo.
+
+--- STATISTICHE ---
+
+Le colonne ora si chiamano VINTE e PERSE invece di "Tu" e "Banco", e sono state anche
+scambiate di posto: le vinte (in giallo) vengono prima.
+C'e' la riga KLONDIKE.
+
+Nel Klondike una partita si conta PERSA solo se la abbandoni distribuendo di nuovo dopo
+aver fatto almeno una mossa. Uscire dal gioco non conta niente, perche' la partita resta
+salvata e la riprendi. Una smazzata bloccata non si puo' riconoscere in modo affidabile,
+quindi non viene contata da sola.
+
+--- NOME ---
+
+"Solitario" e' diventato "Klondike" ovunque: menu, impostazioni, statistiche, titolo della
+finestra di vittoria.
+
+--- COSA PROVARE ---
+
+ 1. Che la scritta in alto sia orizzontale e che le colonne si aprano per intero.
+ 2. Che i valori delle carte si leggano in colonna, dove si vede solo la fascia in alto.
+ 3. L'animazione: tocca una carta e guardala scivolare. Poi rigira il tallone e guarda
+    partire tutte insieme.
+ 4. Statistiche: gioca e vinci un Klondike, poi abbandonane uno a meta'. Devono comparire
+    una vinta e una persa.
+ 5. Che Scopa, Briscola e Tresette funzionino ancora: la tabella delle statistiche e'
+     condivisa e ha cambiato colonne.

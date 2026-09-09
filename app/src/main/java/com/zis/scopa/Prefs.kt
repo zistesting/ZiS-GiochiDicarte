@@ -33,6 +33,14 @@ object Prefs {
     const val GAME_TRESETTE = "tresette"
 
     /**
+     * Il Klondike sta nelle statistiche come gli altri, ma "vinta" e "persa" vogliono dire
+     * un'altra cosa: non c'e' un avversario che vince quando perdi tu. Una partita si conta
+     * come persa quando la abbandoni distribuendo di nuovo dopo aver fatto almeno una mossa.
+     * Uscire dal gioco non conta niente, perche' la partita resta li' e la riprendi.
+     */
+    const val GAME_KLONDIKE = "klondike"
+
+    /**
      * Registra una partita conclusa. Si contano solo le vittorie, da una parte o dall'altra:
      * le partite giocate sono la loro somma. Tenere un terzo contatore separato vorrebbe dire
      * poterlo veder divergere dagli altri due, e non ci sarebbe modo di sapere quale dei tre
@@ -59,7 +67,7 @@ object Prefs {
 
     fun clearStats(ctx: Context) {
         val e = p(ctx).edit()
-        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE)) {
+        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE, GAME_KLONDIKE)) {
             e.remove("stats_${g}_you"); e.remove("stats_${g}_bot")
         }
         e.apply()

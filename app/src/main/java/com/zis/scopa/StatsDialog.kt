@@ -32,10 +32,21 @@ object StatsDialog {
         var totBot = 0
 
         // (celle del gioco) -> chiave con cui e' salvato
+        //
+        // Le colonne si chiamano VINTE e PERSE, non piu' "Tu" e "Banco". Il motivo e' il
+        // Klondike: li' non c'e' nessun Banco che vince quando perdi tu, e una colonna
+        // intitolata a un avversario che non esiste non vorrebbe dire niente. Vinte e perse
+        // funzionano per tutti e quattro, e nei tre giochi contro il Banco significano
+        // esattamente quello che significavano prima.
+        //
+        // I nomi interni delle celle sono rimasti quelli vecchi (You per le vinte, Bot per
+        // le perse): rinominare quattordici id in tre file per una parola sull'etichetta
+        // avrebbe fatto piu' danni che bene.
         val righe = listOf(
             Triple(v.scopaPlayed, v.scopaBot, v.scopaYou) to Prefs.GAME_SCOPA,
             Triple(v.briscPlayed, v.briscBot, v.briscYou) to Prefs.GAME_BRISCOLA,
-            Triple(v.trePlayed, v.treBot, v.treYou) to Prefs.GAME_TRESETTE
+            Triple(v.trePlayed, v.treBot, v.treYou) to Prefs.GAME_TRESETTE,
+            Triple(v.klonPlayed, v.klonBot, v.klonYou) to Prefs.GAME_KLONDIKE
         )
         for ((celle, gioco) in righe) {
             val you = Prefs.wonBy(activity, gioco, true)

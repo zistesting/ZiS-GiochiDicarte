@@ -463,6 +463,30 @@ che c'e', di una scoperta bisogna leggere l'angolo. Se la colonna sfora, i due s
 comprimono insieme. Verificato simulando il tavolo con le carte vere: una colonna da diciannove
 carte ci sta ancora senza comprimere niente.
 
+**Gli indici delle carte sono grandi, e c'e' un solo simbolo al centro.** Non e' una scelta
+estetica. In colonna di ogni carta si vede solo la fascia in alto, e su un telefono quella
+fascia e' larga una quarantina di punti: se il valore non si legge li', non si legge da nessuna
+parte, perche' il disegno al centro resta coperto. Per lo stesso motivo la griglia tradizionale
+di pip e' stata sostituita da un simbolo unico grande: dieci quadri affiancati su una carta
+larga 140 pixel diventano una macchia da contare, e a quella misura non si contano. Il valore
+lo dice l'indice; il simbolo serve solo a far riconoscere il seme con la coda dell'occhio.
+
+**Le carte scivolano** dalla posizione vecchia a quella nuova. L'animazione non sa quale mossa
+e' stata fatta: prima di muovere si fotografa dove si trovava ogni carta, dopo il disegno si
+confrontano le posizioni e si anima tutto quello che si e' spostato. Cosi' funziona da sola
+anche per le mosse che spostano un gruppo, o per il rigiro del tallone che ne sposta
+ventiquattro insieme, senza un caso per ogni tipo di mossa. E la vista e' gia' al posto giusto
+prima di partire: si riporta indietro e la si lascia tornare, quindi l'animazione non puo'
+finire in un punto sbagliato, e se viene interrotta la carta al massimo salta in posizione.
+
+**Un difetto di larghezza che sembrava un difetto di altezza.** Nella prima versione la scritta
+con le mosse divideva la riga con i pulsanti: su un telefono stretto i pulsanti si prendevano
+quasi tutta la larghezza, alla scritta ne restava una ventina di punti e andava a capo una
+lettera per riga. La barra diventava alta mezzo schermo, il tavolo prende l'altezza che avanza,
+e le colonne si schiacciavano fino a mostrare una carta sola. Chi guardava vedeva le colonne
+collassate e cercava il difetto nel calcolo dei ventagli, che era giusto. Adesso la scritta sta
+su una riga sua con `maxLines="1"` e i pulsanti sono in fondo.
+
 **Si gioca a tocchi**, non trascinando. Tocchi una carta e va dove ha senso: prima la
 fondazione, poi una colonna, preferendo quella che non consuma uno spazio vuoto. Su un telefono
 e' anche piu' preciso del trascinamento, perche' una carta larga quaranta punti si prende male
