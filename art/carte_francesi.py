@@ -156,27 +156,39 @@ def carta(i_seme, valore):
            f'stroke="#9C9C9C" stroke-width="3"/>']
 
     # --- indici agli angoli: la parte che conta davvero ---
-    ih = H*0.085
+    #
+    # Sono GRANDI, e non e' una questione di gusto. Nel Klondike le colonne si sfogliano a
+    # ventaglio: di ogni carta si vede solo la fascia in alto, alta un quarto, e su un
+    # telefono quella fascia e' larga una quarantina di punti. Se il valore non si legge li',
+    # non si legge da nessuna parte, perche' il disegno al centro resta coperto.
+    #
+    # Valore e seme stanno AFFIANCATI, non incolonnati: nella fascia alta lo spazio scarseggia
+    # in verticale e abbonda in orizzontale, e mettendoli uno sopra l'altro si finiva per
+    # rimpicciolire entrambi. Il valore e' alto il 22% della carta, il seme il 15%.
+    rh = H*0.22                      # altezza del valore
+    sh = H*0.150                     # altezza del simbolo del seme
+    stretto = (valore == "10")       # il 10 e' l'unico a due cifre: un filo piu' compatto
     for ruota in (False, True):
         g = f'<g transform="rotate(180 {W/2} {H/2})">' if ruota else '<g>'
         out.append(g)
-        out.append(f'<text x="{m+16}" y="{m+ih*0.80}" font-family="DejaVu Sans,Arial,sans-serif" '
-                   f'font-size="{ih}" font-weight="bold" fill="{colore}" text-anchor="middle">{valore}</text>')
-        out.append(f'<g fill="{colore}">{seme_path(i_seme, m+16, m+ih*1.28, ih*0.62)}</g>')
+        out.append(f'<text x="{m+6}" y="{m+rh*0.80}" font-family="DejaVu Sans,Arial,sans-serif" '
+                   f'font-size="{rh}" font-weight="bold" fill="{colore}" '
+                   f'textLength="{rh*(0.92 if stretto else 0.58)}" lengthAdjust="spacingAndGlyphs">{valore}</text>')
+        sx = m + 6 + rh*(0.92 if stretto else 0.58) + rh*0.14
+        out.append(f'<g fill="{colore}">{seme_path(i_seme, sx + sh/2, m + rh*0.52, sh)}</g>')
         out.append('</g>')
 
     if valore in DISPOSIZIONI:
-        px, py, pw, ph = bx+bw*0.16, by+bh*0.06, bw*0.68, bh*0.88
-        s = bh*0.135
-        out.append(f'<g fill="{colore}">')
-        for fx, fy in DISPOSIZIONI[valore]:
-            cx, cy = px+pw*fx, py+ph*fy
-            grande = (valore == "A")
-            out.append(f'<g transform="rotate({180 if fy>0.55 and not grande else 0} {cx} {cy})">'
-                       + seme_path(i_seme, cx, cy, s*(2.6 if grande else 1.0)) + '</g>')
-        out.append('</g>')
+        # UN SOLO simbolo grande al centro, non la griglia tradizionale di pip.
+        #
+        # La griglia e' bella su una carta vera, ma su una carta larga 140 pixel dieci quadri
+        # affiancati diventano una macchia: per capire quale carta e' bisogna contarli, e a
+        # quella misura non si contano. Il valore lo dice l'indice, che ora e' grande; il
+        # simbolo al centro serve solo a far riconoscere il seme con la coda dell'occhio.
+        out.append(f'<g fill="{colore}">'
+                   + seme_path(i_seme, bx+bw/2, by+bh*0.56, bh*0.30) + '</g>')
     else:
-        out.append(figura(SEMI[i_seme], colore, valore, bx+bw*0.13, by+bh*0.05, bw*0.74, bh*0.90))
+        out.append(figura(SEMI[i_seme], colore, valore, bx+bw*0.17, by+bh*0.135, bw*0.66, bh*0.73))
     out.append('</svg>')
     return "".join(out)
 

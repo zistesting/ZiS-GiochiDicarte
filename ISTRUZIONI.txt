@@ -1,62 +1,27 @@
-PARTE 5 - il mazzo francese  (54 file)
+PARTE 5 - il mazzo francese, RIFATTO  (54 file)
 
-  53  immagini  ->  app/src/main/res/drawable-nodpi/
-                    fr_0_1 ... fr_3_13  piu'  fr_back
-   1  script    ->  art/carte_francesi.py   (fuori da app/, non entra nell'APK)
+  53  immagini  ->  app/src/main/res/drawable-nodpi/   (sovrascrivono le precedenti)
+   1  script    ->  art/carte_francesi.py
 
-Sono tutti file nuovi: non sovrascrivono niente e non tolgono niente.
-Le Parti 1, 2, 3 e 4 restano come sono.
+VA RICARICATA: le 53 immagini sono cambiate tutte. Stessi nomi, quindi si sovrascrivono.
 
---- caricamento ---
+--- cosa e' cambiato e perche' ---
 
-Le due cartelle stanno in punti diversi del progetto, ma si caricano in una volta sola:
-pagina principale del repository -> Add file -> Upload files -> trascina TUTTO il contenuto
-di questa cartella (cioe' sia app/ sia art/) -> Commit changes.
-GitHub ricostruisce i percorsi da solo.
+Le carte erano illeggibili al Klondike. Non era colpa della risoluzione: era il disegno.
 
-NON caricare questo ISTRUZIONI.txt.
+ 1. INDICI MOLTO PIU' GRANDI. Il valore ora e' alto il 22% della carta invece dell'8,5%, e
+    il seme gli sta ACCANTO invece che sotto: nella fascia in alto lo spazio scarseggia in
+    verticale e abbonda in orizzontale, e incolonnandoli si finiva per rimpicciolire
+    entrambi.
 
---- QUANDO CARICARLE ---
+ 2. UN SOLO SIMBOLO GRANDE AL CENTRO, al posto della griglia di pip. Su una carta larga 140
+    pixel dieci quadri affiancati diventano una macchia: per capire quale carta e' bisogna
+    contarli, e a quella misura non si contano. Il valore lo dice l'indice, che ora si legge;
+    il simbolo al centro serve solo a riconoscere il seme con la coda dell'occhio.
 
-Puoi farlo subito. Non serve nessuna modifica al codice: le immagini restano li' ferme
-finche' non c'e' il Klondike che le usa, e nel frattempo l'app compila e funziona
-esattamente come adesso.
+Il motivo di fondo e' che nel Klondike, in colonna, di ogni carta si vede SOLO la fascia in
+alto. Il disegno al centro non lo guarda nessuno tranne che sulla carta in cima a ogni pila.
 
-L'unico costo e' che l'APK cresce di circa 900 KB per qualcosa che ancora non si vede.
-Se preferisci, tieni lo zip da parte e caricalo quando arriva il codice del Klondike.
-Il consiglio e' di caricarle subito: quando arrivera' la prima versione del gioco sara'
-gia' tutto in casa e potrai provarla senza altri passaggi.
-
---- come sono fatte ---
-
-  fr_<seme>_<valore>     semi:   0 cuori, 1 quadri, 2 fiori, 3 picche
-                         valori: 1 = Asso, 2..10, 11 = Fante, 12 = Donna, 13 = Re
-
-Misura 600x840, cioe' proporzione 1,4 e NON 1,829 come le carte italiane. Le carte
-francesi sono piu' tozze, ed e' la loro proporzione vera; nel Klondike, dove le colonne
-si sfogliano a ventaglio, ogni pixel di altezza sprecato e' una carta in meno che entra
-nello schermo. Questo vuol dire che quando faremo il gioco servira' una proporzione per
-mazzo, perche' oggi 448x819 e' cablata nei layout.
-
-Tutte e 53 sono generate in vettoriale da art/carte_francesi.py: niente scansioni, niente
-questioni di licenza, e si rigenerano alla misura che si vuole. Pesano 893 KB in tutto,
-16,8 KB a carta, contro i 30-40 KB delle carte italiane.
-
-INDICI AGLI ANGOLI, grandi, su tutte e 52. E' la scelta piu' importante del mazzo e non e'
-estetica: in una colonna del Klondike di ogni carta si vede solo la fascia in alto, e
-quello che si legge e' l'angolo, non il disegno al centro.
-
---- LE FIGURE SONO PROVVISORIE ---
-
-Le 12 figure (J, Q, K) sono leggibili ma non belle: riconosci al volo chi e' chi, e alla
-dimensione a cui si usano nel Klondike fanno il loro lavoro, ma non reggono il confronto
-con le figure del mazzo ZiS.
-
-Sono 12 file con nomi fissi:
-  fr_0_11 fr_0_12 fr_0_13   cuori   (Fante, Donna, Re)
-  fr_1_11 fr_1_12 fr_1_13   quadri
-  fr_2_11 fr_2_12 fr_2_13   fiori
-  fr_3_11 fr_3_12 fr_3_13   picche
-
-Sostituirli con versioni migliori NON tocca una riga di codice: basta ricaricarli con gli
-stessi nomi, in 600x840. I 40 numerali e il dorso invece sono a posto e non vanno rifatti.
+Le figure J, Q e K restano quelle provvisorie di prima, solo rimpicciolite per far posto
+agli indici. Sono sempre 12 file con nomi fissi (fr_0_11 ... fr_3_13): sostituirli con
+versioni migliori non tocca una riga di codice.
