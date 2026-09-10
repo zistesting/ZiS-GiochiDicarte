@@ -52,7 +52,7 @@ android {
         minSdk 24
         targetSdk 36
         versionCode buildVersionCode
-        versionName "3.8"
+        versionName "3.9"
     }
 
     signingConfigs {
@@ -80,7 +80,29 @@ android {
             if (!canSign) {
                 logger.lifecycle("ZiS: nessun keystore configurato -> firma di debug, non caricabile sul Play Store.")
             }
-            minifyEnabled false
+            // R8: butta via il codice e le risorse che non si usano, e offusca i nomi.
+            //
+            // Il grosso di quello che se ne va non e' codice nostro: seimila righe di Kotlin
+            // diventano poche decine di KB di DEX. Sono le parti di appcompat, material e
+            // constraintlayout che quest'app non chiama mai, e sono la maggior parte di quelle
+            // librerie - di material si usano il tema e poco altro.
+            //
+            // shrinkResources non funziona senza minifyEnabled, e insieme fanno le due meta'
+            // dello stesso lavoro: uno il codice, l'altro i drawable, i layout e le stringhe
+            // che le librerie portano e nessuno guarda. Fra questi le traduzioni in ottanta
+            // lingue di appcompat e material.
+            //
+            // NON ci si aspetti un dimezzamento: le immagini sono 9,9 MB su circa 12, cioe'
+            // l'82% del pacchetto, e R8 non le tocca. Il guadagno sta nei due megabyte
+            // restanti.
+            //
+            // ATTENZIONE: e' l'unica modifica del progetto che si puo' verificare soltanto
+            // provando il release sul telefono, perche' e' l'unica che cambia il codice DOPO
+            // la compilazione. Se qualcosa si rompe, il primo passo e' rimettere qui
+            // minifyEnabled false e ricompilare: se il problema sparisce e' R8, se resta sono
+            // le librerie aggiornate. Il secondo passo sta in gradle.properties.
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -99,9 +121,25 @@ kotlin {
     }
 }
 
+// Quattro librerie e nient'altro: niente Compose, Fragment, Navigation, Lifecycle,
+// RecyclerView, Room. E' il motivo per cui aggiornarle e' quasi sempre noioso - la
+// superficie su cui una correzione potrebbe toccarci e' piccolissima - con UNA eccezione,
+// core-ktx.
+//
+// core-ktx e' l'unica di cui l'app usa il COMPORTAMENTO e non solo qualche classe: dentro
+// ci sono WindowCompat, WindowInsetsCompat e ViewCompat.setOnApplyWindowInsetsListener,
+// cioe' tutto SystemBars.kt. Ed e' l'area che Android ha rimaneggiato piu' di ogni altra
+// fra API 35 e 36 con l'edge-to-edge obbligatorio. Restare indietro li' e' l'unico ritardo
+// che si paga davvero.
+//
+// Se la build si ferma con un errore sulla risoluzione delle dipendenze o con "requires
+// compileSdk", e' un numero di versione: si abbassa quello e si riprova. E' un guasto
+// rumoroso e immediato, non una sorpresa a runtime. Da qui in avanti ci pensa Dependabot
+// (.github/dependabot.yml), che propone gli aggiornamenti col numero giusto invece di
+// farlo cercare a mano.
 dependencies {
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.core:core-ktx:1.19.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
 }

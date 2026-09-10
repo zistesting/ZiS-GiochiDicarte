@@ -137,6 +137,62 @@ Cosa resta da fare prima della pubblicazione:
 
 ---
 
+## Il build di release: R8 e le dipendenze
+
+**`minifyEnabled` e `shrinkResources` sono accesi.** R8 butta via il codice e le risorse che
+non si usano e offusca i nomi. Il grosso di quello che se ne va non è codice nostro — seimila
+righe di Kotlin diventano poche decine di KB di DEX — ma le parti di appcompat, material e
+constraintlayout che quest'app non chiama mai, che sono la maggior parte di quelle librerie.
+`shrinkResources` non funziona senza `minifyEnabled`, e insieme fanno le due metà dello stesso
+lavoro: uno il codice, l'altro drawable, layout e stringhe che le librerie portano e nessuno
+guarda, comprese le traduzioni in ottanta lingue.
+
+Non è il guadagno più grosso che resta, e vale saperlo: le immagini sono **9,9 MB su circa 12,
+cioè l'82% del pacchetto**, e R8 non le tocca. Il lettone vero sono i due mazzi scansionati —
+piacentine 3,2 MB e napoletane 2,3 — che si comprimono peggio del disegno a tinte piatte:
+79 KB per carta contro i 20 delle francesi. Scendere di qualità dal 90 all'85 negli script di
+`art/` risparmierebbe circa 1,8 MB, più di quanto dia R8, ma va guardato a schermo pieno prima
+di decidere perché su una scansione si vede.
+
+`app/proguard-rules.pro` **è vuoto di proposito**, e il file spiega perché una per una:
+nessuna riflessione, nessun `Resources.getIdentifier`, nessuna serializzazione automatica, le
+Activity le tiene il manifest, il View Binding è chiamato direttamente, `CardView` non viene
+mai gonfiata da XML. R8 rompe le cose quando il codice raggiunge classi o membri per vie che
+l'analisi statica non vede, e qui non ce ne sono.
+
+È l'unica modifica del progetto che si può verificare **solo provando il release sul
+telefono**, perché è l'unica che cambia il codice dopo la compilazione. Il sintomo tipico di un
+guaio è un `ClassNotFoundException` o un `NoSuchMethodException` che si vede solo in release.
+La diagnosi è breve: rimettere `minifyEnabled false` e ricompilare — se il problema sparisce è
+R8, se resta sono le librerie. Poi, prima di scrivere regole, togliere la modalità aggressiva
+di R8 (`android.enableR8.fullMode=false` in `gradle.properties`, dove c'è la nota).
+
+Il workflow carica i **referti di R8** fra gli artefatti (`mapping.txt`, `usage.txt` e il
+resto). Non è un vezzo: con i nomi offuscati, una stack trace di Android vitals senza
+`mapping.txt` è una sequenza di `a.b.c`. Nell'AAB il mapping ci finisce da solo, quindi per il
+Play Store si è coperti; per l'APK che si installa a mano no, ed è esattamente il caso in cui
+si sta provando. `usage.txt` è l'elenco di quello che R8 ha tolto, cioè il modo per vedere se
+sta lavorando davvero invece di dedurlo dal peso del file.
+
+**Le dipendenze sono quattro e nient'altro:** niente Compose, Fragment, Navigation, Lifecycle,
+RecyclerView, Room. È il motivo per cui aggiornarle è quasi sempre noioso — la superficie su
+cui una correzione potrebbe toccarci è minuscola — con una eccezione, `core-ktx`. Quella è
+l'unica di cui l'app usa il *comportamento* e non solo qualche classe: dentro ci sono
+`WindowCompat`, `WindowInsetsCompat` e `ViewCompat.setOnApplyWindowInsetsListener`, cioè tutto
+`SystemBars.kt`, ed è l'area che Android ha rimaneggiato più di ogni altra fra API 35 e 36 con
+l'edge-to-edge obbligatorio.
+
+Fra le quattro, quella che può cambiare qualcosa a vista è **material**: i suoi major
+rimescolano gli stili dei dialoghi, e qui c'è una giuntura insolita — `AlertDialog.Builder` di
+appcompat con un tema che discende da `Theme.MaterialComponents.Dialog.Alert` e sopra gli
+override di `DarkAlertDialog`. È il primo posto dove guardare dopo un aggiornamento.
+
+Da qui in avanti ci pensa **Dependabot** (`.github/dependabot.yml`): apre una pull request al
+mese col numero di versione giusto e il changelog allegato, librerie raggruppate in una PR
+sola, più le azioni del workflow. Serve a un problema concreto di questo progetto: lavorando
+solo dal sito di GitHub non c'è niente che avvisi quando esce una versione, e le quattro
+librerie sono rimaste indietro di due anni senza che nulla lo segnalasse.
+
 ## Note tecniche
 
 **Mazzo.** Quattro mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,

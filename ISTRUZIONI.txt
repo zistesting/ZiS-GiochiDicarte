@@ -1,69 +1,131 @@
-PARTE 5 di 5 - il mazzo francese  (57 file)   -   versione 3.8
+PARTE 1 di 5 - tutto il progetto tranne le immagini  (86 file)   -   versione 3.9
 
->>> QUESTE CINQUE PARTI SONO IL PROGETTO COMPLETO ALLA VERSIONE 3.8. <<<
-Sostituiscono in blocco tutti gli zip precedenti: 3.4, 3.5, 3.6, 3.7 e i pacchetti
-parziali. Quelli si possono buttare.
+SOSTITUISCE la Parte 1 della 3.8.
 
-Caricandole tutte e cinque il repository e' allineato alla 3.8, qualunque cosa ci sia
-adesso. Sono 309 file in cinque commit, nessuno oltre il limite di 100.
-
---- cosa c'e' dentro ---
-
-  53  immagini  ->  app/src/main/res/drawable-nodpi/
-   1  script    ->  art/carte_francesi.py
-   3  immagini  ->  art/figure/            le sorgenti delle tre figure
-
-Gli ultimi quattro sono gli STESSI che stanno anche nella Parte 1: caricando entrambe le
-parti si sovrascrivono con lo stesso contenuto, non e' un problema. Stanno anche qui
-perche' la Parte 5 resti autosufficiente per il mazzo francese, com'era in origine.
-
---- cosa e' cambiato rispetto alla 3.7 ---
-
-NIENTE. Il mazzo francese non e' stato toccato dalla 3.7 alla 3.8: se hai gia' caricato la
-Parte 5 della 3.7 questa e' identica e puoi saltarla.
-
-C'e' perche' hai chiesto le cinque parti complete: caricandole tutte, il repository e'
-allineato alla 3.8 qualunque cosa ci sia adesso.
-
---- com'e' fatto questo mazzo ---
-
-UN INDICE SOLO, in alto a sinistra, e grande. Nel Klondike le carte non si girano mai e in
-colonna di ogni carta si vede solo la fascia in alto: l'indice in basso a destra non era
-visibile MAI, e si mangiava un terzo dell'altezza. Togliendolo il pannello centrale passa
-dal 30% al 64%.
-
-L'INDICE E' ALLINEATO SULL'INCHIOSTRO, non sulla linea di base: si rasterizza ogni valore,
-si misura, e si scegle il font-size perche' il corpo venga uguale per tutti. Serve a due
-cose che prima non tornavano: il 10 su cui il simbolo del seme finiva sopra allo zero
-(cairosvg ignora textLength) e il J che in colonna si leggeva come una I, perche' il gancio
-scendeva sotto la fascia visibile.
-
-LE TRE FIGURE vengono da tre immagini piatte in art/figure/, normalizzate a quattro soli
-colori e ricolorate per seme secondo la tabella CROMIA in cima a carte_francesi.py: cuori
-carminio e oro, quadri vermiglio e ambra, fiori verde e argento, picche ardesia e acciaio.
-Il vincolo non e' estetico: nel Klondike le colonne si costruiscono a colori alternati,
-quindi rosso e nero devono restare inconfondibili.
-
-LA GRIGLIA TRADIZIONALE di simboli, con la meta' bassa capovolta come nei mazzi veri, e i
-simboli alti il 21% del pannello. Il tetto non e' l'altezza ma la larghezza: le tre colonne
-hanno i centri a cento pixel l'una dall'altra e picche, cuori e fiori sono larghi quasi
-quanto sono alti, quindi a 0,22 si toccherebbero.
+>>> LE PARTI 2, 3, 4 e 5 RESTANO QUELLE DELLA 3.8. <<<
+Non e' cambiata nessuna immagine: qui dentro ci sono solo configurazione di build,
+workflow e README. Tieni gli zip della 3.8 per le altre quattro parti.
 
 --- caricamento ---
 
-Due caricamenti, perche' i file finiscono in due posti diversi.
+Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
+di questa cartella (non la cartella) -> Commit changes.
 
- 1. app/src/main/res/drawable-nodpi/ -> Add file -> Upload files -> le 53 immagini
-    fr_*.webp -> Commit changes.
- 2. Pagina principale -> Add file -> Upload files -> la cartella art -> Commit changes.
+NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
+(su Windows: Visualizza -> Elementi nascosti).
 
-NON caricare questo ISTRUZIONI.txt.
+Il file .github/dependabot.yml e' NUOVO: assicurati che venga caricato anche lui.
 
-Nota: il secondo commit NON fa partire la build, perche' il workflow ignora art/**. E'
-voluto - sono sorgenti grafiche, non codice - e la build parte col primo.
+--- cosa e' cambiato rispetto alla 3.8 ---
 
---- avvertenza di sempre ---
+Sette file, tutti di contorno: nessuna riga di Kotlin, nessun layout, nessuna immagine.
 
-Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi, altrimenti
-Android le ingrandisce alla densita' dello schermo e l'app spreca memoria. Vale anche per
-i loghi.
+ 1. DIPENDENZE AGGIORNATE. Erano di maggio 2024, tranne constraintlayout che era di marzo
+    2022.
+
+        core-ktx          1.13.1  ->  1.19.0
+        appcompat         1.7.0   ->  1.7.1
+        material          1.12.0  ->  1.13.0
+        constraintlayout  2.1.4   ->  2.2.1
+
+    Di queste quattro conta davvero UNA. core-ktx e' l'unica di cui l'app usa il
+    COMPORTAMENTO e non solo qualche classe: dentro ci sono WindowCompat,
+    WindowInsetsCompat e ViewCompat.setOnApplyWindowInsetsListener, cioe' tutto
+    SystemBars.kt. Ed e' l'area che Android ha rimaneggiato piu' di ogni altra fra API 35 e
+    36 con l'edge-to-edge obbligatorio. Le altre tre sono manutenzione: quest'app non usa
+    Compose, Fragment, Navigation, Lifecycle, RecyclerView ne' Room, quindi la superficie su
+    cui una correzione potrebbe toccarla e' minuscola.
+
+ 2. R8 ACCESO: minifyEnabled true e shrinkResources true nel build di release.
+
+ 3. app/proguard-rules.pro RISCRITTO. Resta vuoto di regole, ma adesso spiega perche' non
+    ne serve nessuna, una condizione per volta: niente riflessione, niente
+    Resources.getIdentifier, niente serializzazione automatica, le Activity le tiene il
+    manifest, il View Binding e' chiamato direttamente, CardView non viene mai gonfiata da
+    XML. Serve al te' di fra due anni che aggiunge una libreria e si chiede se deve
+    scrivere una regola.
+
+ 4. IL WORKFLOW CARICA I REFERTI DI R8 (mapping.txt, usage.txt e il resto) fra gli
+    artefatti della build, accanto all'APK e all'AAB. Con i nomi offuscati, una stack trace
+    senza mapping.txt e' una sequenza di a.b.c. Nell'AAB il mapping ci finisce da solo,
+    quindi per il Play Store sei coperto; per l'APK che ti installi a mano no, ed e'
+    esattamente il caso in cui stai provando.
+
+ 5. .github/dependabot.yml, NUOVO. Una pull request al mese col numero di versione giusto e
+    il changelog allegato, le quattro librerie raggruppate in una PR sola, piu' le azioni
+    del workflow. Serve a un problema concreto: lavorando solo dal sito di GitHub non c'e'
+    niente che avvisi quando esce una versione, ed e' cosi' che le librerie sono rimaste
+    indietro di due anni.
+
+ 6. gradle.properties: una nota su android.enableR8.fullMode, che e' la prima cosa da
+    provare se R8 rompesse qualcosa. Nessuna impostazione cambiata, solo il commento.
+
+ 7. README con la sezione nuova sul build di release, e versione 3.9.
+
+--- QUANTO SI RISPARMIA, ONESTAMENTE ---
+
+Meno di quanto sembri, e conviene saperlo prima di guardare il file.
+
+Le immagini sono 9,9 MB su circa 12, cioe' l'82% del pacchetto, e R8 non le tocca: il
+guadagno sta tutto nei due megabyte di DEX e risorse delle librerie. Aspettati qualcosa
+attorno al 10% del totale, non un dimezzamento.
+
+Il modo di misurarlo non richiede strumenti: hai gia' l'APK della build precedente, quindi
+basta confrontare le dimensioni dei due file.
+
+Il lettone vero, se un giorno il peso diventasse un problema, sono i due mazzi
+scansionati: piacentine 3,2 MB e napoletane 2,3, che si comprimono peggio del disegno a
+tinte piatte - 79 KB per carta contro i 20 delle francesi. Scendere di qualita' dal 90
+all'85 negli script di art/ risparmierebbe circa 1,8 MB, piu' di quanto dia R8. Non l'ho
+fatto perche' su una scansione la differenza si vede, e va guardata a schermo pieno prima
+di decidere.
+
+--- SE LA BUILD SI FERMA ---
+
+Il caso piu' probabile e' un numero di versione. Se il log dice qualcosa su "could not
+resolve" o su "requires compileSdk", e' una delle quattro righe delle dipendenze: si
+abbassa quel numero e si riprova. E' un guasto rumoroso e immediato, non una sorpresa a
+runtime, e da qui in avanti Dependabot ti dara' i numeri giusti senza cercarli.
+
+--- SE L'APP SI ROMPE ---
+
+R8 e' l'unica modifica di tutto il progetto che si puo' verificare SOLTANTO provando il
+release sul telefono, perche' e' l'unica che cambia il codice DOPO la compilazione. Il
+workflow compila solo il release, quindi l'APK che scarichi e' quello minificato: quello
+che provi e' quello giusto.
+
+Il sintomo tipico e' un ClassNotFoundException o un NoSuchMethodException. La diagnosi e'
+corta e in questo ordine:
+
+ 1. rimetti  minifyEnabled false  in app/build.gradle e ricompila. Se il problema
+    sparisce e' R8; se resta sono le librerie aggiornate. Un solo build e sai da che parte
+    guardare.
+ 2. se e' R8, rimetti minifyEnabled true e togli il cancelletto a
+    android.enableR8.fullMode=false in gradle.properties: e' la modalita' aggressiva, che
+    dalla AGP 8.0 e' attiva di serie.
+ 3. solo dopo, le regole in app/proguard-rules.pro.
+
+--- COSA PROVARE ---
+
+Le dipendenze e R8 si provano nello stesso giro, ma guardando due cose diverse.
+
+ 1. LE FINESTRE, per material: riepilogo di fine mano della Scopa, scelta della presa,
+    statistiche con l'azzeramento, avviso della pausa, conferme di Rigioca e Ricomincia,
+    vittoria del Klondike. I major di material rimescolano gli stili dei dialoghi, e qui
+    c'e' una giuntura insolita - AlertDialog.Builder di appcompat con un tema che discende
+    da Theme.MaterialComponents.Dialog.Alert e sopra gli override di DarkAlertDialog. Se
+    qualcosa e' fuori posto, angoli o padding o colore del titolo, e' material.
+
+ 2. LE BARRE DI SISTEMA, per core-ktx: che i margini in alto e in basso restino giusti in
+    tutte e cinque le schermate, che niente finisca sotto la barra di stato o sotto quella
+    di navigazione. Provalo anche in orizzontale su un tablet e in schermo diviso.
+
+ 3. TUTTO IL RESTO, per R8: i quattro giochi dall'inizio alla fine, le impostazioni con
+    ogni mazzo, TalkBack sulle carte, il salvataggio e la ripresa uscendo e rientrando.
+    R8 non rompe le cose a caso: rompe i percorsi che l'analisi statica non vede. Qui non
+    ce ne sono, ma la prova sta nel giocare, non nel ragionamento.
+
+ 4. IL PESO: confronta l'APK nuovo con quello vecchio che hai gia'.
+
+ 5. usage.txt nell'artefatto ZiS-GiochiDiCarte-R8: e' l'elenco di quello che R8 ha tolto.
+    Se e' lungo, sta lavorando.
