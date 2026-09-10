@@ -14,4 +14,18 @@
     <dimen name="home_btn_w">138dp</dimen>
     <dimen name="home_btn_h">56dp</dimen>
     <dimen name="home_btn_gap">12dp</dimen>
+
+    <!--
+      La riga in fondo alla schermata iniziale.
+
+      Con QUATTRO pulsanti stava a 52dp e 12dp di margine per lato: 4x52 piu' 8x12 fa
+      304dp, che entravano in uno schermo da 360dp. Con CINQUE, agli stessi numeri,
+      farebbe 380dp e non ci starebbe piu' nemmeno su 360.
+
+      48dp e' il minimo che Material indica per un bersaglio da toccare, quindi si scende
+      fino a li' e non oltre; il margine passa a 5dp per lato. 5x48 piu' 10x5 fa 290dp:
+      entra anche in uno schermo da 320dp lasciando 15dp per lato.
+    -->
+    <dimen name="home_bar_btn">48dp</dimen>
+    <dimen name="home_bar_pad">5dp</dimen>
 </resources>

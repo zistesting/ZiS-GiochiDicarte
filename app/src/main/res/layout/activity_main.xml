@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:text="v.4.1"
+        android:text="v.4.2"
         android:textColor="@color/silver"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -157,28 +157,39 @@
             android:shadowRadius="4" />
     </LinearLayout>
 
-    <!-- Riga in fondo: info, statistiche, impostazioni, logo ZiS. Quattro pulsanti da
-         60dp non ci stavano in larghezza su un telefono da 360dp, quindi sono scesi a 52dp
-         con margini piu' stretti: 304dp in tutto, che ci stanno ovunque. Sono in un LinearLayout invece che
-         ancorati ai due bordi opposti, cosi' l'ordine e' quello scritto qui e restano
-         distanziati allo stesso modo su qualunque larghezza di schermo. -->
+    <!-- Riga in fondo: lingua, info, statistiche, impostazioni, logo ZiS. Cinque pulsanti
+         da @dimen/home_bar_btn, in un contenitore wrap_content centrato: cosi' restano
+         distanziati allo stesso modo su qualunque larghezza di schermo.
+
+         Il pulsante della lingua sta per primo, prima di info, ed e' l'unico dei cinque
+         che cambia lo stato dell'app invece di aprire una finestra. -->
     <LinearLayout
         android:id="@+id/bottomBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="18dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <ImageButton
+            android:id="@+id/btnLang"
+            android:layout_width="@dimen/home_bar_btn"
+            android:layout_height="@dimen/home_bar_btn"
+            android:layout_marginStart="@dimen/home_bar_pad"
+            android:layout_marginEnd="@dimen/home_bar_pad"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/cd_lang"
+            android:scaleType="fitCenter"
+            android:src="@drawable/btn_lang" />
+
+        <ImageButton
             android:id="@+id/btnInfo"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_width="@dimen/home_bar_btn"
+            android:layout_height="@dimen/home_bar_btn"
+            android:layout_marginStart="@dimen/home_bar_pad"
+            android:layout_marginEnd="@dimen/home_bar_pad"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_info"
             android:scaleType="fitCenter"
@@ -186,10 +197,10 @@
 
         <ImageButton
             android:id="@+id/btnStats"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_width="@dimen/home_bar_btn"
+            android:layout_height="@dimen/home_bar_btn"
+            android:layout_marginStart="@dimen/home_bar_pad"
+            android:layout_marginEnd="@dimen/home_bar_pad"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_stats"
             android:scaleType="fitCenter"
@@ -197,10 +208,10 @@
 
         <ImageButton
             android:id="@+id/btnSettings"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_width="@dimen/home_bar_btn"
+            android:layout_height="@dimen/home_bar_btn"
+            android:layout_marginStart="@dimen/home_bar_pad"
+            android:layout_marginEnd="@dimen/home_bar_pad"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_settings"
             android:scaleType="fitCenter"
@@ -208,10 +219,10 @@
 
         <ImageButton
             android:id="@+id/btnZis"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_width="@dimen/home_bar_btn"
+            android:layout_height="@dimen/home_bar_btn"
+            android:layout_marginStart="@dimen/home_bar_pad"
+            android:layout_marginEnd="@dimen/home_bar_pad"
             android:background="@android:color/transparent"
             android:contentDescription="@string/cd_web"
             android:scaleType="fitCenter"

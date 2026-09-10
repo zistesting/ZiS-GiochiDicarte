@@ -49,8 +49,8 @@ class CardView(context: Context) : View(context) {
      * Vero per le carte francesi. Non cambia il disegno - a quello pensa il mazzo scelto -
      * ma cambia il NOME che TalkBack legge, e senza questo il Klondike era l'unica parte
      * dell'app in cui l'accessibilita' non funzionava: il Fante di cuori veniva letto
-     * "11 di denari", la Donna "12 di quadri", perche' italianName sopra il 10 ricade sul
-     * numero e sui semi italiani. Card.frenchName c'era gia' e non lo chiamava nessuno.
+     * "11 di denari", la Donna "12 di quadri", perche' i valori sopra il 10 ricadevano sul
+     * numero e sui semi italiani.
      *
      * E' una proprieta' della vista e non si ricava dal mazzo in uso perche' il mazzo e'
      * uno stato statico condiviso: leggerlo qui vorrebbe dire che una vista creata prima
@@ -71,7 +71,7 @@ class CardView(context: Context) : View(context) {
     /** Descrizione letta da TalkBack: "Sette di denari", "Carta coperta", "... non giocabile". */
     private fun describe() {
         val c = card
-        val nome = if (c == null) "" else if (french) c.frenchName else c.italianName
+        val nome = c?.nome(resources, french) ?: ""
         contentDescription = when {
             !faceUp || c == null -> context.getString(R.string.cd_card_back)
             !playable -> context.getString(R.string.cd_card_disabled, nome)

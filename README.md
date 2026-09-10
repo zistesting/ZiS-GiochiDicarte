@@ -212,6 +212,54 @@ scelta di GitHub, quindi la firma ripiega sulla chiave di debug come previsto in
 `build.gradle` e la build risponde solo alla domanda che conta: compila o no. Gli artefatti
 sulle PR non vengono pubblicati, non servono.
 
+## Italiano e inglese
+
+L'app si legge in italiano o in inglese, e si cambia con il pulsante delle bandiere in fondo
+alla schermata iniziale, il primo dei cinque. Non è una preferenza sepolta nelle impostazioni:
+un tocco e tutto il testo cambia, regole e glossario compresi.
+
+Il meccanismo è `AppCompatDelegate.setApplicationLocales`, cioè l'API ufficiale della lingua
+**per app**. Da Android 13 chiama il sistema, sotto ci pensa appcompat, e in entrambi i casi la
+scelta persiste e le activity vengono ricreate da sole. Non c'è nessuna preferenza da salvare a
+mano e nessun `Context` da avvolgere.
+
+Tre cose però servono, e nessuna delle tre è ovvia.
+
+La prima: **`locale` è stato togliuto dai `configChanges`** delle quattro activity di gioco.
+C'era, insieme a `layoutDirection`, per il principio «non ricrearmi». Ma un cambio di lingua è
+esattamente il caso in cui la ricreazione è ciò che si vuole: con `locale` in quell'elenco
+l'activity avrebbe ricevuto `onConfigurationChanged` e i testi già letti nelle `TextView`
+sarebbero rimasti nella lingua di prima.
+
+La seconda: **un servizio che non fa niente**, `AppLocalesMetadataHolderService`, dichiarato nel
+manifest con `autoStoreLocales` a `true` e `android:enabled="false"`. Non viene mai avviato:
+appcompat lo usa solo come contenitore per quel meta-dato, ed è il posto dove va a scrivere la
+preferenza sotto Android 13. Senza, su Android da 7 a 12 la lingua tornerebbe italiana a ogni
+riavvio — cioè proprio sui telefoni per cui appcompat esiste.
+
+La terza: **i nomi delle carte per TalkBack erano cablati nel codice.** `Card.kt` aveva quattro
+proprietà — `suitLabel`, `frenchSuitLabel`, `italianName`, `frenchName` — con i semi e le figure
+scritti in italiano dentro il Kotlin, ed era l'unica parte dell'app che non si poteva tradurre:
+`Card` non ha un `Context`, quindi non può leggere le risorse. Adesso c'è un metodo
+`Card.nome(res, french)` che prende il valore e il seme da quattro `string-array` e la
+congiunzione da `cd_card_name` — che in inglese diventa «of», cioè esattamente la cosa che
+concatenando `"$valore di $seme"` non si poteva ottenere.
+
+Sulle scelte di traduzione, due meritano una riga. «Banco» diventa **Bot** e non *House* o
+*Dealer*: questa app dice esplicitamente che qui non si scommette, quindi una parola presa dal
+gioco d'azzardo sarebbe il sapore sbagliato, e *Dealer* sarebbe anche inesatto perché nella
+Scopa nessuno fa il mazziere. Ed è di tre caratteri, che conta: è l'intestazione di una colonna
+accanto a etichette lunghe come «Settebello». I termini italiani senza equivalente — Scopa,
+Settebello, Primiera, Briscola, Tresette — restano come sono: sono il nome delle cose, non la
+loro descrizione. I semi italiani usano i termini inglesi convenzionali (coins, cups, swords,
+batons) e le figure Knave / Knight / King, mentre il mazzo francese tiene Jack / Queen / King.
+
+Il quinto pulsante ha costretto a ridimensionare la riga in fondo: con quattro stava a 52dp e
+12dp di margine per lato, cioè 304dp, che entravano in uno schermo da 360. Con cinque agli
+stessi numeri farebbe 380dp. Ora sono 48dp — il minimo che Material indica per un bersaglio da
+toccare, quindi si scende fino a lì e non oltre — con 5dp di margine: 290dp in tutto, che
+entrano anche in uno schermo da 320dp.
+
 ## Note tecniche
 
 **Mazzo.** Quattro mazzi da 40 carte piu' dorso in `res/drawable-nodpi/`, tutti a **448x819**,

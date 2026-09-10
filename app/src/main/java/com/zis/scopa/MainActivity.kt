@@ -1,10 +1,12 @@
 package com.zis.scopa
-
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.ConfigurationCompat
+import androidx.core.os.LocaleListCompat
 import com.zis.scopa.databinding.ActivityMainBinding
 import kotlin.system.exitProcess
 
@@ -48,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         b.btnQuit.setOnClickListener { quitApp() }
         b.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         b.btnStats.setOnClickListener { showStats() }
+        b.btnLang.setOnClickListener { cambiaLingua() }
         b.btnInfo.setOnClickListener {
             closeDialogs()
             track(InfoDialog.show(this, R.string.info_app_title, R.string.info_app))
@@ -107,4 +110,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun appVersion(): String =
         try { packageManager.getPackageInfo(packageName, 0).versionName ?: "" } catch (e: Exception) { "" }
+    /**
+     * Passa da italiano a inglese e viceversa.
+     *
+     * Lo fa AppCompatDelegate.setApplicationLocales, che e' l'API ufficiale della lingua
+     * PER APP: da Android 13 chiama il sistema, sotto ci pensa appcompat. Non serve
+     * salvare niente a mano - la scelta persiste da sola, e sotto Android 13 grazie al
+     * servizio AppLocalesMetadataHolderService dichiarato nel manifest - e non serve
+     * ricreare niente a mano: le activity vengono ricreate dal meccanismo, ed e' per
+     * questo che dai configChanges e' stato tolto "locale". Con "locale" li' dentro,
+     * questa schermata avrebbe ricevuto onConfigurationChanged e i testi gia' letti
+     * sarebbero rimasti nella lingua di prima.
+     *
+     * La lingua corrente non e' semplicemente quella scelta: se non e' mai stata scelta,
+     * getApplicationLocales torna vuoto e vale quella del telefono. Da qui i due passaggi,
+     * che rispondono a "che lingua sto leggendo adesso" e non a "che lingua ho scelto".
+     */
+    private fun cambiaLingua() {
+        val nuova = if (linguaCorrente() == "en") "it" else "en"
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(nuova))
+    }
+
+    private fun linguaCorrente(): String {
+        val scelta = AppCompatDelegate.getApplicationLocales()
+        if (!scelta.isEmpty) return scelta.get(0)?.language ?: "it"
+        // mai scelta: vale quella del telefono, e se non e' ne' italiano ne' inglese
+        // l'app mostra comunque l'italiano, che e' la lingua predefinita delle risorse
+        val sistema = ConfigurationCompat.getLocales(resources.configuration).get(0)?.language
+        return if (sistema == "en") "en" else "it"
+    }
+
 }

@@ -1,78 +1,112 @@
-ZiS-GiochiDiCarte-app1  -  il programma  (95 file)  -  versione 4.1
+ZiS-GiochiDiCarte-app1  -  il programma  (71 file)  -  versione 4.2
 
-SOSTITUISCE ZiS-GiochiDiCarte-app1 della 4.0.
+>>> ATTENZIONE: LA DIVISIONE DEI PACCHETTI E' CAMBIATA. <<<
 
->>> GLI ALTRI TRE ZIP RESTANO QUELLI DELLA 3.9. <<<
-Nessuna immagine e' cambiata: piacentine-zis, bergamasche-napoletane e francesi vanno bene
-come sono.
+Da questa versione ci sono CINQUE zip invece di quattro:
+
+    ZiS-GiochiDiCarte-app1                     71 file   il programma (questo)
+    ZiS-GiochiDiCarte-app2                     27 file   NUOVO: art/ e verifica/
+    ZiS-GiochiDiCarte-piacentine-zis           82 file   invariato dalla 3.9
+    ZiS-GiochiDiCarte-bergamasche-napoletane   82 file   invariato dalla 3.9
+    ZiS-GiochiDiCarte-francesi                 53 file   invariato dalla 3.9
+
+Perche': app1 era arrivato a 98 file su 100, e con le tre aggiunte di questa versione
+(l'immagine del pulsante, values-en/strings.xml, res/xml/locales_config.xml) il margine si
+era ridotto a due. La divisione era gia' prevista e annotata da tre versioni: art/ e
+verifica/ escono da app1 e vanno in app2. Non servono alla build - il workflow ignora
+art/** di proposito e verifica/ e' solo Python di prova - quindi il programma vero scende
+a 71 file e ha di nuovo respiro.
+
+DEVI CARICARE ANCHE app2, una volta: quei 27 file sono gia' nel repository, ma se non
+carichi app2 non c'e' niente da fare, restano quelli che ci sono. Caricalo comunque per
+tenere allineate le due cose; da qui in avanti app2 cambiera' raramente.
+
+I due zip dei mazzi italiani e quello del mazzo francese sono invariati dalla 3.9: nessuna
+carta e' cambiata.
 
 --- caricamento ---
 
 Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app1 e trascina QUELLO CHE C'E' DENTRO (app, art, verifica, .github,
-.gitignore, README.md, build.gradle, gradle, gradle.properties, gradlew, gradlew.bat,
-settings.gradle) -> Commit changes.
+ZiS-GiochiDiCarte-app1 e trascina QUELLO CHE C'E' DENTRO -> Commit changes.
 
-E in fondo alla pagina, prima di confermare, controlla che sia selezionato
-"Commit directly to the main branch" e NON "Create a new branch...": e' quello che l'altra
-volta ha fatto finire i file su un ramo, lasciando main con la versione vecchia.
+In fondo alla pagina, prima di confermare, controlla che sia selezionato "Commit directly
+to the main branch".
 
-NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
-(su Windows: Visualizza -> Elementi nascosti).
+NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti.
 
---- cosa e' cambiato rispetto alla 4.0 ---
+--- cosa e' cambiato: L'APP PARLA DUE LINGUE ---
 
-Sette file, tutti nel Klondike o di contorno. Nessuna immagine, nessun layout.
+Il pulsante con le due bandiere e' il PRIMO dei cinque in fondo alla schermata iniziale,
+prima di info. Un tocco e tutto il testo passa da italiano a inglese e viceversa: interfaccia,
+regole, glossario, avviso sul gioco responsabile, descrizioni per TalkBack. 114 stringhe.
 
- 1. LA BARRA IN ALTO adesso dice  "Mosse: 42   Carte: 30"  invece di
-    "Mosse: 42 - mancano 30 carte". Il secondo numero e' lo stesso di prima: le carte che
-    non sono ancora in fondazione, da 52 a zero.
+Il meccanismo e' AppCompatDelegate.setApplicationLocales, cioe' l'API ufficiale della
+lingua PER APP: da Android 13 chiama il sistema, sotto ci pensa appcompat. La scelta
+persiste da sola e le activity vengono ricreate dal meccanismo: nessuna preferenza da
+salvare a mano.
 
- 2. IL PULSANTE "RICOMINCIA" ADESSO DICE "RIGIOCA".
- 3. IL PULSANTE "RIGIOCA" ADESSO DICE "NUOVO".
+Tre cose sono servite, e nessuna era ovvia:
 
-    Le due cose non si sono scambiate di posto ne' di funzione: sono nello stesso ordine di
-    prima - Annulla, Rigioca, Nuovo - e fanno quello che facevano. Cambiano solo i nomi.
-      "Rigioca" rimette la STESSA smazzata. Non conta niente in statistica.
-      "Nuovo"   distribuisce una smazzata NUOVA. Sopra le cinque mosse conta una persa.
+ 1. "locale" E' STATO TOLTO DAI configChanges delle quattro activity di gioco. C'era,
+    insieme a layoutDirection, per il principio "non ricrearmi". Ma un cambio di lingua e'
+    esattamente il caso in cui la ricreazione e' quello che si vuole: con locale in quella
+    lista l'activity avrebbe ricevuto onConfigurationChanged e i testi gia' letti nelle
+    TextView sarebbero rimasti nella lingua di prima. E' la trappola in cui questa
+    modifica sarebbe finita se non l'avessi guardato prima di scrivere il codice.
 
-    Nota: "Rigioca" e' la stessa parola che Scopa, Briscola e Tresette usano nel dialogo di
-    fine mano, "RIGIOCA l'ultima mano", e con lo stesso senso - le stesse carte un'altra
-    volta. Quindi il Klondike adesso e' allineato al resto dell'app, non in contrasto.
+ 2. UN SERVIZIO CHE NON FA NIENTE, AppLocalesMetadataHolderService, dichiarato nel manifest
+    con autoStoreLocales a true e android:enabled="false". Non viene mai avviato: appcompat
+    lo usa solo come contenitore per quel meta-dato, ed e' il posto dove va a scriversi la
+    preferenza sotto Android 13. Senza, su Android da 7 a 12 la lingua tornerebbe italiana
+    a ogni riavvio dell'app - cioe' proprio sui telefoni per cui appcompat esiste.
 
- 4. IL MESSAGGIO DI SMAZZATA CHIUSA e' cambiato per forza. Diceva "Non ci sono piu' mosse:
-    tocca RIGIOCA", e RIGIOCA voleva dire "distribuisci di nuovo": con i nomi nuovi quella
-    frase avrebbe mandato l'utente sul pulsante sbagliato. Adesso dice "Non ci sono piu'
-    mosse: RIGIOCA o NUOVO", che sono le due cose sensate da fare - riprovare le stesse
-    carte, o cambiarle.
+ 3. I NOMI DELLE CARTE PER TALKBACK ERANO CABLATI NEL CODICE. Card.kt aveva quattro
+    proprieta' - suitLabel, frenchSuitLabel, italianName, frenchName - con i semi e le
+    figure scritti in italiano dentro il Kotlin, e sarebbe stata l'unica parte dell'app a
+    NON tradursi: Card non ha un Context, quindi non puo' leggere le risorse. Adesso c'e'
+    un metodo Card.nome(res, french) che prende valore e seme da quattro string-array e la
+    congiunzione da cd_card_name, che in inglese diventa "of" - cioe' esattamente la cosa
+    che concatenando "$valore di $seme" non si poteva ottenere.
 
- 5. Corretto un errore di battitura mio nella conferma di Rigioca: c'era "all' inizio" con
-    uno spazio dopo l'apostrofo.
+--- due scelte di traduzione, se non ti tornano si cambiano ---
 
- 6. I COMMENTI DEL CODICE allineati, e non e' pignoleria. I nomi nel codice restano legati
-    a quello che i pulsanti FANNO (btnRestart, btnDeal, chiediRicomincia), non alle
-    etichette, perche' rinominarli vorrebbe dire toccare il layout e tre file per cambiare
-    due parole a schermo. Ma cosi' chi cerca "Rigioca" nel codice non trova niente: la
-    corrispondenza e' scritta accanto al punto dove i pulsanti si collegano.
+"Banco" diventa BOT, non "House" ne' "Dealer". Questa app dice esplicitamente che qui non
+si scommette, quindi una parola presa dal gioco d'azzardo sarebbe il sapore sbagliato; e
+"Dealer" sarebbe anche inesatto, perche' nella Scopa nessuno fa il mazziere. Ed e' di tre
+caratteri, che conta: e' l'intestazione di una colonna accanto a etichette lunghe come
+"Settebello", e una parola larga avrebbe stretto la colonna delle etichette.
 
- 7. README allineato, e versione 4.1.
+I termini italiani senza equivalente restano come sono: Scopa, Settebello, Primiera,
+Briscola, Tresette. Sono il nome delle cose, non la loro descrizione. I semi italiani usano
+i termini inglesi convenzionali - coins, cups, swords, batons - e le figure Knave, Knight,
+King; il mazzo francese tiene Jack, Queen, King.
 
---- un effetto collaterale gradito ---
+Il numero verde nell'avviso sul gioco responsabile e' italiano, quindi nella versione
+inglese e' descritto come tale, con una riga che dice di cercare il servizio equivalente
+nel proprio paese. Non ho inventato altri numeri.
 
-Le etichette nuove sono piu' corte: "Rigioca" invece di "Ricomincia", "Nuovo" invece di
-"Rigioca". I tre pulsanti hanno autoSizeTextType, cioe' rimpiccioliscono il testo quanto
-basta a starci, e con etichette piu' corte adesso dovrebbero restare tutti alla misura
-piena di 15sp invece di stringersi. Se prima "Ricomincia" ti sembrava piccolo, ora non
-dovrebbe piu' esserlo.
+--- la riga in fondo ha dovuto restringersi ---
+
+Con QUATTRO pulsanti stava a 52dp e 12dp di margine per lato: 304dp, che entravano in uno
+schermo da 360. Con CINQUE agli stessi numeri farebbe 380dp e non ci starebbe. Ora sono
+48dp - il minimo che Material indica per un bersaglio da toccare, quindi si scende fino a
+li' e non oltre - con 5dp di margine: 290dp in tutto, che entrano anche in uno schermo da
+320dp. Le misure stanno in res/values/dimen.xml.
 
 --- COSA PROVARE ---
 
- 1. La barra in alto: "Mosse: N   Carte: N", e il secondo numero deve scendere quando le
-    carte vanno in fondazione, fino a zero quando vinci.
- 2. I tre pulsanti: Annulla, Rigioca, Nuovo - in quest'ordine, e tutti leggibili su una
-    riga. Provalo anche col carattere di sistema ingrandito.
- 3. Rigioca: qualche mossa, poi Rigioca e conferma. Le carte devono tornare ESATTAMENTE
-    come erano. E il contatore delle partite nelle statistiche NON deve muoversi.
- 4. Nuovo: qualche mossa (piu' di cinque), poi Nuovo e conferma. Deve arrivare una smazzata
-    diversa, e in statistica una partita persa.
- 5. Bloccati apposta pescando a tre: il messaggio in alto deve dire "RIGIOCA o NUOVO".
+ 1. Il pulsante delle bandiere: un tocco, e la schermata iniziale deve ricomparire in
+    inglese. Un altro tocco e torna in italiano.
+ 2. LA LINGUA DEVE RESTARE dopo aver chiuso e riaperto l'app. E' il punto piu' importante:
+    se torna italiana, e' il servizio del manifest che non e' stato caricato.
+ 3. Entra in Scopa, Briscola, Tresette e Klondike CON L'APP IN INGLESE: tutto il testo
+    dentro le partite deve essere inglese, non solo la schermata iniziale.
+ 4. Le regole e le informazioni (pulsante info) in entrambe le lingue: sono i testi piu'
+    lunghi, ed e' dove si vedrebbe una stringa dimenticata.
+ 5. Il riepilogo di fine partita in inglese: "You" e "Bot" sono intestazioni di colonna
+    accanto a "Settebello" e "Primiera". Se la tabella si stringe male, si vede qui.
+ 6. TALKBACK IN INGLESE: tocca una carta in Scopa, deve dire "Seven of coins" e non "7 di
+    denari". Nel Klondike "Jack of hearts". E' la parte che prima non si traduceva.
+ 7. Cambia lingua MENTRE una partita e' salvata (esci col Menu, cambia lingua, rientra): la
+    partita deve essere ancora li'.
+ 8. La riga dei cinque pulsanti su uno schermo piccolo: devono starci tutti senza tagliarsi.

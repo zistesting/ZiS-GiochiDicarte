@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Le lingue che l'app dichiara di sapere.
+
+  Serve a due cose. La prima: da Android 13 il sistema mostra "Lingua dell'app" nelle
+  impostazioni, e prende da qui l'elenco da proporre. La seconda: e' l'elenco che
+  AppCompatDelegate.setApplicationLocales considera valido.
+
+  L'italiano e' anche la lingua predefinita, quella di res/values/strings.xml: chi ha il
+  telefono in una lingua che non e' ne' italiano ne' inglese vede l'italiano.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="it" />
+    <locale android:name="en" />
+</locale-config>

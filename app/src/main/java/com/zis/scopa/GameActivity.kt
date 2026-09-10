@@ -508,7 +508,7 @@ class GameActivity : AppCompatActivity() {
         if (busy || game.turn != 0 || game.finished) return
         val caps = game.capturesFor(card.value)
         if (caps.size > 1) {
-            val labels = caps.map { opt -> opt.joinToString(" + ") { it.italianName } }.toTypedArray()
+            val labels = caps.map { opt -> opt.joinToString(" + ") { it.nome(resources, false) } }.toTypedArray()
             track(
                 AlertDialog.Builder(this)
                     .setTitle(R.string.choose_capture)

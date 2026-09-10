@@ -1,5 +1,7 @@
 package com.zis.scopa
 
+import android.content.res.Resources
+
 /**
  * Una carta, in tutti e due i mazzi che l'app conosce.
  *
@@ -38,46 +40,24 @@ data class Card(val suit: Int, val value: Int) {
             else -> 10 // 8 Fante, 9 Cavallo, 10 Re
         }
 
-    val suitLabel: String
-        get() = when (suit) {
-            0 -> "denari"
-            1 -> "coppe"
-            2 -> "spade"
-            else -> "bastoni"
-        }
-
-    val frenchSuitLabel: String
-        get() = when (suit) {
-            0 -> "cuori"
-            1 -> "quadri"
-            2 -> "fiori"
-            else -> "picche"
-        }
-
-    /** Nome letto da TalkBack nei giochi con le carte francesi. */
-    val frenchName: String
-        get() {
-            val v = when (value) {
-                1 -> "Asso"
-                11 -> "Fante"
-                12 -> "Donna"
-                13 -> "Re"
-                else -> value.toString()
-            }
-            return "$v di $frenchSuitLabel"
-        }
-
-    val italianName: String
-        get() {
-            val v = when (value) {
-                1 -> "Asso"
-                8 -> "Fante"
-                9 -> "Cavallo"
-                10 -> "Re"
-                else -> value.toString()
-            }
-            return "$v di $suitLabel"
-        }
+    /**
+     * Il nome della carta letto da TalkBack, nella lingua dell'app.
+     *
+     * Prima erano quattro proprieta' di questa classe - suitLabel, frenchSuitLabel,
+     * italianName, frenchName - con i semi e le figure scritti in italiano dentro il
+     * codice. Era l'unica parte dell'app che non si traduceva cambiando lingua, e non si
+     * poteva tradurre: Card non ha un Context, quindi non puo' leggere le risorse.
+     *
+     * Da qui il parametro: chi chiama ha un Context - CardView e GameActivity - e passa le
+     * sue Resources. Il valore e il seme vengono dagli array, la congiunzione da
+     * cd_card_name, che in inglese diventa "of": e' esattamente la cosa che concatenando
+     * "$valore di $seme" non si poteva ottenere.
+     */
+    fun nome(res: Resources, french: Boolean): String {
+        val semi = res.getStringArray(if (french) R.array.semi_francesi else R.array.semi_italiani)
+        val valori = res.getStringArray(if (french) R.array.valori_francesi else R.array.valori_italiani)
+        return res.getString(R.string.cd_card_name, valori[value - 1], semi[suit])
+    }
 }
 
 fun fullDeck(): MutableList<Card> {

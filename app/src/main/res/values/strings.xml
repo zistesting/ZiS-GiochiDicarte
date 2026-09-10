@@ -87,11 +87,65 @@
     <!-- Descrizioni per TalkBack: le carte sono disegnate a mano, quindi senza queste
          chi non vede non ha modo di sapere che cosa c'e' sul tavolo. -->
     <string name="cd_card_back">Carta coperta</string>
+    <!--
+      IL NOME DI UNA CARTA, per TalkBack.
+
+      Prima lo componeva Card.kt in Kotlin, con i semi scritti a mano nel codice: quindi
+      l'unica parte dell'app che NON si traduceva cambiando lingua. Adesso il valore e il
+      seme vengono dai quattro array qui sotto e la congiunzione da questa stringa, che in
+      inglese diventa "of" - cioe' la cosa che non si puo' ottenere concatenando.
+    -->
+    <string name="cd_card_name">%1$s di %2$s</string>
+
+    <!-- Mazzo italiano: semi nell'ordine 0 denari, 1 coppe, 2 spade, 3 bastoni. -->
+    <string-array name="semi_italiani">
+        <item>denari</item>
+        <item>coppe</item>
+        <item>spade</item>
+        <item>bastoni</item>
+    </string-array>
+    <!-- Valori 1..10. Le figure hanno un nome, i numeri restano cifre: TalkBack le legge
+         come numeri, ed e' come si nominano parlando. -->
+    <string-array name="valori_italiani">
+        <item>Asso</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>Fante</item>
+        <item>Cavallo</item>
+        <item>Re</item>
+    </string-array>
+    <!-- Mazzo francese: 0 cuori, 1 quadri, 2 fiori, 3 picche. -->
+    <string-array name="semi_francesi">
+        <item>cuori</item>
+        <item>quadri</item>
+        <item>fiori</item>
+        <item>picche</item>
+    </string-array>
+    <string-array name="valori_francesi">
+        <item>Asso</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>Fante</item>
+        <item>Donna</item>
+        <item>Re</item>
+    </string-array>
     <string name="cd_card_disabled">%1$s, non giocabile</string>
     <string name="cd_deck">Mazzo, %1$d carte</string>
     <string name="cd_deck_empty">Mazzo finito</string>
 
     <!-- Pulsanti info e spiegazioni -->
+    <string name="cd_lang">Lingua: italiano o inglese</string>
     <string name="cd_info">Informazioni</string>
     <string name="info_title">Come si gioca</string>
     <string name="info_app_title">ZiS Giochi di Carte</string>

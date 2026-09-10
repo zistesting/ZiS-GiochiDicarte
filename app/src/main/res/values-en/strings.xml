@@ -1,0 +1,214 @@
+<resources>
+    <!--
+      English translation. Italian (res/values/strings.xml) stays the default: whoever has
+      the phone set to a language that is neither Italian nor English gets Italian.
+
+      TERMINOLOGY, and it has to stay consistent because the app counts three different
+      things and the score dialog shows two of them side by side:
+          Italian "mano"     -> HAND   a round of the cards you hold: three in Scopa and
+                                       Briscola, ten in Tresette.
+          Italian "partita"  -> GAME   the whole deck, from the deal to counting points.
+          Italian "incontro" -> MATCH  the series of games up to the chosen target.
+      The Italian resource names (hand_*, match_*, round_over) are older than the
+      terminology and do not line up with it: "round" means game, "match" means match.
+
+      "Banco" is the computer opponent. It is translated as BOT and not as "House" or
+      "Dealer": this app says plainly that nothing is wagered here, so a word borrowed
+      from gambling would be the wrong flavour, and "Dealer" would be inaccurate too
+      because nobody deals in Scopa. "Bot" is also three characters, which matters: it is
+      a column header in the score table, next to labels as long as "Settebello".
+
+      Card names, suits and figures use the conventional English terms for Italian-suited
+      decks: coins, cups, swords, batons, and Knave / Knight / King. The French deck keeps
+      Jack / Queen / King. Italian game terms that have no English equivalent - Scopa,
+      Settebello, Primiera, Briscola, Tresette - are left as they are: they are the names
+      of the things, not descriptions of them.
+    -->
+    <string name="app_name">ZiS-GiochiDiCarte</string>
+
+    <!-- Home -->
+    <string name="title">Card Games</string>
+    <string name="play_scopa">Scopa</string>
+    <string name="quit">Quit</string>
+
+    <!-- Game -->
+    <string name="bot">Bot</string>
+    <string name="you">You</string>
+    <string name="bot_turn">Bot is playing…</string>
+    <string name="back_home">Menu</string>
+
+    <!-- End of game dialog -->
+    <string name="round_over">Game over</string>
+
+    <!-- Results and scores: the same for Scopa, Briscola and Tresette -->
+    <string name="match_win_you">You won the match!</string>
+    <string name="match_win_bot">The Bot wins</string>
+    <string name="you_points">You: %1$s</string>
+    <string name="bot_points">Bot: %1$s</string>
+    <string name="briscola_hands_label">Games needed to win the match</string>
+    <string name="hands_5">5 games</string>
+    <string name="hands_11">11 games</string>
+    <string name="pt_carte">Cards</string>
+    <string name="pt_denari">Coins</string>
+    <string name="pt_settebello">Settebello</string>
+    <string name="pt_primiera">Primiera</string>
+    <string name="pt_totale">Total</string>
+    <string name="pt_partita">Game</string>
+    <string name="pt_incontro">Match</string>
+    <string name="pt_scope">Sweeps</string>
+    <string name="choose_capture">Choose the capture</string>
+    <!-- Banners shown in the middle of the table after a capture -->
+    <string name="banner_scopa">SCOPA!</string>
+    <string name="banner_settebello">SETTEBELLO!</string>
+    <string name="banner_nice_take">Nice capture!</string>
+    <string name="cd_web">ZiS website</string>
+    <string name="cd_settings">Settings</string>
+    <string name="settings_title">Settings</string>
+    <string name="score_target_label">Points needed to win the match</string>
+    <string name="target_11">11 points</string>
+    <string name="target_21">21 points</string>
+    <string name="continue_match">Continue</string>
+    <string name="new_match">New match</string>
+    <!-- End of game: go back to the start of the last hand (3 cards each, 10 in Tresette) -->
+    <string name="replay_last_deal">REPLAY the last hand</string>
+    <string name="play_briscola">Briscola</string>
+    <string name="you_take">You take</string>
+    <string name="bot_take">Bot takes</string>
+
+    <!-- Tresette -->
+    <string name="play_tresette">Tresette</string>
+    <string name="tre_points_third">%1$d and ⅓</string>
+    <string name="tre_points_twothirds">%1$d and ⅔</string>
+    <string name="tresette_target_label">Points needed to win the match</string>
+    <string name="tre_target_21">21 points</string>
+    <string name="tre_target_31">31 points</string>
+    <string name="draw_seconds_label">How long the drawn card stays face up</string>
+    <string name="draw_1s">1 second</string>
+    <string name="draw_2s">2 seconds</string>
+    <string name="draw_3s">3 seconds</string>
+
+    <!-- Statistics -->
+    <string name="cd_stats">Statistics</string>
+    <string name="stats_title">Statistics</string>
+    <string name="stat_played">Played</string>
+    <string name="stat_won">Won</string>
+    <string name="stat_lost">Lost</string>
+    <string name="stat_total">Total</string>
+    <string name="stats_empty">Nothing to count yet: matches against the Bot count once they reach the target, Klondike games count when you win them or give them up.</string>
+    <string name="stats_note">Games won are in yellow. In matches against the Bot only those that reach the target are counted: the ones left half way do not count. In Klondike a game counts as lost only if you give it up by dealing a new one.</string>
+    <string name="stats_reset">Reset</string>
+    <string name="stats_reset_ask">Reset all statistics? This cannot be undone.</string>
+
+    <!-- TalkBack descriptions: the cards are drawings, so without these someone who
+         cannot see them has no way of knowing what is on the table. -->
+    <string name="cd_card_back">Face-down card</string>
+    <string name="cd_card_disabled">%1$s, cannot be played</string>
+    <string name="cd_deck">Deck, %1$d cards</string>
+    <string name="cd_deck_empty">Deck empty</string>
+    <!-- "Seven of coins", "Knave of swords": the conjunction is the reason this is a
+         string and not a concatenation in the code. -->
+    <string name="cd_card_name">%1$s of %2$s</string>
+
+    <string-array name="semi_italiani">
+        <item>coins</item>
+        <item>cups</item>
+        <item>swords</item>
+        <item>batons</item>
+    </string-array>
+    <string-array name="valori_italiani">
+        <item>Ace</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>Knave</item>
+        <item>Knight</item>
+        <item>King</item>
+    </string-array>
+    <string-array name="semi_francesi">
+        <item>hearts</item>
+        <item>diamonds</item>
+        <item>clubs</item>
+        <item>spades</item>
+    </string-array>
+    <string-array name="valori_francesi">
+        <item>Ace</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>Jack</item>
+        <item>Queen</item>
+        <item>King</item>
+    </string-array>
+
+    <!-- Info buttons and explanations -->
+    <string name="cd_lang">Language: Italian or English</string>
+    <string name="cd_info">Information</string>
+    <string name="info_title">How to play</string>
+    <string name="info_app_title">ZiS Card Games</string>
+    <string name="close">Close</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="rules_scopa">Two players, 40-card deck. Four cards face up on the table, three each in hand.\nPlayers take turns playing one card. If a table card has the same value, you capture it. If not, you can capture several cards whose values add up to the card you played: the Ace is 1, the Knave 8, the Knight 9, the King 10. If a single card of the same value is there, that one takes precedence and must be captured. If you capture nothing, your card stays on the table.\nClearing the table with a capture is a SCOPA, worth one point. It does not count on the last card of the game.\n\nWhen the three cards in hand run out, three more are dealt to each player, as long as the deck lasts: each round of three cards is a hand. When the deck is empty and the last three have been played, the game ends: whatever is left on the table goes to whoever captured last.\n\nAt the end of the game four points are counted, one each: most cards, most coins, the settebello (the 7 of coins), and the primiera. Plus the sweeps. On a tie, nobody takes that point.\nThe primiera is worked out by taking your best card in each suit and adding up their values: the 7 is worth 21, the 6 is 18, the Ace 16, the 5 is 15, the 4 is 14, the 3 is 13, the 2 is 12, the figures 10. A player who captured no card at all in one suit does not compete for the primiera.\n\nThe match goes to whoever reaches 11 or 21 points first, whichever you choose in the settings.</string>
+    <string name="rules_briscola">Two players, 40-card deck. Three cards each, the rest forms the deck. The bottom card of the deck is left face up: its suit is the briscola, the trump, and it beats every other suit.\nOne player leads a card, the other answers with whatever they like: you are not obliged to follow suit. The trick goes to the higher trump, or, if there is none, to the higher card of the led suit. Whoever takes the trick draws first and leads the next one. Once the deck runs out, the last hand is played: three cards each, no drawing.\n\n<b>Order of strength</b>, highest first: Ace, 3, King, Knight, Knave, 7, 6, 5, 4, 2.\n\n<b>Points</b>: Ace 11, the 3 is worth 10, King 4, Knight 3, Knave 2. The other cards are worth nothing. There are 120 points in all: 61 are enough to win the game, and at 60 all the game is a draw.\n\nThe match goes to whoever wins 5 or 11 games first, whichever you choose in the settings.</string>
+    <string name="rules_tresette">Two players, 40-card deck. Ten cards each, twenty stay in the stock.\n\nWhoever answers MUST follow the led suit. You may play another suit only if you have none of it, but then you cannot take the trick.\n\nThe trick goes to the higher card of the led suit. Then both draw, the winner first, and the drawn card is shown to the opponent: keep an eye on them, they tell you what is left in their hand. Once the stock runs out, the last hand is played: ten tricks with no drawing.\n\n<b>Order of strength</b>, highest first: 3, 2, Ace, King, Knight, Knave, 7, 6, 5, 4.\n\n<b>Points</b>: the Ace is worth a whole point; the 2, the 3, the Knave, the Knight and the King are worth a third each; from 4 to 7, nothing. The last trick is worth one point. At the end of the game each player drops the leftover thirds, and the game is always worth 11 points in all.\n\nThe match goes to whoever reaches 21 or 31 points first, whichever you choose in the settings.</string>
+    <string name="info_app"><b>GLOSSARY</b>\n\n<b>Hand</b>: a round of the cards you hold, three in Scopa and Briscola, ten in Tresette.\n<b>Game</b>: the whole deck, from the deal to counting the points.\n<b>Match</b>: the series of games up to the target. The statistics only count finished matches.\n\n<b>RESPECT FOR YOUR PRIVACY</b>\n\nThis app collects nothing and sends nothing. There are no usage statistics, no advertising, no third-party tracking, and it asks for no permissions. It has no access to the internet, nor to your contacts, your location, the camera or the files on your phone. You can check this yourself in the Android settings, under the app\'s Permissions.\nThe only thing the app saves is your game preferences, and they stay on your phone.\n\n<b>RESPONSIBLE PLAY</b>\n\nNothing is wagered here and nothing is won: it is just a game of cards. A reminder still appears between one match and the next, and it can be turned off in the settings.</string>
+
+    <!-- Responsible play break -->
+    <string name="test_section">Test</string>
+    <string name="auto_play">Play by itself</string>
+    <string name="show_bot_cards">Show the Bot\'s cards</string>
+    <string name="show_bot_cards_desc">The Bot\'s cards stay face up and fully visible. Useful for checking the game logic.</string>
+    <string name="auto_play_desc">The program plays both the Bot\'s cards and yours. Useful for testing quickly that everything works.</string>
+    <string name="pause_section">Responsible play</string>
+    <string name="pause_switch">1-minute break between matches</string>
+    <string name="pause_switch_desc">At the end of every match a reminder appears and you have to wait a minute before starting again. If you turn it off, it comes back on by itself after an hour.</string>
+    <string name="pause_title">Take a break</string>
+    <string name="pause_message">Playing for a long time without stopping can turn into a habit that is hard to keep in check. Stop for a minute: stand up, have a drink, look at the time.
+
+If you feel the need to start again straight away, if you are playing to make up for a loss, or if playing is taking time away from other things, talk to someone about it.
+
+Italy\'s national freephone helpline for gambling-related problems: 800 558 822 (free and anonymous, Monday to Friday, 10am to 4pm). Outside Italy, look for the equivalent service in your own country.</string>
+    <string name="pause_countdown">Wait %1$d s</string>
+    <string name="pause_wait">Wait</string>
+    <string name="pause_off_info">Break turned off. It comes back on automatically in %1$d min.</string>
+
+    <!-- Deck -->
+    <string name="deck_section">Deck</string>
+    <string name="deck_label">Look of the cards</string>
+    <string name="deck_zis">ZiS theme</string>
+    <string name="deck_trad">Piacenza</string>
+    <string name="deck_berg">Bergamo</string>
+    <string name="deck_nap">Naples</string>
+
+    <!-- Klondike. The two labels keep the same split of meaning as in Italian:
+         REPLAY deals the same layout again and counts nothing, NEW deals a different one
+         and counts as a lost game. -->
+    <string name="play_klondike">Klondike</string>
+    <string name="kl_undo">Undo</string>
+    <string name="kl_restart">Replay</string>
+    <string name="kl_restart_ask">Put the cards back as they were at the start of this deal? The moves you made are lost, but the game does not count as lost.</string>
+    <string name="kl_deal">New</string>
+    <string name="kl_deal_ask">Give up this game and deal a new one? It will count as a lost game.</string>
+    <string name="kl_deal_ask_free">Deal a new one? You have made only a few moves, so this game will not be counted.</string>
+    <string name="kl_finish">Finish</string>
+    <string name="kl_status">Moves: %1$d   Cards: %2$d</string>
+    <string name="kl_no_moves">No moves left: REPLAY or NEW</string>
+    <string name="kl_auto_stop">Playing by itself stopped: no useful moves left</string>
+    <string name="kl_won_title">Klondike solved</string>
+    <string name="kl_won">You placed all 52 cards in %1$d moves.</string>
+    <string name="kl_section">Klondike</string>
+    <string name="kl_draw_label">Cards turned from the stock</string>
+    <string name="kl_draw_1">One at a time</string>
+    <string name="kl_draw_3">Three at a time</string>
+    <string name="rules_klondike">A solitaire played with the 52-card French deck. The aim is to build all four foundations, top right, from Ace to King.\n\nSeven columns: the first with one card, the seventh with seven. Only the last card of each column is face up. The remaining 24 form the stock, top left.\n\n<b>The columns</b> are built downwards in alternating colours: a black 8 goes on a red 9. You can move a single card or a group that is already in order.\n\n<b>An empty column takes a King and nothing else.</b> It is the harshest rule in the game: free space is the most valuable thing you have, and only four cards out of fifty-two can use it.\n\n<b>The foundations</b> are built upwards, one suit each, from Ace to King. A card that has gone up can come back down if you need it as a base: just tap it.\n\n<b>The stock</b> is turned by tapping it. When it runs out, tapping the empty space turns it over again: the cards come back in the same order as before. How many are turned at a time, one or three, is chosen in the settings.\n\n<b>You play by tapping</b>, not by dragging. You tap a card and it goes where it makes sense: the foundation first, then a column. If that is not where you wanted it, there is Undo.\n\nWhen no face-down cards are left and the stock is finished, <b>Finish</b> appears: from there on there are no choices left to make, only cards to send up.\n\nNot every deal can be won, and it is not your fault: about one in eleven is lost from the start when turning one card at a time, about one in five when turning three.</string>
+    <string name="kl_draw_info">Three at a time is much harder: two thirds of the stock never reach the top during the current pass, and the deals that cannot be won go from about one in eleven to about one in five.</string>
+</resources>
