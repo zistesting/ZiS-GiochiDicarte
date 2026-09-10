@@ -1,4 +1,4 @@
-PARTE 2 di 5 - mazzo ZiS, mazzo piacentino, loghi e sfondo  (89 file)   -   versione 3.8
+PARTE 4 di 5 - il mazzo napoletano  (41 file)   -   versione 3.8
 
 >>> QUESTE CINQUE PARTI SONO IL PROGETTO COMPLETO ALLA VERSIONE 3.8. <<<
 Sostituiscono in blocco tutti gli zip precedenti: 3.4, 3.5, 3.6, 3.7 e i pacchetti
@@ -9,20 +9,17 @@ adesso. Sono 309 file in cinque commit, nessuno oltre il limite di 100.
 
 --- cosa c'e' dentro ---
 
-  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
-  41  mazzo piacentino     trad_0_1 ... trad_3_10 + trad_back
-   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
-                           title_logo, zis_logo, velvet
+  41  nap_0_1 ... nap_3_10 + nap_back
+
+Il foglio da cui vengono e lo script che le ritaglia stanno nella PARTE 1, in art/.
 
 --- cosa e' cambiato rispetto alla 3.7 ---
 
-DUE carte su ottantanove: gli assi di denari.
+UNA carta su quarantuno: nap_0_1.webp, l'asso di denari, con le due teste d'aquila e il
+marchio ZiS.
 
-  card_0_1.webp   mazzo ZiS      l'aquila stilizzata col marchio ZiS
-  trad_0_1.webp   piacentine     l'aquila d'epoca col marchio ZiS
-
-Tutte le altre ottantasette sono identiche a quelle che hai. Se preferisci, puoi caricare
-solo quei due file invece di tutti e ottantanove: il risultato e' lo stesso.
+Le altre quaranta sono identiche a quelle che hai. Se preferisci, puoi caricare solo
+nap_0_1.webp invece di tutti e quarantuno.
 
 Le immagini sorgente e lo script che le porta nel formato del mazzo (art/assi/ e
 art/assi_denari.py) stanno nella PARTE 1.
