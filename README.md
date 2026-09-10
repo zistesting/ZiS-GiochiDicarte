@@ -182,16 +182,35 @@ l'unica di cui l'app usa il *comportamento* e non solo qualche classe: dentro ci
 `SystemBars.kt`, ed è l'area che Android ha rimaneggiato più di ogni altra fra API 35 e 36 con
 l'edge-to-edge obbligatorio.
 
-Fra le quattro, quella che può cambiare qualcosa a vista è **material**: i suoi major
-rimescolano gli stili dei dialoghi, e qui c'è una giuntura insolita — `AlertDialog.Builder` di
-appcompat con un tema che discende da `Theme.MaterialComponents.Dialog.Alert` e sopra gli
-override di `DarkAlertDialog`. È il primo posto dove guardare dopo un aggiornamento.
+**C'è un tetto, e non è una questione di prudenza: sforarlo ferma la build.** Ogni AAR porta
+scritto dentro (AAR metadata) il minimo di `compileSdk` e di AGP che pretende, e AGP lo
+controlla in `checkReleaseAarMetadata`. Con AGP 8.13.2 e `compileSdk 36` — il massimo che
+questa AGP supporta — il tetto per `core-ktx` è la **1.17.0**, che vuole AGP ≥ 8.9.1 e
+`compileSdk 36`. La 1.18.0 vuole `compileSdk 36.1`, la 1.19.0 vuole `compileSdk 37` e AGP
+≥ 9.1.0. Il primo tentativo di aggiornare, fatto con la 1.19.0, è finito lì con quattro
+errori di AAR metadata: per andare oltre servono AGP 9.x, Gradle 9.x e l'SDK di Android 17,
+che è una migrazione a sé e non un numero da cambiare.
+
+`material` **resta alla 1.12.0**, e non per prudenza generica. È la sola delle quattro che può
+cambiare qualcosa a vista, perché i suoi major rimescolano gli stili dei dialoghi, e qui c'è
+una giuntura insolita: `AlertDialog.Builder` di appcompat con un tema che discende da
+`Theme.MaterialComponents.Dialog.Alert` e sopra gli override di `DarkAlertDialog`. A
+quest'app la 1.13.0 non porta niente — si usano il tema e poco altro — quindi sarebbe un
+rischio visivo in cambio di nulla. Si aggiornerà insieme ad AGP 9.
 
 Da qui in avanti ci pensa **Dependabot** (`.github/dependabot.yml`): apre una pull request al
 mese col numero di versione giusto e il changelog allegato, librerie raggruppate in una PR
-sola, più le azioni del workflow. Serve a un problema concreto di questo progetto: lavorando
-solo dal sito di GitHub non c'è niente che avvisi quando esce una versione, e le quattro
-librerie sono rimaste indietro di due anni senza che nulla lo segnalasse.
+sola, più le azioni del workflow. Il file contiene anche il tetto su `core`, da togliere
+quando si passerà ad AGP 9: senza, Dependabot riproporrebbe ogni mese un aggiornamento che
+non può funzionare.
+
+E il workflow gira **anche sulle pull request**, il che è la metà che mancava. Le proposte di
+Dependabot arrivano come PR, e senza quel trigger non venivano compilate: un numero di
+versione troppo avanti si sarebbe scoperto solo dopo averlo unito nel ramo principale, che è
+esattamente come è andata la prima volta. Nelle PR di Dependabot i secret non ci sono, per
+scelta di GitHub, quindi la firma ripiega sulla chiave di debug come previsto in
+`build.gradle` e la build risponde solo alla domanda che conta: compila o no. Gli artefatti
+sulle PR non vengono pubblicati, non servono.
 
 ## Note tecniche
 

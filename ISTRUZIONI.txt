@@ -1,131 +1,109 @@
-PARTE 1 di 5 - tutto il progetto tranne le immagini  (86 file)   -   versione 3.9
+CORREZIONE DELLA BUILD  -  4 file  -  versione 3.9
 
-SOSTITUISCE la Parte 1 della 3.8.
+La Parte 1 della 3.9 che hai caricato non compila: uno dei numeri di versione delle
+librerie era troppo avanti. Questi quattro file la correggono, e sono gli UNICI da
+ricaricare: tutto il resto della 3.9 va bene, e le Parti 2, 3, 4 e 5 della 3.8 restano
+quelle giuste.
 
->>> LE PARTI 2, 3, 4 e 5 RESTANO QUELLE DELLA 3.8. <<<
-Non e' cambiata nessuna immagine: qui dentro ci sono solo configurazione di build,
-workflow e README. Tieni gli zip della 3.8 per le altre quattro parti.
+La versione resta 3.9: la build precedente non ha prodotto nessun APK, quindi non c'e'
+nessuna 3.9 in giro da cui distinguerla.
 
 --- caricamento ---
 
 Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
 di questa cartella (non la cartella) -> Commit changes.
 
-NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
+NON caricare questo ISTRUZIONI.txt. Attenzione a .github, che e' nascosto
 (su Windows: Visualizza -> Elementi nascosti).
 
-Il file .github/dependabot.yml e' NUOVO: assicurati che venga caricato anche lui.
+  app/build.gradle                  le versioni corrette
+  .github/dependabot.yml            il tetto, perche' non riproponga l'errore ogni mese
+  .github/workflows/build-apk.yml   build anche sulle pull request
+  README.md                         allineato
 
---- cosa e' cambiato rispetto alla 3.8 ---
+--- cosa era andato storto ---
 
-Sette file, tutti di contorno: nessuna riga di Kotlin, nessun layout, nessuna immagine.
+Ogni AAR porta scritto dentro - si chiama AAR metadata - il minimo di compileSdk e di AGP
+che pretende, e AGP lo controlla nel task checkReleaseAarMetadata. Sforare non produce un
+avviso: ferma la build, ed e' quello che e' successo.
 
- 1. DIPENDENZE AGGIORNATE. Erano di maggio 2024, tranne constraintlayout che era di marzo
-    2022.
+Il log diceva due cose:
 
-        core-ktx          1.13.1  ->  1.19.0
-        appcompat         1.7.0   ->  1.7.1
-        material          1.12.0  ->  1.13.0
-        constraintlayout  2.1.4   ->  2.2.1
+  "Dependency 'androidx.core:core-ktx:1.19.0' requires Android Gradle plugin 9.1.0 or
+   higher. This build currently uses Android Gradle plugin 8.13.2."
 
-    Di queste quattro conta davvero UNA. core-ktx e' l'unica di cui l'app usa il
-    COMPORTAMENTO e non solo qualche classe: dentro ci sono WindowCompat,
-    WindowInsetsCompat e ViewCompat.setOnApplyWindowInsetsListener, cioe' tutto
-    SystemBars.kt. Ed e' l'area che Android ha rimaneggiato piu' di ogni altra fra API 35 e
-    36 con l'edge-to-edge obbligatorio. Le altre tre sono manutenzione: quest'app non usa
-    Compose, Fragment, Navigation, Lifecycle, RecyclerView ne' Room, quindi la superficie su
-    cui una correzione potrebbe toccarla e' minuscola.
+  "...requires ... to compile against version 37 or later of the Android APIs. :app is
+   currently compiled against android-36. Also, the maximum recommended compile SDK
+   version for Android Gradle plugin 8.13.2 is 36."
 
- 2. R8 ACCESO: minifyEnabled true e shrinkResources true nel build di release.
+Cioe': la core-ktx 1.19.0 vuole compileSdk 37 e AGP 9.1, e l'AGP 8.13.2 non arriva ne'
+all'una ne' all'altro cosa. Era il rischio che avevo segnalato - i numeri di versione erano
+la sola parte che non potevo verificare senza compilare - e si e' avverato.
 
- 3. app/proguard-rules.pro RISCRITTO. Resta vuoto di regole, ma adesso spiega perche' non
-    ne serve nessuna, una condizione per volta: niente riflessione, niente
-    Resources.getIdentifier, niente serializzazione automatica, le Activity le tiene il
-    manifest, il View Binding e' chiamato direttamente, CardView non viene mai gonfiata da
-    XML. Serve al te' di fra due anni che aggiunge una libreria e si chiede se deve
-    scrivere una regola.
+--- cosa cambia ---
 
- 4. IL WORKFLOW CARICA I REFERTI DI R8 (mapping.txt, usage.txt e il resto) fra gli
-    artefatti della build, accanto all'APK e all'AAB. Con i nomi offuscati, una stack trace
-    senza mapping.txt e' una sequenza di a.b.c. Nell'AAB il mapping ci finisce da solo,
-    quindi per il Play Store sei coperto; per l'APK che ti installi a mano no, ed e'
-    esattamente il caso in cui stai provando.
+    core-ktx          1.19.0  ->  1.17.0     <- l'unica correzione necessaria
+    appcompat         1.7.1               restava buona
+    constraintlayout  2.2.1               restava buona
+    material          1.12.0              NON si aggiorna, vedi sotto
 
- 5. .github/dependabot.yml, NUOVO. Una pull request al mese col numero di versione giusto e
-    il changelog allegato, le quattro librerie raggruppate in una PR sola, piu' le azioni
-    del workflow. Serve a un problema concreto: lavorando solo dal sito di GitHub non c'e'
-    niente che avvisi quando esce una versione, ed e' cosi' che le librerie sono rimaste
-    indietro di due anni.
+IL TETTO, adesso scritto in build.gradle perche' non si perda:
 
- 6. gradle.properties: una nota su android.enableR8.fullMode, che e' la prima cosa da
-    provare se R8 rompesse qualcosa. Nessuna impostazione cambiata, solo il commento.
+    core-ktx 1.17.0    vuole AGP >= 8.9.1 e compileSdk 36   <- esattamente il nostro caso
+    core-ktx 1.18.0    vuole compileSdk 36.1
+    core-ktx 1.19.0    vuole compileSdk 37 e AGP >= 9.1.0
 
- 7. README con la sezione nuova sul build di release, e versione 3.9.
+La 1.17.0 non e' un ripiego: da 1.13.1 sono quattro versioni minori, e core-ktx e' l'unica
+delle quattro librerie che conta davvero per quest'app, perche' e' dove stanno
+WindowCompat, WindowInsetsCompat e setOnApplyWindowInsetsListener, cioe' tutto
+SystemBars.kt.
 
---- QUANTO SI RISPARMIA, ONESTAMENTE ---
+appcompat 1.7.1 e constraintlayout 2.2.1 sono di inizio 2025 e non chiedono piu' di
+compileSdk 35: quelle stavano larghe e restano aggiornate.
 
-Meno di quanto sembri, e conviene saperlo prima di guardare il file.
+material RESTA alla 1.12.0, e non per prudenza generica. E' la sola delle quattro che puo'
+cambiare qualcosa a vista, perche' i suoi major rimescolano gli stili dei dialoghi, e qui
+c'e' una giuntura insolita: AlertDialog.Builder di appcompat con un tema che discende da
+Theme.MaterialComponents.Dialog.Alert e sopra gli override di DarkAlertDialog. A
+quest'app la 1.13.0 non porta niente, quindi sarebbe un rischio visivo in cambio di nulla.
+Con material fermo, la prova delle finestre di cui parlavano le istruzioni della 3.9 non
+serve piu': resta solo quella delle barre di sistema, per core-ktx.
 
-Le immagini sono 9,9 MB su circa 12, cioe' l'82% del pacchetto, e R8 non le tocca: il
-guadagno sta tutto nei due megabyte di DEX e risorse delle librerie. Aspettati qualcosa
-attorno al 10% del totale, non un dimezzamento.
+--- la correzione che conta piu' della correzione ---
 
-Il modo di misurarlo non richiede strumenti: hai gia' l'APK della build precedente, quindi
-basta confrontare le dimensioni dei due file.
+IL WORKFLOW ORA GIRA ANCHE SULLE PULL REQUEST.
 
-Il lettone vero, se un giorno il peso diventasse un problema, sono i due mazzi
-scansionati: piacentine 3,2 MB e napoletane 2,3, che si comprimono peggio del disegno a
-tinte piatte - 79 KB per carta contro i 20 delle francesi. Scendere di qualita' dal 90
-all'85 negli script di art/ risparmierebbe circa 1,8 MB, piu' di quanto dia R8. Non l'ho
-fatto perche' su una scansione la differenza si vede, e va guardata a schermo pieno prima
-di decidere.
+Le proposte di Dependabot arrivano come pull request, e il workflow partiva solo sui push
+al ramo principale: quindi una PR con un numero di versione troppo avanti NON veniva
+compilata, e il guasto si sarebbe scoperto solo dopo averla unita. Esattamente come e'
+andata adesso, a mano.
 
---- SE LA BUILD SI FERMA ---
+Con la riga aggiunta, una PR che non compila lo dice dentro la PR, prima di unire, e la si
+chiude. Nelle PR di Dependabot i secret non ci sono - e' una scelta di GitHub - quindi la
+firma ripiega sulla chiave di debug come previsto in build.gradle, e la build risponde solo
+alla domanda che conta: compila o no. Sulle PR gli artefatti non vengono pubblicati, che
+non servono e costano minuti.
 
-Il caso piu' probabile e' un numero di versione. Se il log dice qualcosa su "could not
-resolve" o su "requires compileSdk", e' una delle quattro righe delle dipendenze: si
-abbassa quel numero e si riprova. E' un guasto rumoroso e immediato, non una sorpresa a
-runtime, e da qui in avanti Dependabot ti dara' i numeri giusti senza cercarli.
+In dependabot.yml ho messo anche il tetto su core (ignora >= 1.18.0): senza, ti
+riproporrebbe ogni mese lo stesso aggiornamento che non puo' funzionare. Va TOLTO quando si
+passera' ad AGP 9, ed e' scritto nel file.
 
---- SE L'APP SI ROMPE ---
+--- e per andare oltre ---
 
-R8 e' l'unica modifica di tutto il progetto che si puo' verificare SOLTANTO provando il
-release sul telefono, perche' e' l'unica che cambia il codice DOPO la compilazione. Il
-workflow compila solo il release, quindi l'APK che scarichi e' quello minificato: quello
-che provi e' quello giusto.
-
-Il sintomo tipico e' un ClassNotFoundException o un NoSuchMethodException. La diagnosi e'
-corta e in questo ordine:
-
- 1. rimetti  minifyEnabled false  in app/build.gradle e ricompila. Se il problema
-    sparisce e' R8; se resta sono le librerie aggiornate. Un solo build e sai da che parte
-    guardare.
- 2. se e' R8, rimetti minifyEnabled true e togli il cancelletto a
-    android.enableR8.fullMode=false in gradle.properties: e' la modalita' aggressiva, che
-    dalla AGP 8.0 e' attiva di serie.
- 3. solo dopo, le regole in app/proguard-rules.pro.
+Per la core-ktx 1.19.0 servono AGP 9.x, Gradle 9.x e l'SDK di Android 17. E' una migrazione
+a se': AGP 9 e' un major con cambiamenti al DSL, e compileSdk 37 porta dentro lint e
+manifest merger nuovi. Non e' un numero da cambiare, e non ha fretta: nessuna delle quattro
+librerie ti sta bloccando adesso.
 
 --- COSA PROVARE ---
 
-Le dipendenze e R8 si provano nello stesso giro, ma guardando due cose diverse.
-
- 1. LE FINESTRE, per material: riepilogo di fine mano della Scopa, scelta della presa,
-    statistiche con l'azzeramento, avviso della pausa, conferme di Rigioca e Ricomincia,
-    vittoria del Klondike. I major di material rimescolano gli stili dei dialoghi, e qui
-    c'e' una giuntura insolita - AlertDialog.Builder di appcompat con un tema che discende
-    da Theme.MaterialComponents.Dialog.Alert e sopra gli override di DarkAlertDialog. Se
-    qualcosa e' fuori posto, angoli o padding o colore del titolo, e' material.
-
+ 1. Che compili. E' il punto.
  2. LE BARRE DI SISTEMA, per core-ktx: che i margini in alto e in basso restino giusti in
     tutte e cinque le schermate, che niente finisca sotto la barra di stato o sotto quella
-    di navigazione. Provalo anche in orizzontale su un tablet e in schermo diviso.
-
+    di navigazione. Anche in orizzontale su un tablet e in schermo diviso.
  3. TUTTO IL RESTO, per R8: i quattro giochi dall'inizio alla fine, le impostazioni con
-    ogni mazzo, TalkBack sulle carte, il salvataggio e la ripresa uscendo e rientrando.
-    R8 non rompe le cose a caso: rompe i percorsi che l'analisi statica non vede. Qui non
-    ce ne sono, ma la prova sta nel giocare, non nel ragionamento.
-
+    ogni mazzo, TalkBack sulle carte, il salvataggio e la ripresa uscendo e rientrando. Se
+    qualcosa si rompe SOLO nel release, rimetti minifyEnabled false e ricompila: se
+    sparisce e' R8, se resta sono le librerie.
  4. IL PESO: confronta l'APK nuovo con quello vecchio che hai gia'.
-
  5. usage.txt nell'artefatto ZiS-GiochiDiCarte-R8: e' l'elenco di quello che R8 ha tolto.
-    Se e' lungo, sta lavorando.
