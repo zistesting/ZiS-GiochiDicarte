@@ -1,23 +1,22 @@
-PARTE 2 di 5 - mazzo ZiS, mazzo piacentino, loghi e sfondo  (89 file)   -   versione 3.5
+PARTE 3 di 5 - il mazzo bergamasco  (41 file)   -   versione 3.5
 
 >>> NON SERVE RICARICARLA. <<<
 
 Queste immagini sono IDENTICHE a quelle che hai gia' nel repository: dalla 3.4 alla 3.5
 non ne e' cambiata nessuna. La parte c'e' solo perche' il progetto resti completo in
 cinque pezzi. Se la carichi non fai danni - i nomi sono gli stessi, si sovrascrivono -
-ma stai caricando 89 file per niente.
+ma stai caricando 41 file per niente.
 
 Della 3.5 servono solo la PARTE 1 (il codice) e la PARTE 5 (le carte francesi).
 
-  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
-  41  mazzo piacentino     trad_0_1 ... trad_3_10 + trad_back
-   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
-                           title_logo, zis_logo, velvet
+  41  berg_0_1 ... berg_3_10 + berg_back
+
+Il foglio da cui vengono e lo script che le ritaglia stanno nella Parte 1, in art/.
 
 --- se la carichi comunque ---
 
 Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti i 89 file di questa cartella (non la cartella: il suo contenuto).
+dentro tutti i 41 file di questa cartella (non la cartella: il suo contenuto).
 NON caricare questo ISTRUZIONI.txt.
 
 --- avvertenza di sempre ---
