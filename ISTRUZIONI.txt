@@ -1,44 +1,27 @@
-PARTE 1 di 5 - tutto il progetto tranne le immagini  (78 file)   -   versione 3.4
+PARTE 2 di 5 - mazzo ZiS, mazzo piacentino, loghi e sfondo  (89 file)   -   versione 3.5
 
->>> VA RICARICATA ANCHE LA PARTE 5 <<<  (le carte hanno gli indici piu' grandi)
-Ordine: prima la Parte 5, poi questa. Le Parti 2, 3 e 4 restano come sono.
+>>> NON SERVE RICARICARLA. <<<
 
---- caricamento ---
+Queste immagini sono IDENTICHE a quelle che hai gia' nel repository: dalla 3.4 alla 3.5
+non ne e' cambiata nessuna. La parte c'e' solo perche' il progetto resti completo in
+cinque pezzi. Se la carichi non fai danni - i nomi sono gli stessi, si sovrascrivono -
+ma stai caricando 89 file per niente.
 
-Pagina principale -> Add file -> Upload files -> trascina il CONTENUTO -> Commit changes.
-NON caricare questo ISTRUZIONI.txt.  Attenzione a .github e .gitignore, che sono nascosti.
+Della 3.5 servono solo la PARTE 1 (il codice) e la PARTE 5 (le carte francesi).
 
---- cosa e' cambiato ---
+  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
+  41  mazzo piacentino     trad_0_1 ... trad_3_10 + trad_back
+   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
+                           title_logo, zis_logo, velvet
 
- 1. Il pulsante "Nuova partita" ora dice RIGIOCA.
+--- se la carichi comunque ---
 
- 2. MAZZO A DESTRA, SCARTI ALLA SUA SINISTRA: posizioni invertite.
-    Gli scarti pero' non sono semplicemente specchiati. Il ventaglio e' ancorato alla carta
-    IN CIMA, non alla prima: le piu' vecchie si dispongono a scalare verso sinistra. La
-    carta in cima e' l'unica giocabile, e ancorando la prima si spostava ogni volta che il
-    numero di carte visibili passava da tre a due a una. Cosi' invece sta sempre nello
-    stesso punto, subito a sinistra del mazzo, e la si prende senza guardare.
+Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
+dentro tutti i 89 file di questa cartella (non la cartella: il suo contenuto).
+NON caricare questo ISTRUZIONI.txt.
 
- 3. IL DIFETTO DEGLI SCARTI: TROVATO E RISOLTO.
-    Non erano le carte a disallinearsi, era l'ordine con cui venivano impilate.
-    L'animazione portava avanti la carta in movimento con bringToFront, che riordina i figli
-    del contenitore. Ma l'ordine dei figli e' esattamente quello che impila i ventagli:
-    animando piu' carte insieme, l'ordine in cui venivano portate avanti era quello casuale
-    della mappa, e dopo qualche mossa il ventaglio si ritrovava impilato al contrario. Si
-    vedeva sfalsato, e soprattutto una carta VECCHIA, che non ha il tocco, finiva sopra a
-    quella in cima, che ce l'ha: il tocco arrivava alla carta sbagliata e sembrava che le
-    carte non si potessero piu' prendere.
-    Ora la carta in movimento si alza con translationZ, che agisce solo sul disegno e non
-    tocca l'ordine dei figli.
+--- avvertenza di sempre ---
 
- 4. Indici delle carte piu' grandi di meta' (sta nella Parte 5).
-
---- COSA PROVARE ---
-
- 1. Pesca a tre finche' non hai il ventaglio pieno, poi gioca la carta in cima e ripeti,
-    parecchie volte di fila. E' il caso che prima si rompeva: le carte devono restare
-    impilate nello stesso verso e quella in cima deve essere sempre prendibile.
- 2. Rigira il tallone piu' volte: ventiquattro carte si animano insieme, ed e' l'altro caso
-    che scatenava il problema.
- 3. Che il mazzo sia a destra e gli scarti alla sua sinistra.
- 4. Che i valori si leggano ancora meglio di prima in colonna.
+Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi,
+altrimenti Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
+Vale anche per i loghi.
