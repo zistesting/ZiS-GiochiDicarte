@@ -1,112 +1,48 @@
-ZiS-GiochiDiCarte-app1  -  il programma  (71 file)  -  versione 4.2
+ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (27 file)  -  versione 4.2
 
->>> ATTENZIONE: LA DIVISIONE DEI PACCHETTI E' CAMBIATA. <<<
+PACCHETTO NUOVO. Prima questi file stavano dentro app1, che era arrivato a 98 su 100:
+uscendo da li' il programma scende a 71 file e ha di nuovo margine.
 
-Da questa versione ci sono CINQUE zip invece di quattro:
+  art/         23 file   gli script che producono carte, dorsi, figure, assi e icone,
+                         piu' le immagini sorgente (art/assi/, art/figure/, logo_app.png)
+  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
+                         per misurare le euristiche fuori dal telefono
 
-    ZiS-GiochiDiCarte-app1                     71 file   il programma (questo)
-    ZiS-GiochiDiCarte-app2                     27 file   NUOVO: art/ e verifica/
-    ZiS-GiochiDiCarte-piacentine-zis           82 file   invariato dalla 3.9
-    ZiS-GiochiDiCarte-bergamasche-napoletane   82 file   invariato dalla 3.9
-    ZiS-GiochiDiCarte-francesi                 53 file   invariato dalla 3.9
-
-Perche': app1 era arrivato a 98 file su 100, e con le tre aggiunte di questa versione
-(l'immagine del pulsante, values-en/strings.xml, res/xml/locales_config.xml) il margine si
-era ridotto a due. La divisione era gia' prevista e annotata da tre versioni: art/ e
-verifica/ escono da app1 e vanno in app2. Non servono alla build - il workflow ignora
-art/** di proposito e verifica/ e' solo Python di prova - quindi il programma vero scende
-a 71 file e ha di nuovo respiro.
-
-DEVI CARICARE ANCHE app2, una volta: quei 27 file sono gia' nel repository, ma se non
-carichi app2 non c'e' niente da fare, restano quelli che ci sono. Caricalo comunque per
-tenere allineate le due cose; da qui in avanti app2 cambiera' raramente.
-
-I due zip dei mazzi italiani e quello del mazzo francese sono invariati dalla 3.9: nessuna
-carta e' cambiata.
+NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
+nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
+del gioco automatico sono state misurate. Servono il giorno che vuoi rigenerare un mazzo o
+rimisurare qualcosa.
 
 --- caricamento ---
 
 Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app1 e trascina QUELLO CHE C'E' DENTRO -> Commit changes.
+ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
+Commit changes.
 
-In fondo alla pagina, prima di confermare, controlla che sia selezionato "Commit directly
-to the main branch".
+NON caricare questo ISTRUZIONI.txt.
 
-NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti.
+Nota: questo commit NON fara' partire la build, ed e' voluto - il workflow ignora art/**.
+Se non parte niente, non e' un guasto.
 
---- cosa e' cambiato: L'APP PARLA DUE LINGUE ---
+--- cosa e' cambiato rispetto alla 4.1 ---
 
-Il pulsante con le due bandiere e' il PRIMO dei cinque in fondo alla schermata iniziale,
-prima di info. Un tocco e tutto il testo passa da italiano a inglese e viceversa: interfaccia,
-regole, glossario, avviso sul gioco responsabile, descrizioni per TalkBack. 114 stringhe.
+NIENTE. Questi 27 file sono identici a quelli che hai gia' nel repository: uscivano da
+app1, non sono stati modificati. Caricarli non fa danni e serve solo a tenere allineate le
+due cose; se preferisci puoi anche saltarlo, il repository e' gia' a posto per questa
+parte.
 
-Il meccanismo e' AppCompatDelegate.setApplicationLocales, cioe' l'API ufficiale della
-lingua PER APP: da Android 13 chiama il sistema, sotto ci pensa appcompat. La scelta
-persiste da sola e le activity vengono ricreate dal meccanismo: nessuna preferenza da
-salvare a mano.
+Da qui in avanti app2 cambiera' raramente: solo quando si tocca uno script di art/ o una
+prova in verifica/.
 
-Tre cose sono servite, e nessuna era ovvia:
+--- cosa c'e' dentro art/ ---
 
- 1. "locale" E' STATO TOLTO DAI configChanges delle quattro activity di gioco. C'era,
-    insieme a layoutDirection, per il principio "non ricrearmi". Ma un cambio di lingua e'
-    esattamente il caso in cui la ricreazione e' quello che si vuole: con locale in quella
-    lista l'activity avrebbe ricevuto onConfigurationChanged e i testi gia' letti nelle
-    TextView sarebbero rimasti nella lingua di prima. E' la trappola in cui questa
-    modifica sarebbe finita se non l'avessi guardato prima di scrivere il codice.
-
- 2. UN SERVIZIO CHE NON FA NIENTE, AppLocalesMetadataHolderService, dichiarato nel manifest
-    con autoStoreLocales a true e android:enabled="false". Non viene mai avviato: appcompat
-    lo usa solo come contenitore per quel meta-dato, ed e' il posto dove va a scriversi la
-    preferenza sotto Android 13. Senza, su Android da 7 a 12 la lingua tornerebbe italiana
-    a ogni riavvio dell'app - cioe' proprio sui telefoni per cui appcompat esiste.
-
- 3. I NOMI DELLE CARTE PER TALKBACK ERANO CABLATI NEL CODICE. Card.kt aveva quattro
-    proprieta' - suitLabel, frenchSuitLabel, italianName, frenchName - con i semi e le
-    figure scritti in italiano dentro il Kotlin, e sarebbe stata l'unica parte dell'app a
-    NON tradursi: Card non ha un Context, quindi non puo' leggere le risorse. Adesso c'e'
-    un metodo Card.nome(res, french) che prende valore e seme da quattro string-array e la
-    congiunzione da cd_card_name, che in inglese diventa "of" - cioe' esattamente la cosa
-    che concatenando "$valore di $seme" non si poteva ottenere.
-
---- due scelte di traduzione, se non ti tornano si cambiano ---
-
-"Banco" diventa BOT, non "House" ne' "Dealer". Questa app dice esplicitamente che qui non
-si scommette, quindi una parola presa dal gioco d'azzardo sarebbe il sapore sbagliato; e
-"Dealer" sarebbe anche inesatto, perche' nella Scopa nessuno fa il mazziere. Ed e' di tre
-caratteri, che conta: e' l'intestazione di una colonna accanto a etichette lunghe come
-"Settebello", e una parola larga avrebbe stretto la colonna delle etichette.
-
-I termini italiani senza equivalente restano come sono: Scopa, Settebello, Primiera,
-Briscola, Tresette. Sono il nome delle cose, non la loro descrizione. I semi italiani usano
-i termini inglesi convenzionali - coins, cups, swords, batons - e le figure Knave, Knight,
-King; il mazzo francese tiene Jack, Queen, King.
-
-Il numero verde nell'avviso sul gioco responsabile e' italiano, quindi nella versione
-inglese e' descritto come tale, con una riga che dice di cercare il servizio equivalente
-nel proprio paese. Non ho inventato altri numeri.
-
---- la riga in fondo ha dovuto restringersi ---
-
-Con QUATTRO pulsanti stava a 52dp e 12dp di margine per lato: 304dp, che entravano in uno
-schermo da 360. Con CINQUE agli stessi numeri farebbe 380dp e non ci starebbe. Ora sono
-48dp - il minimo che Material indica per un bersaglio da toccare, quindi si scende fino a
-li' e non oltre - con 5dp di margine: 290dp in tutto, che entrano anche in uno schermo da
-320dp. Le misure stanno in res/values/dimen.xml.
-
---- COSA PROVARE ---
-
- 1. Il pulsante delle bandiere: un tocco, e la schermata iniziale deve ricomparire in
-    inglese. Un altro tocco e torna in italiano.
- 2. LA LINGUA DEVE RESTARE dopo aver chiuso e riaperto l'app. E' il punto piu' importante:
-    se torna italiana, e' il servizio del manifest che non e' stato caricato.
- 3. Entra in Scopa, Briscola, Tresette e Klondike CON L'APP IN INGLESE: tutto il testo
-    dentro le partite deve essere inglese, non solo la schermata iniziale.
- 4. Le regole e le informazioni (pulsante info) in entrambe le lingue: sono i testi piu'
-    lunghi, ed e' dove si vedrebbe una stringa dimenticata.
- 5. Il riepilogo di fine partita in inglese: "You" e "Bot" sono intestazioni di colonna
-    accanto a "Settebello" e "Primiera". Se la tabella si stringe male, si vede qui.
- 6. TALKBACK IN INGLESE: tocca una carta in Scopa, deve dire "Seven of coins" e non "7 di
-    denari". Nel Klondike "Jack of hearts". E' la parte che prima non si traduceva.
- 7. Cambia lingua MENTRE una partita e' salvata (esci col Menu, cambia lingua, rientra): la
-    partita deve essere ancora li'.
- 8. La riga dei cinque pulsanti su uno schermo piccolo: devono starci tutti senza tagliarsi.
+  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
+  card_back.py + i .svg        i dorsi dei cinque mazzi
+  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
+  estrai_carta_singola.py      una carta per volta, per i ritocchi
+  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
+  figure/                      le tre immagini da cui vengono J, Q e K francesi
+  icona_app.py + logo_app.png  il logo dell'app e le cinque icone del lanciatore
+  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
+  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
+  README.md                    come si usano
