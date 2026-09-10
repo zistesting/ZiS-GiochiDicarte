@@ -1,4 +1,4 @@
-PARTE 4 di 5 - il mazzo napoletano  (41 file)   -   versione 3.8
+PARTE 5 di 5 - il mazzo francese  (57 file)   -   versione 3.8
 
 >>> QUESTE CINQUE PARTI SONO IL PROGETTO COMPLETO ALLA VERSIONE 3.8. <<<
 Sostituiscono in blocco tutti gli zip precedenti: 3.4, 3.5, 3.6, 3.7 e i pacchetti
@@ -9,28 +9,58 @@ adesso. Sono 309 file in cinque commit, nessuno oltre il limite di 100.
 
 --- cosa c'e' dentro ---
 
-  41  nap_0_1 ... nap_3_10 + nap_back
+  53  immagini  ->  app/src/main/res/drawable-nodpi/
+   1  script    ->  art/carte_francesi.py
+   3  immagini  ->  art/figure/            le sorgenti delle tre figure
 
-Il foglio da cui vengono e lo script che le ritaglia stanno nella PARTE 1, in art/.
+Gli ultimi quattro sono gli STESSI che stanno anche nella Parte 1: caricando entrambe le
+parti si sovrascrivono con lo stesso contenuto, non e' un problema. Stanno anche qui
+perche' la Parte 5 resti autosufficiente per il mazzo francese, com'era in origine.
 
 --- cosa e' cambiato rispetto alla 3.7 ---
 
-UNA carta su quarantuno: nap_0_1.webp, l'asso di denari, con le due teste d'aquila e il
-marchio ZiS.
+NIENTE. Il mazzo francese non e' stato toccato dalla 3.7 alla 3.8: se hai gia' caricato la
+Parte 5 della 3.7 questa e' identica e puoi saltarla.
 
-Le altre quaranta sono identiche a quelle che hai. Se preferisci, puoi caricare solo
-nap_0_1.webp invece di tutti e quarantuno.
+C'e' perche' hai chiesto le cinque parti complete: caricandole tutte, il repository e'
+allineato alla 3.8 qualunque cosa ci sia adesso.
 
-Le immagini sorgente e lo script che le porta nel formato del mazzo (art/assi/ e
-art/assi_denari.py) stanno nella PARTE 1.
+--- com'e' fatto questo mazzo ---
+
+UN INDICE SOLO, in alto a sinistra, e grande. Nel Klondike le carte non si girano mai e in
+colonna di ogni carta si vede solo la fascia in alto: l'indice in basso a destra non era
+visibile MAI, e si mangiava un terzo dell'altezza. Togliendolo il pannello centrale passa
+dal 30% al 64%.
+
+L'INDICE E' ALLINEATO SULL'INCHIOSTRO, non sulla linea di base: si rasterizza ogni valore,
+si misura, e si scegle il font-size perche' il corpo venga uguale per tutti. Serve a due
+cose che prima non tornavano: il 10 su cui il simbolo del seme finiva sopra allo zero
+(cairosvg ignora textLength) e il J che in colonna si leggeva come una I, perche' il gancio
+scendeva sotto la fascia visibile.
+
+LE TRE FIGURE vengono da tre immagini piatte in art/figure/, normalizzate a quattro soli
+colori e ricolorate per seme secondo la tabella CROMIA in cima a carte_francesi.py: cuori
+carminio e oro, quadri vermiglio e ambra, fiori verde e argento, picche ardesia e acciaio.
+Il vincolo non e' estetico: nel Klondike le colonne si costruiscono a colori alternati,
+quindi rosso e nero devono restare inconfondibili.
+
+LA GRIGLIA TRADIZIONALE di simboli, con la meta' bassa capovolta come nei mazzi veri, e i
+simboli alti il 21% del pannello. Il tetto non e' l'altezza ma la larghezza: le tre colonne
+hanno i centri a cento pixel l'una dall'altra e picche, cuori e fiori sono larghi quasi
+quanto sono alti, quindi a 0,22 si toccherebbero.
 
 --- caricamento ---
 
-Vai in  app/src/main/res/drawable-nodpi/  nel repository -> Add file -> Upload files ->
-trascina dentro tutti i file .webp di questa cartella (non la cartella: il suo
-contenuto) -> Commit changes.
+Due caricamenti, perche' i file finiscono in due posti diversi.
+
+ 1. app/src/main/res/drawable-nodpi/ -> Add file -> Upload files -> le 53 immagini
+    fr_*.webp -> Commit changes.
+ 2. Pagina principale -> Add file -> Upload files -> la cartella art -> Commit changes.
 
 NON caricare questo ISTRUZIONI.txt.
+
+Nota: il secondo commit NON fa partire la build, perche' il workflow ignora art/**. E'
+voluto - sono sorgenti grafiche, non codice - e la build parte col primo.
 
 --- avvertenza di sempre ---
 
