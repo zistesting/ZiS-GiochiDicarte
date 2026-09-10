@@ -1,0 +1,48 @@
+# Aggiornamenti proposti da Dependabot.
+#
+# Serve a un problema concreto di questo progetto: lavorando solo dal sito di GitHub, non
+# c'e' una finestra che avvisi quando esce una versione nuova, e le quattro librerie sono
+# rimaste indietro di due anni senza che nulla lo segnalasse. Dependabot apre una pull
+# request col numero di versione GIUSTO e il changelog allegato, quindi non c'e' piu' da
+# cercarlo a mano ne' da indovinarlo.
+#
+# Le librerie sono raggruppate: una pull request per tutte e quattro invece di quattro
+# separate. Su un progetto con quattro dipendenze, quattro PR al mese sarebbero rumore.
+#
+# Se non arriva nessuna pull request, la cosa da controllare e' "directories": le versioni
+# stanno in app/build.gradle, non nel build.gradle della radice.
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directories:
+      - "/"
+      - "/app"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      androidx-e-material:
+        patterns:
+          - "androidx.*"
+          - "com.google.android.material:*"
+    # IL TETTO. Con AGP 8.13.2 e compileSdk 36, core-ktx si ferma alla 1.17.0: la 1.18.0
+    # pretende compileSdk 36.1 e la 1.19.0 compileSdk 37 con AGP 9.1. Senza questa riga
+    # Dependabot riproporrebbe ogni mese un aggiornamento che non puo' funzionare.
+    #
+    # DA TOGLIERE quando si passera' ad AGP 9.x: e' l'unico posto dove questo vincolo e'
+    # scritto in modo che Dependabot lo rispetti, quindi va rivisto insieme all'AGP e non
+    # dopo.
+    ignore:
+      - dependency-name: "androidx.core:core-ktx"
+        versions: [">=1.18.0"]
+      - dependency-name: "androidx.core:core"
+        versions: [">=1.18.0"]
+
+  # Anche le azioni del workflow invecchiano, e quando succede la build si ferma con un
+  # messaggio su Node che non dice quale azione sia. Vedi il commento sopra
+  # upload-artifact nel workflow: la v5 non bastava piu'.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
