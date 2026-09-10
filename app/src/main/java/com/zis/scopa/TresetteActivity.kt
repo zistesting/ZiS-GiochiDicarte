@@ -127,7 +127,7 @@ class TresetteActivity : AppCompatActivity() {
         when {
             game.finished -> { busy = true; render(); endHand() }
             game.turn == 1 -> { busy = true; render(); post(t.think) { botPlay() } }
-            busy -> { busy = false; render(); b.txtStatus.setText(R.string.your_turn); maybeAutoPlay() }
+            busy -> { busy = false; render(); b.txtStatus.text = ""; maybeAutoPlay() }
             else -> maybeAutoPlay()
         }
     }
@@ -317,7 +317,7 @@ class TresetteActivity : AppCompatActivity() {
         busy = true
         render()
         moveSeq++
-        b.txtStatus.setText(if (game.turn == 1) R.string.bot_turn else R.string.your_turn)
+        statoTurno()
         dealAnimation()
         post(t.deal) {
             if (destroyed || ending) return@post
@@ -326,7 +326,7 @@ class TresetteActivity : AppCompatActivity() {
             } else {
                 busy = false
                 render()
-                b.txtStatus.setText(R.string.your_turn)
+                b.txtStatus.text = ""
                 maybeAutoPlay()
             }
         }
@@ -542,8 +542,6 @@ class TresetteActivity : AppCompatActivity() {
     }
 
     private fun render(trickOverride: List<Card>? = null) {
-        b.txtMatch.text = getString(R.string.match_line, matchYou, matchBot)
-        b.txtMatch.tintByScore(matchYou, matchBot)
         b.botScore.text = getString(R.string.bot_points, formatThirds(game.thirdsFor(1)))
         b.youScore.text = getString(R.string.you_points, formatThirds(game.thirdsFor(0)))
 
@@ -655,7 +653,7 @@ class TresetteActivity : AppCompatActivity() {
         } else {
             busy = false
             render()
-            b.txtStatus.setText(R.string.your_turn)
+            b.txtStatus.text = ""
             maybeAutoPlay()
         }
     }
@@ -680,7 +678,7 @@ class TresetteActivity : AppCompatActivity() {
                         else -> {
                             busy = false
                             render()
-                            b.txtStatus.setText(R.string.your_turn)
+                            b.txtStatus.text = ""
                             maybeAutoPlay()
                         }
                     }
@@ -777,7 +775,7 @@ class TresetteActivity : AppCompatActivity() {
         roundScored = false
         moveSeq++
         busy = true
-        b.txtStatus.setText(if (game.turn == 1) R.string.bot_turn else R.string.your_turn)
+        statoTurno()
         // recover() legge lo stato reale: fa giocare il Banco se tocca a lui, altrimenti
         // libera la mano per la tua giocata
         recover()
@@ -887,4 +885,20 @@ class TresetteActivity : AppCompatActivity() {
         val (x, y) = topLeftInOverlay(v)
         return Pair(x + v.width / 2f, y + v.height / 2f)
     }
+    /**
+     * La riga di stato per il turno: VUOTA quando tocca a te.
+     *
+     * "Tocca a te: gioca una carta" non informava nessuno - a gioco fermo tocca sempre a te -
+     * e la riga della partita ("Incontro: Tu x - x Banco") portava via spazio al tavolo per un
+     * dato che il riepilogo di fine partita mostra comunque, alla voce Incontro.
+     *
+     * La riga pero' NON e' stata tolta, perche' ci passano due cose che ovvie non sono: che
+     * sta giocando il Banco, e chi ha preso la mano. E nel layout ha android:lines="1", cioe'
+     * resta alta una riga anche da vuota: se collassasse, il tavolo salterebbe su e giu' di
+     * venti punti a ogni cambio di turno, che e' peggio del testo che si e' tolto.
+     */
+    private fun statoTurno() {
+        if (game.turn == 1) b.txtStatus.setText(R.string.bot_turn) else b.txtStatus.text = ""
+    }
+
 }

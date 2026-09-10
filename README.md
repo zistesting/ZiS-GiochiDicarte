@@ -446,6 +446,24 @@ con logo, titolo e riga in fondo, non lasciava respiro a niente. Su due colonne 
 Le misure stanno in `dimen.xml` e non nel layout, perche' le usano sei pulsanti su tre righe: coi
 numeri ripetuti sei volte, cambiarne uno e dimenticarne un altro sfasa la griglia.
 
+**Due righe in meno sopra il tavolo**, nei tre giochi contro il Banco. Via la riga della
+partita (`Incontro: Tu x - x Banco`): portava via spazio per un dato che il riepilogo di fine
+partita mostra comunque, alla voce *Incontro*. E via `Tocca a te: gioca una carta`, che non
+informava nessuno — a gioco fermo tocca sempre a te.
+
+La riga di stato però **non** è stata tolta, perché ci passano due cose che ovvie non sono:
+che sta giocando il Banco, e chi ha preso la mano. Si svuota soltanto sul turno del giocatore,
+e nel layout ha `android:lines="1"`, cioè resta alta una riga anche da vuota. Se collassasse,
+il tavolo salterebbe su e giù di venti punti a ogni cambio di turno, che è peggio del testo
+che si è tolto.
+
+**Il logo e le icone del lanciatore** escono da `art/logo_app.png` con `art/icona_app.py`: un
+file sorgente e sei destinazioni — `app_logo.webp` a 500x500, che serve sia al logo della
+schermata iniziale sia al *foreground* dell'icona adattiva, più i cinque `ic_launcher.png`
+delle densità da mdpi a xxxhdpi. Le icone classiche servono ancora, perché `minSdk` è 24 e
+Android 7 non conosce le icone adattive. L'alfa si conserva: il logo è un quadrato con gli
+angoli arrotondati e trasparenti, appiattirlo su un fondo farebbe comparire quattro spicchi.
+
 I quattro pulsanti in fondo alla schermata iniziale sono scesi da 60 a 52dp con margini piu'
 stretti: a 60dp quattro pulsanti facevano 384dp e su un telefono da 360dp non ci stavano.
 Adesso sono 304dp in tutto.

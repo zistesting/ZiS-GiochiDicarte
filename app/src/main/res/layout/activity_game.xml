@@ -21,18 +21,6 @@
             android:gravity="center"
             android:orientation="horizontal" />
 
-        <!-- Riga della partita: stessa posizione e stesso testo di Briscola e Tresette -->
-        <TextView
-            android:id="@+id/txtMatch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:gravity="center"
-            android:textColor="@color/celeste"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
-
         <!-- situazione della mano (Banco) -->
         <TextView
             android:id="@+id/botScore"
@@ -48,6 +36,7 @@
         <!-- status -->
         <TextView
             android:id="@+id/txtStatus"
+            android:lines="1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"

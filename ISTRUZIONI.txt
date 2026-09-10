@@ -1,54 +1,86 @@
-ZiS-GiochiDiCarte-piacentine-zis  -  mazzi piacentine e ZiS  (82 file)  -  versione 3.9
+ZiS-GiochiDiCarte-app1  -  il programma  (95 file)  -  versione 4.0
 
->>> QUESTI QUATTRO ZIP SONO IL PROGETTO COMPLETO, VERSIONE 3.9. <<<
+SOSTITUISCE ZiS-GiochiDiCarte-app1 della 3.9.
 
-    ZiS-GiochiDiCarte-app1                     93 file   il programma
-    ZiS-GiochiDiCarte-piacentine-zis           82 file   mazzi piacentine e ZiS
-    ZiS-GiochiDiCarte-bergamasche-napoletane   82 file   mazzi bergamasche e napoletane
-    ZiS-GiochiDiCarte-francesi                 53 file   mazzo francese
-
-Sostituiscono TUTTI gli zip precedenti: le cinque "part", i pacchetti di correzione, i
-parziali. Quelli si possono buttare. Non c'e' nessun app2: il programma sta in 93 file,
-sotto il limite di 100 per commit.
-
-Caricandoli tutti e quattro il repository e' allineato alla 3.9, qualunque cosa ci sia
-adesso. Sono 310 file in quattro commit.
-
---- cosa c'e' dentro ---
-
-  41  mazzo ZiS          card_0_1 ... card_3_10 + card_back
-  41  mazzo piacentino   trad_0_1 ... trad_3_10 + trad_back
-
-Vanno tutti in app/src/main/res/drawable-nodpi/ , e il percorso e' gia' nello zip.
-
-Gli script che producono queste carte stanno in art/, dentro ZiS-GiochiDiCarte-app1.
-
---- cosa e' cambiato rispetto agli zip precedenti ---
-
-DUE carte su ottantadue: gli assi di denari, card_0_1.webp e trad_0_1.webp, che ora hanno
-il marchio e la scritta ZiS - l'aquila stilizzata per il mazzo ZiS, quella d'epoca per le
-piacentine. Le altre ottanta sono quelle di sempre.
-
-I loghi e lo sfondo dell'app (app_logo, title_logo, zis_logo, btn_*, velvet) NON stanno
-piu' qui: sono passati in ZiS-GiochiDiCarte-app1, perche' sono grafica dell'app e non
-carte da gioco. Se avevi caricato la vecchia "part2" sono gia' nel repository e non
-cambiano.
+>>> GLI ALTRI TRE ZIP RESTANO QUELLI DELLA 3.9. <<<
+Nessuna carta e' cambiata: piacentine-zis, bergamasche-napoletane e francesi vanno bene
+come sono. Tieni quegli zip.
 
 --- caricamento ---
 
-Uguale per tutti e quattro gli zip, e si fa sempre dalla pagina principale del
-repository, senza aprire cartelle:
+Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
+di questa cartella (non la cartella) -> Commit changes.
 
-    Add file -> Upload files -> trascina il CONTENUTO di questa cartella
-    (non la cartella) -> Commit changes.
+NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
+(su Windows: Visualizza -> Elementi nascosti).
 
-Dentro lo zip i file sono nella stessa struttura del repository, e GitHub trascinando le
-cartelle mantiene i percorsi: quindi non c'e' da navigare fino a drawable-nodpi come nelle
-versioni precedenti. Un trascinamento, un commit.
+--- cosa e' cambiato rispetto alla 3.9 ---
 
-NON caricare questo ISTRUZIONI.txt.
+ 1. VIA LA RIGA DELLA PARTITA nei tre giochi contro il Banco. "Incontro: Tu x - x Banco"
+    non c'e' piu': la TextView e' stata tolta dai tre layout e le due righe di codice che
+    la scrivevano sono spartite. Il dato non si perde, il riepilogo di fine partita lo
+    mostra alla voce Incontro.
 
---- avvertenza di sempre ---
+ 2. VIA "TOCCA A TE: GIOCA UNA CARTA". La riga di stato adesso resta vuota quando tocca a
+    te.
 
-Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi, altrimenti
-Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
+    LA RIGA PERO' NON L'HO TOLTA, e vale la pena spiegare perche'. Su quella riga passano
+    tre messaggi, non uno: "Tocca a te", "Gioca il Banco..." e - in Briscola e Tresette -
+    chi ha preso la mano, "Prendi tu" o "Prende il Banco". Gli ultimi due non sono ovvi: il
+    primo spiega perche' i tocchi non rispondono mentre il Banco muove, il secondo dice chi
+    ha vinto il giro prima che le carte vengano raccolte. Togliere la riga li avrebbe
+    portati via insieme al testo inutile.
+
+    E la riga resta ALTA una riga anche da vuota (android:lines="1" nei tre layout). Se
+    collassasse, il tavolo salterebbe su e giu' di una ventina di punti a ogni cambio di
+    turno, mentre le carte si muovono: peggio del testo che si e' tolto.
+
+    Se la vuoi via del tutto e' una TextView per layout e tre righe di Kotlin, ma perdi
+    "Prendi tu" e "Prende il Banco".
+
+ 3. IL LOGO NUOVO. Sostituisce app_logo, che serve in due posti:
+      - il logo in cima alla schermata iniziale
+      - il foreground dell'icona adattiva (Android 8+), rientrato di 18dp su 108
+    e le cinque icone classiche del lanciatore, mipmap-mdpi ... mipmap-xxxhdpi, che servono
+    ancora perche' minSdk e' 24 e Android 7 non conosce le icone adattive. Erano il punto
+    facile da dimenticare: cambiando solo app_logo, sui telefoni vecchi sarebbe rimasta
+    l'icona precedente.
+
+    Le fa tutte e sei art/icona_app.py, nuovo, dal sorgente art/logo_app.png. Un file e sei
+    destinazioni: farlo a mano vuol dire ridimensionare sei volte e ricordarsi le cinque
+    densita'.
+
+    L'alfa si conserva: il logo e' un quadrato con gli angoli arrotondati e trasparenti, e
+    appiattirlo su un fondo farebbe comparire quattro spicchi negli angoli. Nell'icona
+    adattiva il fondo lo mette il lanciatore.
+
+ 4. Due stringhe in meno (match_line e your_turn), README allineato, versione 4.0.
+
+--- COSA PROVARE ---
+
+ 1. L'ICONA sul telefono: che sia quella nuova. Se resta la vecchia, di solito e' la cache
+    del lanciatore: disinstalla e reinstalla, o riavvia.
+ 2. Il logo in cima alla schermata iniziale.
+ 3. SCOPA, BRISCOLA, TRESETTE: sopra il tavolo devono restare la situazione della mano del
+    Banco e una riga sola di stato, vuota quando tocchi tu.
+ 4. Che il tavolo NON salti quando il turno passa da te al Banco e viceversa: e' la cosa
+    che android:lines="1" deve impedire, e si vede solo giocando.
+ 5. BRISCOLA e TRESETTE: a fine giro deve comparire "Prendi tu" o "Prende il Banco". Se non
+    compaiono piu', ho tolto troppo.
+ 6. Il riepilogo di fine partita: la voce Incontro deve esserci, perche' e' l'unico posto
+    dove ora si legge il punteggio dell'incontro.
+
+--- quello che vale ancora dalla 3.9 ---
+
+ - Se non l'hai ancora fatto: cancella a mano art/marchio_asso_berg.py e la cartella
+   art/__pycache__ , che un caricamento non puo' togliere.
+ - Il tetto delle librerie: core-ktx si ferma alla 1.17.0 con AGP 8.13.2 e compileSdk 36.
+   E' scritto in app/build.gradle e in .github/dependabot.yml.
+ - R8 e' acceso. Se qualcosa si rompesse solo nel release: minifyEnabled false, ricompila,
+   e sai se e' R8 o le librerie.
+
+--- il margine sui 100 file ---
+
+95 su 100: ne restano 5, due meno della 3.9 (due file nuovi in art/). Se si sforasse, la
+divisione naturale e' art/ e verifica/ in un app2: non servono alla build, il workflow
+ignora art/** di proposito, e il programma vero scende sotto i settanta file.
