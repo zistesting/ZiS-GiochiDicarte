@@ -37,9 +37,12 @@ import android.content.Context
 object SavedGame {
 
     // Alzato a 2 quando la codifica delle carte e' passata da base 10 a base 13 per fare
-    // posto al mazzo francese: i salvataggi scritti con la versione 1 verrebbero riletti
+    // La 3 aggiunge al salvataggio del Klondike il mazzo come e' stato distribuito, che
+    // serve al pulsante Ricomincia: i salvataggi della 2 hanno una sezione in meno e
+    // verrebbero riletti sfalsati, quindi si buttano.
+    // La 2 fece posto al mazzo francese: i salvataggi scritti con la versione 1 verrebbero riletti
     // storti, quindi vanno scartati. Si perde una partita a meta', non si va in errore.
-    private const val VERSION = 2
+    private const val VERSION = 3
     private const val FILE = "zis_partite"
 
     const val SCOPA = "scopa"

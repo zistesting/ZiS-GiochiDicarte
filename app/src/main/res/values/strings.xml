@@ -131,12 +131,25 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <!-- Klondike -->
     <string name="play_klondike">Klondike</string>
     <string name="kl_undo">Annulla</string>
+    <!-- Ricomincia rimette la STESSA smazzata dall'inizio, e non conta niente in
+         statistica: e' un secondo tentativo, non una rinuncia. Rigioca, che invece
+         cambia smazzata, conta come partita persa. La differenza sta nelle due
+         domande, perche' i due pulsanti sono uno accanto all'altro. -->
+    <string name="kl_restart">Ricomincia</string>
+    <string name="kl_restart_ask">Vuoi rimettere le carte come all\' inizio di questa smazzata? Le mosse fatte si perdono, ma la partita non viene contata come persa.</string>
     <string name="kl_deal">Rigioca</string>
-    <string name="kl_deal_ask">Vuoi abbandonare questa partita e distribuire di nuovo?</string>
+    <!-- Le due domande di RIGIOCA dicono la stessa cosa in due situazioni diverse: la
+         prima quando la partita conta come persa, la seconda quando non conta. Chi risponde
+         deve sapere quale delle due sta accettando. -->
+    <string name="kl_deal_ask">Vuoi abbandonare questa partita e distribuire di nuovo? Verra\' contata come partita persa.</string>
+    <string name="kl_deal_ask_free">Vuoi distribuire di nuovo? Hai fatto poche mosse, quindi questa partita non verra\' contata.</string>
     <string name="kl_finish">Completa</string>
     <string name="kl_status">Mosse: %1$d • mancano %2$d carte</string>
     <!-- Compare quando non c'e' piu' nessuna mossa legale: la smazzata e' chiusa. -->
     <string name="kl_no_moves">Non ci sono piu\' mosse: tocca RIGIOCA</string>
+    <!-- Il gioco automatico si ferma da solo quando non trova piu' mosse che facciano
+         progresso, anche se qualche mossa legale ci sarebbe ancora. -->
+    <string name="kl_auto_stop">Gioco automatico fermo: non trova altre mosse utili</string>
     <string name="kl_won_title">Klondike riuscito</string>
     <string name="kl_won">Hai messo a posto tutte e 52 le carte in %1$d mosse.</string>
     <string name="kl_section">Klondike</string>

@@ -100,32 +100,73 @@
         android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!--
+          TRE pulsanti dove prima ce n'erano due, e la larghezza e' diventata stretta:
+          su uno schermo da 360dp restano circa 106dp per pulsante, e il cartiglio se ne
+          prende 24 di padding interno. "Ricomincia" a 15sp non ci starebbe.
+
+          Da qui autoSizeTextType: il testo si rimpicciolisce da solo fino a 11sp quanto
+          basta a starci, invece di andare a capo o di essere tagliato. Copre anche il caso
+          che non posso provare, cioe' il carattere di sistema ingrandito. Con autoSize
+          attivo NON si mette android:textSize, che verrebbe ignorato: il massimo lo dice
+          autoSizeMaxTextSize.
+
+          I margini fra i tre sono scesi da 6 a 4dp per lasciare il poco che si poteva ai
+          pulsanti.
+        -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnUndo"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="6dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
             android:background="@drawable/btn_cartiglio"
+            android:maxLines="1"
             android:text="@string/kl_undo"
             android:textAllCaps="false"
             android:textColor="@color/silver"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="11sp"
+            app:autoSizeMaxTextSize="15sp"
+            app:autoSizeStepGranularity="1sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnRestart"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_cartiglio"
+            android:maxLines="1"
+            android:text="@string/kl_restart"
+            android:textAllCaps="false"
+            android:textColor="@color/silver"
+            android:textStyle="bold"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="11sp"
+            app:autoSizeMaxTextSize="15sp"
+            app:autoSizeStepGranularity="1sp" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnDeal"
             android:layout_width="0dp"
             android:layout_height="48dp"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="4dp"
             android:layout_marginEnd="12dp"
             android:layout_weight="1"
             android:background="@drawable/btn_cartiglio"
+            android:maxLines="1"
             android:text="@string/kl_deal"
             android:textAllCaps="false"
             android:textColor="@color/silver"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="11sp"
+            app:autoSizeMaxTextSize="15sp"
+            app:autoSizeStepGranularity="1sp" />
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -95,8 +95,48 @@ class KlondikeGame(val drawCount: Int = 1) {
 
     // ---------------------------------------------------------------- distribuzione
 
-    fun newGame() {
-        val d = shuffledFrenchDeck()
+    /**
+     * Il mazzo come e' stato distribuito, nell'ordine in cui e' uscito dal mescolamento.
+     *
+     * Serve a [ricomincia], e va salvato con la partita: senza, riprendendo una partita da
+     * un'altra sessione il pulsante Ricomincia non avrebbe piu' niente da ricominciare.
+     *
+     * NON sta dentro save(): quella la usa anche snapshot() per la pila dell'annulla, e
+     * cinquantadue carte in piu' per ognuna delle cento fotografie sarebbero quindici
+     * chilobyte di storia per un dato che non cambia mai. Lo scrive l'activity, accanto al
+     * numero di carte da pescare.
+     */
+    val mazzoIniziale: List<Card> get() = _mazzoIniziale
+    private val _mazzoIniziale = mutableListOf<Card>()
+
+    fun caricaMazzoIniziale(d: List<Card>) {
+        // la copia prima di svuotare non e' pignoleria: distribuisci() chiama questa con la
+        // lista che sta per leggere, e se un giorno qualcuno le passasse _mazzoIniziale
+        // stesso, clear() la svuoterebbe e addAll() non aggiungerebbe niente
+        val copia = d.toList()
+        _mazzoIniziale.clear()
+        _mazzoIniziale.addAll(copia)
+    }
+
+    fun newGame() = distribuisci(shuffledFrenchDeck())
+
+    /**
+     * Rimette le carte come all'inizio della smazzata in corso.
+     *
+     * Non e' una comodita': e' il complemento del fatto che una smazzata su undici e'
+     * impossibile e che il giocatore non vede le ventuno carte coperte. Anche in una
+     * smazzata risolvibile si puo' fare presto una scelta irreversibile, e l'annulla si
+     * ferma a cento mosse. Con questo, una smazzata persa per una mossa sbagliata si puo'
+     * riprovare invece di essere buttata via.
+     */
+    fun ricomincia(): Boolean {
+        if (_mazzoIniziale.size != 52) return false
+        distribuisci(_mazzoIniziale.toMutableList())
+        return true
+    }
+
+    private fun distribuisci(d: MutableList<Card>) {
+        caricaMazzoIniziale(d)
         stock.clear(); waste.clear()
         for (f in foundations) f.clear()
         for (c in tableau) { c.hidden.clear(); c.shown.clear() }
@@ -295,6 +335,134 @@ class KlondikeGame(val drawCount: Int = 1) {
      * proprio niente da toccare.
      */
     fun hasAnyMove(): Boolean = legalMoves().isNotEmpty()
+
+    /**
+     * Vero se mandare [c] in fondazione non puo' piu' servire a nessuno in colonna.
+     *
+     * Una carta in fondazione non torna piu' giu' da sola, e a volte serve come appoggio:
+     * quel 5 rosso puo' essere l'unico posto dove mettere un 4 nero.
+     *
+     * La regola classica, la stessa che usa verifica/solutore_klondike.py: assi e due sempre;
+     * per il resto un valore v e' al sicuro se le due fondazioni del colore OPPOSTO sono
+     * arrivate almeno a v-1 e l'altra dello STESSO colore almeno a v-2. La prima condizione
+     * dice che nessuna carta del colore opposto avra' bisogno di appoggiarsi su questa; la
+     * seconda copre il passo dopo, la carta di valore v-2 dello stesso colore che avrebbe
+     * bisogno di una v-1 del colore opposto che a sua volta avrebbe bisogno di questa.
+     */
+    private fun sicuraInFondazione(c: Card): Boolean {
+        if (c.value <= 2) return true
+        // semi: 0 cuori, 1 quadri (rossi), 2 fiori, 3 picche (neri)
+        val opposti = if (c.isRed) intArrayOf(2, 3) else intArrayOf(0, 1)
+        val stesso = if (c.isRed) 1 - c.suit else 5 - c.suit
+        return opposti.all { foundations[it].size >= c.value - 1 } &&
+            foundations[stesso].size >= c.value - 2
+    }
+
+    /**
+     * Vero se qualche carta del tallone o degli scarti puo' finire da qualche parte.
+     *
+     * Se nessuna delle ventiquattro carte che girano ha un posto ne' in fondazione ne' su
+     * una colonna, continuare a voltare non cambiera' niente per definizione, e il gioco
+     * automatico puo' fermarsi subito invece di sfogliare il tallone due volte per scoprirlo.
+     * Non e' il contrario: che una carta abbia un posto non vuol dire che ci arrivera',
+     * perche' pescando a tre non tutte passano in cima. Per quel caso serve ancora il conto
+     * dei giri a vuoto, che sta nell'activity.
+     */
+    private fun girareServe(): Boolean {
+        for (c in stock) {
+            if (canPlaceOnFoundation(c)) return true
+            for (col in 0..6) if (canPlaceOnColumn(c, col)) return true
+        }
+        for (c in waste) {
+            if (canPlaceOnFoundation(c)) return true
+            for (col in 0..6) if (canPlaceOnColumn(c, col)) return true
+        }
+        return false
+    }
+
+    /**
+     * Una mossa scelta dal programma, per il gioco automatico delle impostazioni.
+     *
+     * NON e' un risolutore, e non prova a esserlo: e' quello che serve alla voce "gioco
+     * automatico", cioe' provare in fretta che animazioni, annulla, vittoria e statistiche
+     * funzionino. Vince meno spesso di una persona attenta, perche' non riordina il tavolo
+     * per costruire sequenze: sposta una carta da colonna a colonna solo quando quel
+     * movimento SCOPRE una carta coperta.
+     *
+     * Quella regola non e' pigrizia, e' l'antidoto ai giri a vuoto. Uno spostamento fra
+     * colonne che non scopre niente e' reversibile, e due mosse reversibili bastano a far
+     * girare in tondo per sempre un giocatore automatico. Per lo stesso motivo non riporta
+     * mai giu' una carta dalla fondazione: legale, a volte utile, e la strada piu' breve
+     * per un rimpallo infinito fra fondazione e colonna.
+     *
+     * L'ordine delle priorita' e' quello classico, e ogni gradino sotto al primo esiste
+     * perche' il precedente non ha trovato niente.
+     */
+    fun mossaAutomatica(): Move? {
+        if (finished) return null
+        val mosse = legalMoves()
+
+        // 1. in fondazione, ma solo quando e' al sicuro
+        for (m in mosse) {
+            val c = when (m) {
+                is Move.WasteToFoundation -> waste.lastOrNull()
+                is Move.ColumnToFoundation -> tableau[m.col].top
+                else -> null
+            } ?: continue
+            if (sicuraInFondazione(c)) return m
+        }
+
+        // 2. qualunque mossa che scopra una carta coperta: e' il vero progresso del gioco
+        mosse.firstOrNull { m ->
+            m is Move.ColumnToColumn &&
+                m.count == tableau[m.from].shown.size && tableau[m.from].hidden.isNotEmpty()
+        }?.let { return it }
+        mosse.firstOrNull { m ->
+            m is Move.ColumnToFoundation &&
+                tableau[m.col].shown.size == 1 && tableau[m.col].hidden.isNotEmpty()
+        }?.let { return it }
+
+        // 3. un Re su una colonna vuota: la apre, e su una colonna vuota ci va solo un Re
+        mosse.firstOrNull { m ->
+            (m is Move.WasteToColumn && tableau[m.col].isEmpty) ||
+                (m is Move.ColumnToColumn && tableau[m.to].isEmpty)
+        }?.let { return it }
+
+        // 4. svuotare una colonna, spostando TUTTE le sue scoperte su un'altra.
+        //
+        // Vale il quadruplo di tutto il resto: da sola porta le vittorie dal 9% al 32%
+        // pescando una carta alla volta (misurato su 1500 smazzate col motore in
+        // verifica/). Il motivo e' che una colonna vuota e' l'unica cosa che accoglie un Re,
+        // e i Re bloccati sono la ragione per cui le smazzate si piantano.
+        //
+        // E' anche l'UNICA mossa fra colonne che non scopre niente e che qui si accetta,
+        // perche' e' l'unica che non si puo' disfare: la colonna resta vuota e su una
+        // colonna vuota puo' salire solo un Re, mentre la testa del gruppo appena spostato
+        // un Re non e' - se lo fosse, non sarebbe stata su nessuna carta. E ogni volta che
+        // scatta il numero di colonne occupate scende di uno, quindi non puo' scattare piu'
+        // di sette volte.
+        mosse.firstOrNull { m ->
+            m is Move.ColumnToColumn && m.count == tableau[m.from].shown.size &&
+                tableau[m.from].hidden.isEmpty() && !tableau[m.to].isEmpty
+        }?.let { return it }
+
+        // 5. dagli scarti al tavolo: fa scorrere il tallone
+        mosse.firstOrNull { it is Move.WasteToColumn }?.let { return it }
+
+        // 6. voltare, ma solo se girare puo' servire a qualcosa
+        if (mosse.contains(Move.Draw) && girareServe()) return Move.Draw
+
+        // 7. in fondazione anche se non e' al sicuro: a questo punto e' l'unica cosa che
+        //    cambia qualcosa
+        mosse.firstOrNull {
+            it is Move.WasteToFoundation || it is Move.ColumnToFoundation
+        }?.let { return it }
+
+        // 8. rigirare il tallone, alle stesse condizioni del punto 6
+        if (mosse.contains(Move.Recycle) && girareServe()) return Move.Recycle
+
+        return null
+    }
 
     /**
      * Vero quando la partita e' ormai vinta e resta solo da salire.

@@ -34,6 +34,17 @@ class KlondikeActivity : AppCompatActivity() {
 
     private var destroyed = false
     private var started = false
+
+    // ---- gioco automatico ----
+    //
+    // La voce delle impostazioni c'era da sempre ma qui non la leggeva nessuno: la
+    // guardavano solo i tre giochi contro il Banco, e nel Klondike accenderla non faceva
+    // niente. Adesso il programma gioca il solitario da solo, con la stessa idea di la':
+    // serve a provare in fretta che animazioni, annulla, vittoria e statistiche funzionino.
+    private var autoPlay = false
+    private var autoFermo = false
+    private var autoMosse = 0
+    private var autoGiri = 0
     private var openDialog: AlertDialog? = null
 
     // geometria, calcolata una volta che il tavolo conosce la propria misura
@@ -84,6 +95,7 @@ class KlondikeActivity : AppCompatActivity() {
             val prima = HashMap(posizioni)
             if (game.undo()) render(prima)
         }
+        b.btnRestart.setOnClickListener { chiediRicomincia() }
         b.btnDeal.setOnClickListener { chiediNuovaPartita() }
         b.btnFinish.setOnClickListener { completaDaSolo() }
         b.btnInfo.setOnClickListener {
@@ -129,6 +141,7 @@ class KlondikeActivity : AppCompatActivity() {
         if (!destroyed && b.board.width > 0 && b.board.height > 0) {
             misura()
             if (started) render() else if (!restoreState()) nuovaPartita()
+            avviaAutomatico()
         }
     }
 
@@ -153,6 +166,9 @@ class KlondikeActivity : AppCompatActivity() {
         // il Klondike usa sempre e solo il mazzo francese: il mazzo scelto nelle impostazioni
         // vale per i tre giochi italiani e qui non c'entra
         CardView.setDeck(Prefs.DECK_FR)
+        // Riletto a ogni ritorno: la voce si cambia nelle impostazioni, che sono un'altra
+        // schermata, e tornando qui deve valere subito.
+        autoPlay = Prefs.autoPlay(this)
         // Un solo punto di ingresso per tutto, invece del render() diretto di prima. Fa due
         // cose in piu' che servono entrambe: rimisura, perche' la finestra puo' essere
         // cambiata mentre la schermata era ferma (schermo diviso aperto da un'altra app), e
@@ -449,11 +465,19 @@ class KlondikeActivity : AppCompatActivity() {
         // non si muovesse niente. La risposta e' prudente per costruzione - dice di no solo
         // quando non resta proprio niente da toccare - quindi si puo' mostrare senza il
         // rischio di dire "hai perso" a chi invece poteva ancora vincere.
-        b.txtStatus.text =
-            if (!game.finished && !game.hasAnyMove()) getString(R.string.kl_no_moves)
-            else getString(R.string.kl_status, game.moves, rimaste)
+        b.txtStatus.text = when {
+            !game.finished && !game.hasAnyMove() -> getString(R.string.kl_no_moves)
+            autoFermo && !game.finished -> getString(R.string.kl_auto_stop)
+            else -> getString(R.string.kl_status, game.moves, rimaste)
+        }
         b.btnUndo.isEnabled = game.canUndo
         b.btnUndo.alpha = if (game.canUndo) 1f else 0.4f
+        // Ricomincia si spegne a smazzata appena distribuita: non c'e' niente da rimettere
+        // a posto, e un pulsante che si puo' premere senza che accada nulla e' peggio di uno
+        // spento.
+        val puoRicominciare = started && game.moves > 0
+        b.btnRestart.isEnabled = puoRicominciare
+        b.btnRestart.alpha = if (puoRicominciare) 1f else 0.4f
         b.btnFinish.visibility = if (game.canAutoFinish()) View.VISIBLE else View.GONE
     }
 
@@ -469,7 +493,45 @@ class KlondikeActivity : AppCompatActivity() {
         val prima = HashMap(posizioni)
         if (!game.play(m)) return
         render(prima)
-        if (game.finished) vinta()
+        if (game.finished) vinta() else avviaAutomatico()
+    }
+
+    /**
+     * Il passo del gioco automatico, se e' accesa la voce nelle impostazioni.
+     *
+     * Passa sempre dall'Handler, e sempre con un removeCallbacks davanti: muovi() la chiama
+     * a ogni mossa, comprese quelle dell'utente, e senza il removeCallbacks due tocchi
+     * vicini metterebbero in coda due catene che si pestano i piedi.
+     */
+    private fun avviaAutomatico() {
+        if (!autoPlay || autoFermo || destroyed || !started || game.finished) return
+        ui.removeCallbacks(passoAutomatico)
+        ui.postDelayed(passoAutomatico, DURATA_MOSSA + 60)
+    }
+
+    private val passoAutomatico = Runnable {
+        // Non gioca dietro a una finestra aperta: la vittoria e la conferma di Rigioca
+        // aspettano una risposta, e vedere le carte muoversi da sole sotto un dialogo
+        // sarebbe solo confondente.
+        if (autoPlay && started && !game.finished && !destroyed && openDialog?.isShowing != true) {
+            val m = game.mossaAutomatica()
+            if (m == null || autoMosse >= AUTO_MOSSE_MAX || autoGiri >= AUTO_GIRI_MAX) {
+                // Si fermi e lo dica. Fermarsi in silenzio lascerebbe a chi guarda il dubbio
+                // se sia finito il gioco o si sia piantata l'app.
+                autoFermo = true
+                aggiornaBarra()
+            } else {
+                autoMosse++
+                // I giri del tallone si contano, il resto li azzera. Il motore si ferma da
+                // solo quando NESSUNA carta che gira ha un posto; questo conto serve per
+                // l'altro caso, pescando a tre: una carta buona c'e', ma non passa mai in
+                // cima. Due giri interi bastano, perche' dopo un rigiro l'allineamento e'
+                // lo stesso e il terzo giro mostrerebbe le stesse carte del secondo.
+                if (m is KlondikeGame.Move.Recycle) autoGiri++
+                else if (m !is KlondikeGame.Move.Draw) autoGiri = 0
+                muovi(m)
+            }
+        }
     }
 
     /**
@@ -480,6 +542,9 @@ class KlondikeActivity : AppCompatActivity() {
      * da fare fino a cinquantadue tocchi che non decidono niente.
      */
     private fun completaDaSolo() {
+        // una catena per volta: se no il completamento e il gioco automatico postano
+        // entrambi e le carte partono l'una sopra l'altra
+        autoFermo = true
         val m = game.nextAutoMove()
         if (m == null || destroyed) { render(); return }
         val prima = HashMap(posizioni)
@@ -509,25 +574,68 @@ class KlondikeActivity : AppCompatActivity() {
         game.newGame()
         started = true
         vittoriaContata = false
+        autoFermo = false
+        autoMosse = 0
+        autoGiri = 0
         render()
+        avviaAutomatico()
     }
 
     /**
-     * Ridistribuire a meta' partita chiede conferma; a partita appena cominciata no.
+     * Ridistribuire chiede SEMPRE conferma, tranne a partita finita.
      *
-     * La soglia e' bassa apposta: chi ha fatto due mosse sta ancora guardando le carte e
-     * vuole solo un'altra smazzata, chi ne ha fatte trenta ci sta lavorando e un tocco
-     * sbagliato gli butterebbe via il lavoro.
+     * Prima la chiedeva solo sopra le cinque mosse, e sotto ridistribuiva di colpo: ma un
+     * tocco per sbaglio su Rigioca butta via il lavoro comunque, e l'unico modo di
+     * accorgersene e' vedere le carte cambiare. A partita finita l'eccezione resta: non c'e'
+     * niente da abbandonare, e far confermare dopo aver vinto e' attrito e niente altro.
+     *
+     * Le due domande sono diverse perche' le due situazioni sono diverse: sopra la soglia la
+     * partita conta come persa, sotto no. Chi risponde deve sapere quale delle due sta
+     * accettando, se no la conferma non informa, chiede solo di ripetere il tocco.
      */
     private fun chiediNuovaPartita() {
-        if (game.moves < MOSSE_PER_ABBANDONO || game.finished) { nuovaPartita(); return }
+        if (game.finished) { nuovaPartita(); return }
+        val conta = started && game.moves >= MOSSE_PER_ABBANDONO
         openDialog?.dismiss()
         openDialog = AlertDialog.Builder(this)
             .setTitle(R.string.kl_deal)
-            .setMessage(R.string.kl_deal_ask)
+            .setMessage(if (conta) R.string.kl_deal_ask else R.string.kl_deal_ask_free)
             .setPositiveButton(R.string.yes) { _, _ -> nuovaPartita() }
             .setNegativeButton(R.string.no, null)
             .show()
+    }
+
+    /**
+     * Ricomincia la stessa smazzata, e chiede conferma perche' butta via le mosse fatte.
+     *
+     * Non conta niente in statistica, ed e' la differenza con Rigioca: quello cambia
+     * smazzata, cioe' rinuncia, e conta come partita persa; questo e' un secondo tentativo
+     * sulle stesse carte. La domanda lo dice, perche' i due pulsanti sono accanto.
+     *
+     * Sopra ci sta anche l'unico effetto collaterale: azzerando vittoriaContata, una
+     * smazzata gia' vinta e poi ricominciata, se rivinta, conta una seconda vittoria. E'
+     * l'interpretazione coerente - una partita giocata, una partita vinta - ma vuol dire
+     * che chi vuole gonfiare le statistiche puo' farlo.
+     */
+    private fun chiediRicomincia() {
+        if (!started || game.moves == 0) return
+        openDialog?.dismiss()
+        openDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.kl_restart)
+            .setMessage(R.string.kl_restart_ask)
+            .setPositiveButton(R.string.yes) { _, _ -> ricominciaOra() }
+            .setNegativeButton(R.string.no, null)
+            .show()
+    }
+
+    private fun ricominciaOra() {
+        if (!game.ricomincia()) return
+        vittoriaContata = false
+        autoFermo = false
+        autoMosse = 0
+        autoGiri = 0
+        render()
+        avviaAutomatico()
     }
 
     private var vittoriaContata = false
@@ -557,6 +665,8 @@ class KlondikeActivity : AppCompatActivity() {
         // prima il numero di carte da pescare: serve per costruire il gioco, quindi va letto
         // prima dello stato
         w.int(game.drawCount)
+        // il mazzo come e' stato distribuito: serve a Ricomincia dopo una ripresa
+        w.cards(game.mazzoIniziale)
         game.save(w)
         SavedGame.write(this, SavedGame.KLONDIKE, w)
     }
@@ -571,6 +681,7 @@ class KlondikeActivity : AppCompatActivity() {
         val r = SavedGame.read(this, SavedGame.KLONDIKE) ?: return false
         try {
             game = KlondikeGame(r.int())
+            game.caricaMazzoIniziale(r.cards())
             game.load(r)
         } catch (e: Exception) {
             SavedGame.clear(this, SavedGame.KLONDIKE)
@@ -612,6 +723,17 @@ class KlondikeActivity : AppCompatActivity() {
          * lavorando, e allora la rinuncia e' dichiarata e va contata.
          */
         const val MOSSE_PER_ABBANDONO = 5
+
+        /**
+         * Quanti rigiri del tallone tollerare, senza che si muova nient'altro, prima di
+         * fermare il gioco automatico. Due: dopo un rigiro l'allineamento delle carte e' lo
+         * stesso, quindi il terzo giro mostrerebbe esattamente le stesse carte del secondo.
+         */
+        const val AUTO_GIRI_MAX = 2
+
+        /** Tetto di sicurezza sulle mosse automatiche in una smazzata: le mosse utili sono
+         *  limitate per costruzione, ma un tetto costa un confronto e chiude il discorso. */
+        const val AUTO_MOSSE_MAX = 800
 
         /**
          * Di quanto si sfalsano le carte in colonna, in frazioni dell'altezza di una carta.

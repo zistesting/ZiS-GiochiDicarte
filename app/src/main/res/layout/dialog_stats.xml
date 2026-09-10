@@ -11,36 +11,44 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingStart="24dp"
-    android:paddingEnd="24dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:paddingTop="10dp"
     android:paddingBottom="6dp">
 
+    <!--
+      LA PRIMA COLONNA NON SI STRINGE. Prima c'era shrinkColumns="0", cioe' proprio la
+      colonna dei nomi: quando la tabella non ci stava in larghezza - e non ci stava,
+      perche' le tre colonne dei numeri sono larghe quanto le loro intestazioni - a cedere
+      erano i nomi dei giochi, che finivano tagliati a mezza parola. "Briscola" diventava
+      "Brisc", "Tresette" "Trese", "Klondike" "Klond", e nessuno se ne accorgeva dal codice
+      perche' il taglio lo fa la TableLayout in silenzio.
+
+      Adesso a stringersi sono le colonne 1, 2 e 3, che contengono numeri di una o due
+      cifre e hanno un minWidth: hanno margine da cedere, i nomi no.
+    -->
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:stretchColumns="0"
-        android:shrinkColumns="0">
+        android:shrinkColumns="1,2,3">
 
         <TableRow>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
-                style="@style/StatsValue"
+                style="@style/StatsHeader"
                 android:text="@string/stat_played"
-                android:textColor="@color/celeste"
-                android:textStyle="bold" />
+                android:textColor="@color/celeste" />
             <TextView
-                style="@style/StatsValue"
+                style="@style/StatsHeader"
                 android:text="@string/stat_won"
-                android:textColor="@color/celeste"
-                android:textStyle="bold" />
+                android:textColor="@color/celeste" />
             <TextView
-                style="@style/StatsValue"
+                style="@style/StatsHeader"
                 android:text="@string/stat_lost"
-                android:textColor="@color/celeste"
-                android:textStyle="bold" />
+                android:textColor="@color/celeste" />
         </TableRow>
 
         <View
@@ -50,26 +58,26 @@
             android:background="@color/silver_dark" />
 
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_scopa" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/play_scopa" />
             <TextView android:id="@+id/scopaPlayed" style="@style/StatsValue" />
             <TextView android:id="@+id/scopaYou" style="@style/StatsValue" android:textColor="@color/gold" />
             <TextView android:id="@+id/scopaBot" style="@style/StatsValue" />
         </TableRow>
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_briscola" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/play_briscola" />
             <TextView android:id="@+id/briscPlayed" style="@style/StatsValue" />
             <TextView android:id="@+id/briscYou" style="@style/StatsValue" android:textColor="@color/gold" />
             <TextView android:id="@+id/briscBot" style="@style/StatsValue" />
         </TableRow>
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_tresette" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/play_tresette" />
             <TextView android:id="@+id/trePlayed" style="@style/StatsValue" />
             <TextView android:id="@+id/treYou" style="@style/StatsValue" android:textColor="@color/gold" />
             <TextView android:id="@+id/treBot" style="@style/StatsValue" />
         </TableRow>
 
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/play_klondike" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/play_klondike" />
             <TextView android:id="@+id/klonPlayed" style="@style/StatsValue" />
             <TextView android:id="@+id/klonYou" style="@style/StatsValue" android:textColor="@color/gold" />
             <TextView android:id="@+id/klonBot" style="@style/StatsValue" />
@@ -82,7 +90,7 @@
             android:background="@color/silver_dark" />
 
         <TableRow>
-            <TextView style="@style/ScoreLabel" android:maxLines="1" android:text="@string/stat_total" android:textStyle="bold" />
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/stat_total" android:textStyle="bold" />
             <TextView android:id="@+id/totPlayed" style="@style/StatsValue" android:textStyle="bold" />
             <TextView android:id="@+id/totYou" style="@style/StatsValue" android:textColor="@color/gold" android:textStyle="bold" />
             <TextView android:id="@+id/totBot" style="@style/StatsValue" android:textStyle="bold" />

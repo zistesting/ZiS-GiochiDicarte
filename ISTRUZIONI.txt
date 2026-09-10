@@ -1,77 +1,95 @@
-PARTE 5 di 5 - il mazzo francese  (57 file)   -   versione 3.6
+PARTE 1 di 5 - tutto il progetto tranne le immagini  (85 file)   -   versione 3.8
 
->>> VA RICARICATA. <<<  Sono cambiate TUTTE e 52 le carte, non solo le figure: e'
-cambiato l'indice, che sta su ogni carta. Il dorso fr_back e' invariato.
+SOSTITUISCE la Parte 1 della 3.7. Se non l'hai ancora caricata, salta a questa.
 
-Questa parte SOSTITUISCE la Parte 5 della 3.5.
+>>> LE IMMAGINI: solo QUATTRO carte sono cambiate, e stanno nello zip a parte
+    "assi-di-denari" (4 file). Le Parti 2, 3, 4 e 5 in versione integrale NON
+    servono: cambierebbero una o due immagini su ottantanove, quarantuno,
+    quarantuno e cinquantatre. <<<
 
-  53  immagini  ->  app/src/main/res/drawable-nodpi/   (sovrascrivono le precedenti)
-   1  script    ->  art/carte_francesi.py
-   3  immagini  ->  art/figure/                        (le sorgenti delle figure)
-
-Gli ultimi quattro sono gli STESSI che stanno anche nella Parte 1: caricando entrambe le
-parti si sovrascrivono con lo stesso contenuto, non e' un problema. Stanno anche qui
-perche' la Parte 5 resti autosufficiente per il mazzo francese, com'era in origine.
+>>> C'E' ANCHE UN FILE DA CANCELLARE A MANO. Vedi in fondo. <<<
 
 --- caricamento ---
 
-I file finiscono in due posti diversi, quindi sono due caricamenti.
+Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
+di questa cartella (non la cartella) -> Commit changes.
 
- 1. Vai in  app/src/main/res/drawable-nodpi/  -> Add file -> Upload files -> trascina le
-    53 immagini fr_*.webp -> Commit changes.
- 2. Torna alla pagina principale -> Add file -> Upload files -> trascina la cartella art
-    (con dentro carte_francesi.py e figure/) -> Commit changes.
+NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
+(su Windows: Visualizza -> Elementi nascosti).
 
-NON caricare questo ISTRUZIONI.txt.
+--- cosa e' cambiato rispetto alla 3.7 ---
 
-Nota: il secondo commit NON fa partire la build, perche' il workflow ignora art/**. E'
-voluto - sono sorgenti grafiche, non codice - e la build parte col primo.
+ 1. IL PULSANTE "RICOMINCIA", fra Annulla e Rigioca. Rimette la STESSA smazzata
+    dall'inizio.
+    Non conta niente in statistica, ed e' la differenza con Rigioca: quello cambia
+    smazzata, cioe' rinuncia, e conta come partita persa; questo e' un secondo tentativo
+    sulle stesse carte. Le due domande di conferma lo dicono, perche' i due pulsanti sono
+    uno accanto all'altro.
+    Si spegne a smazzata appena distribuita: non c'e' niente da rimettere a posto, e un
+    pulsante che si puo' premere senza che accada nulla e' peggio di uno spento.
 
---- cosa e' cambiato ---
+    Il mazzo come e' stato distribuito viene salvato con la partita: se no, riprendendo una
+    partita da un'altra sessione, Ricomincia non avrebbe piu' niente da ricominciare. NON
+    sta dentro save() del motore, perche' quella la usa anche la pila dell'annulla, e
+    cinquantadue carte in piu' per ognuna delle cento fotografie sarebbero quindici
+    chilobyte di storia per un dato che non cambia mai: lo scrive l'activity.
 
-UN INDICE SOLO, in alto a sinistra, GRIGLIA TRADIZIONALE di simboli al centro e FIGURA
-GRANDE. Il pannello centrale passa dal 30% al 64% dell'altezza.
+    ATTENZIONE, effetto collaterale voluto ma da sapere: ricominciando si azzera anche il
+    contatore della vittoria, quindi una smazzata gia' vinta, ricominciata e rivinta conta
+    due vittorie. E' l'interpretazione coerente - una partita giocata, una partita vinta -
+    ma vuol dire che le statistiche si possono gonfiare. Se preferisci il contrario e' una
+    riga.
 
-L'INDICE E' ALLINEATO SULL'INCHIOSTRO. Si rasterizza ogni valore e si misura (funzione
-ink), poi si scegle il font-size perche' il CORPO venga uguale per tutti: da li' esce
-anche una sola linea di base, e il simbolo del seme si piazza dopo la larghezza MISURATA
-del valore. Si misura invece di leggere le metriche del font perche' le metriche
-richiederebbero di sapere quale font e' installato sulla macchina che genera i file.
+ 2. SALVATAGGI: IL FORMATO E' CAMBIATO, da versione 2 a 3, perche' il salvataggio del
+    Klondike ha una sezione in piu' (il mazzo distribuito). I salvataggi della 2 hanno una
+    sezione in meno e verrebbero riletti sfalsati, quindi vengono buttati: la prima volta
+    che apri la 3.8 PERDI le partite in corso di tutti e quattro i giochi. Le statistiche
+    no, quelle stanno in un altro file.
 
-Corregge due difetti che il mazzo aveva da sempre:
+ 3. TRE PULSANTI IN FONDO al posto di due. Su uno schermo da 360dp restano circa 106dp per
+    pulsante e il cartiglio se ne prende 24 di padding interno: "Ricomincia" a 15sp non ci
+    starebbe. Da qui autoSizeTextType, che rimpicciolisce il testo fino a 11sp quanto basta
+    a starci invece di mandarlo a capo o farlo tagliare. Copre anche il caso che non posso
+    provare da qui, cioe' il carattere di sistema ingrandito.
 
-  - sul 10 il simbolo del seme finiva sopra allo zero. cairosvg ignora textLength,
-    quindi il valore usciva alla sua larghezza naturale, 321 px invece dei 212 chiesti;
-  - in colonna il J si leggeva come una I, perche' il gancio scendeva fino a 0,360
-    dell'altezza mentre la fascia visibile si fermava a 0,300. Alla Q capitava lo stesso
-    con la coda.
+ 4. I QUATTRO ASSI DI DENARI, con il marchio e la scritta ZiS. Le carte finite stanno nello
+    zip "assi-di-denari"; qui c'e' quello che le produce:
+      art/assi/               le quattro immagini sorgente, gia' a 448x819
+      art/assi_denari.py      le porta nel formato del mazzo
+    Uno script e non un ritaglio a mano per due motivi: le carte si ritagliano dai fogli
+    con estrai_foglio_bergamasche.py e compagnia, e il giorno che uno di quei fogli si
+    rigenera l'asso tornerebbe quello di serie senza che nessuno se ne accorga; e i PNG
+    hanno gli angoli trasparenti, che appiattiti sul nero invece che sul bianco farebbero
+    comparire quattro spicchi scuri agli angoli della carta.
 
-Adesso l'inchiostro di qualunque valore sta dentro 0,030 - 0,310, verificato su tutte e
-52, e lo sfalso delle scoperte in colonna e' 0,32 (sta nella Parte 1): l'indice si vede
-sempre intero. Il corpo viene 154 px su 700, cioe' il 9% piu' piccolo di prima, ma
-UGUALE per tutti i valori, che e' quello che l'occhio legge come "della stessa
-grandezza".
+ 5. art/fogli_mazzo.py RIMESSO IN SESTO. Aveva percorsi di una vecchia sessione e non
+    girava piu'. Ora legge da drawable-nodpi, copre tutti e cinque i mazzi (francese
+    compreso) e la misura della carta la dettano le carte stesse, non una costante.
 
-LA GRIGLIA usa le posizioni di DISPOSIZIONI, che era gia' scritta nel generatore e di
-cui prima si usavano solo le chiavi. Le Y coprono 0,16-0,84 del riquadro di allora e qui
-si riportano nel pannello mandando i simboli estremi a toccarne esattamente i bordi, non
-con un fattore a occhio: con un fattore il primo simbolo finiva quindici pixel sopra il
-pannello, cioe' dentro la fascia che in colonna resta visibile, e sotto l'indice di ogni
-numerale comparivano due puntine scure. La meta' bassa dei simboli e' capovolta come nei
-mazzi veri. L'Asso fa storia a se': un simbolo solo e grande al centro, perche' con la
-misura degli altri diventava un puntino in mezzo al vuoto.
+ 6. art/marchio_asso_berg.py TOLTO: e' superato. Metteva il marchio nel medaglione
+    dell'asso bergamasco, e adesso l'asso arriva gia' fatto da art/assi/.
 
-LE FIGURE sono le stesse della 3.5 - le tre immagini in art/figure/ ricolorate per seme
-secondo CROMIA - ma adesso riempiono il pannello grande: comanda la larghezza, e sono
-appoggiate in basso perche' sono mezzi busti e la testa deve finire subito sotto
-l'indice.
+ 7. README allineato, e versione 3.8.
 
-I 52 file pesano 867 KB in tutto (erano 824 con il simbolo unico).
+--- il file da cancellare ---
+
+    art/marchio_asso_berg.py
+
+Un caricamento non cancella niente: aprilo nel repository e clicca il cestino in alto a
+destra -> Commit changes. Se resta li' non fa danni - non lo chiama nessuno - ma se un
+giorno lo lanciassi ti timbrerebbe un secondo marchio sopra a quello che c'e' gia'.
+
+Controlla anche che non sia rimasta la cartella art/__pycache__ : se c'e', svuotala.
 
 --- COSA PROVARE ---
 
- 1. In colonna: il J deve avere il gancio, e sul 10 il seme non deve toccare lo zero.
- 2. Che sotto l'indice, sulle carte coperte, non si veda nessuna punta di simbolo.
- 3. Che nessuna figura tocchi l'indice, in nessuna delle dodici.
- 4. Sfoglia il mazzo: gli indici devono sembrare tutti della stessa grandezza. Il font
-    e' diverso da valore a valore proprio per ottenere questo.
+ 1. Klondike, Ricomincia: fai qualche mossa, tocca Ricomincia e conferma. Le carte devono
+    tornare ESATTAMENTE come erano, stesse colonne e stesso tallone, non una smazzata
+    nuova. E' la cosa che conta piu' di tutte in questa versione.
+ 2. Ricomincia a smazzata appena distribuita: il pulsante deve essere spento.
+ 3. Ricomincia, poi esci con Menu e rientra, poi Ricomincia di nuovo: deve funzionare
+    ancora, perche' il mazzo distribuito e' salvato con la partita.
+ 4. I tre pulsanti in fondo: "Ricomincia" deve leggersi tutto e su una riga. Provalo anche
+    col carattere di sistema ingrandito nelle impostazioni di Android.
+ 5. Le statistiche: dopo un Ricomincia il contatore delle partite NON deve muoversi; dopo
+    un Rigioca sopra le cinque mosse deve segnare una persa.

@@ -205,10 +205,10 @@ l'87% della larghezza invece del 94%. Non è un errore ed è voluto: la forma è
 stirarla per pareggiare sarebbe stato peggio. I mazzi non si mescolano mai fra loro, quindi la
 differenza non si vede in partita.
 
-La seconda: l'**asso di denari è vuoto**. In questo tipo di mazzo è la carta su cui i
-fabbricanti mettono il proprio marchio, e nella copia usata il marchio è stato tolto: resta
-l'anello concentrico senza niente al centro. Funziona, ma è l'unica carta del mazzo che non
-dice nulla.
+La seconda: l'**asso di denari era vuoto**. In questo tipo di mazzo è la carta su cui i
+fabbricanti mettono il proprio marchio, e nella copia usata il marchio era stato tolto: restava
+l'anello concentrico senza niente al centro, l'unica carta del mazzo che non diceva nulla.
+Adesso ci sta il marchio ZiS — vedi *Gli assi di denari* più sotto.
 
 Il dorso non viene dal foglio, che ne è privo: è lo stesso disegno vettoriale degli altri due,
 con una terza palette (`berg` in `art/card_back.py`) presa dai tre inchiostri del mazzo, blu,
@@ -365,6 +365,12 @@ di sapere quale dei tre ha ragione. Le partite abbandonate a meta' non si contan
 non hanno un esito; la tabella lo dice quando e' vuota, invece di lasciar credere che il
 conteggio sia rotto.
 
+**I quattro giochi stanno su due colonne**, e sotto c'e' Esci. Prima erano cinque pulsanti in
+fila: 5 x 56dp piu' quattro spazi da 12dp fanno 328dp di altezza, che su un telefono da 640dp,
+con logo, titolo e riga in fondo, non lasciava respiro a niente. Su due colonne diventano 192dp.
+Le misure stanno in `dimen.xml` e non nel layout, perche' le usano sei pulsanti su tre righe: coi
+numeri ripetuti sei volte, cambiarne uno e dimenticarne un altro sfasa la griglia.
+
 I quattro pulsanti in fondo alla schermata iniziale sono scesi da 60 a 52dp con margini piu'
 stretti: a 60dp quattro pulsanti facevano 384dp e su un telefono da 360dp non ci stavano.
 Adesso sono 304dp in tutto.
@@ -410,6 +416,24 @@ passata al dialogo con `setView`, non un testo. Prima le colonne erano tenute in
 spazi e un carattere a larghezza fissa: 27 caratteri che sui telefoni stretti andavano a capo
 e mandavano tutto fuori squadra. Con la tabella le colonne le tiene il layout e si usa il
 carattere normale dell'app.
+
+## Gli assi di denari
+
+I quattro assi di denari non vengono dai fogli di scansione come le altre trentanove carte di
+ogni mazzo: sono immagini a parte, col marchio ZiS e la scritta, e stanno in `art/assi/` già
+nel formato 448x819. Le porta nel mazzo `art/assi_denari.py`.
+
+Uno script e non un ritaglio fatto a mano, per due motivi che non hanno a che vedere con
+l'estetica. Il primo: le carte si ritagliano dai fogli con `estrai_foglio_bergamasche.py` e
+compagnia, e il giorno che uno di quei fogli si rigenera l'asso tornerebbe quello di serie
+senza che nessuno se ne accorga. Il secondo: i PNG hanno gli angoli trasparenti, e appiattirli
+sul nero invece che sul bianco farebbe comparire quattro spicchi scuri agli angoli della carta.
+
+`art/fogli_mazzo.py` produce un foglio per mazzo con tutte le carte più il dorso, alla
+risoluzione nativa: quattro righe, una per seme, più il dorso da solo e centrato in fondo.
+Vale per tutti e cinque i mazzi, francese compreso, e la misura della carta la dettano le
+carte stesse — le italiane sono 448x819, le francesi 600x840. A 300 dpi un foglio italiano
+misura 41 x 37 cm.
 
 ## Klondike
 
@@ -473,6 +497,37 @@ posiziona il codice su queste misure, e calcolarle una volta sola alla creazione
 che dopo una rotazione o l'apertura dello schermo diviso restavano alle coordinate della
 finestra precedente.
 
+**Ricomincia** rimette la stessa smazzata dall'inizio, e sta fra Annulla e Rigioca. Non è una
+comodità: una smazzata su undici è impossibile, il giocatore non vede le ventuno carte coperte
+e l'annulla si ferma a cento mosse, quindi una scelta irreversibile presa presto butta via la
+partita senza rimedio. Con Ricomincia si riprova.
+
+Non conta niente in statistica, ed è la differenza con Rigioca: quello cambia smazzata, cioè
+rinuncia, e conta come partita persa. Il mazzo come è stato distribuito viene salvato con la
+partita, se no dopo una ripresa non ci sarebbe più niente da ricominciare; non sta dentro
+`save()` del motore, perché quella la usa anche la pila dell'annulla e cinquantadue carte per
+ognuna delle cento fotografie sarebbero quindici chilobyte per un dato che non cambia mai.
+
+Tre pulsanti dove prima ce n'erano due lasciano circa 106dp per pulsante su uno schermo da
+360dp, e il cartiglio se ne prende 24 di padding interno: "Ricomincia" a 15sp non ci starebbe.
+Da qui `autoSizeTextType`, che rimpicciolisce il testo fino a 11sp quanto basta a starci
+invece di mandarlo a capo. Copre anche il carattere di sistema ingrandito.
+
+**Il gioco automatico** delle impostazioni ora vale anche qui: prima lo leggevano solo i tre
+giochi contro il Banco e nel Klondike accenderlo non faceva niente. Non e' un risolutore e non
+prova a esserlo - serve a provare in fretta che animazioni, annulla, vittoria e statistiche
+funzionino - ma vince il 32% delle smazzate pescando una carta alla volta e il 6,6% pescando a
+tre, misurato su 1500 partite col motore in `verifica/`. La regola che vale piu' di tutte le
+altre insieme e' svuotare una colonna spostandone tutte le scoperte su un'altra: da sola porta
+le vittorie dal 9% al 32%, perche' una colonna vuota e' l'unico posto dove puo' andare un Re.
+Il rischio di un giocatore automatico non e' giocare male, e' girare in tondo: percio' fra
+colonne si muove solo quando la mossa scopre una carta coperta o svuota una colonna, cioe' solo
+quando non si puo' disfare, e non riporta mai giu' una carta dalla fondazione.
+
+**Rigioca chiede sempre conferma**, tranne a partita finita, e la domanda dice se la partita in
+corso contera' come persa: sopra le cinque mosse si', sotto no. Una conferma che non informa
+chiede solo di ripetere il tocco.
+
 Le coperte si sfalsano del 16% dell'altezza, le scoperte del **32%**: di una coperta basta
 vedere che c'e', di una scoperta bisogna leggere l'angolo. Il 32 non e' arrotondato a occhio,
 lo fissa l'indice: l'inchiostro dell'indice arriva a 0,310 dell'altezza della carta, e con lo
@@ -531,7 +586,10 @@ Serve a risolvere due difetti che il mazzo aveva e che non erano dettagli:
 Adesso l'inchiostro di qualunque valore sta dentro 0,030-0,310, verificato su tutte e 52, e lo
 sfalso delle scoperte e' 0,32: l'indice si vede sempre intero.
 
-**La griglia tradizionale di simboli** ha ripreso il posto del simbolo unico grande. Il
+**La griglia tradizionale di simboli** ha ripreso il posto del simbolo unico grande. I simboli
+sono alti il 21% del pannello, e il tetto non e' l'altezza ma la larghezza: le tre colonne hanno
+i centri a cento pixel l'una dall'altra e picche, cuori e fiori sono larghi quasi quanto sono
+alti, quindi oltre quella misura si toccherebbero. Il
 ragionamento che aveva portato al simbolo unico era che dieci quadri affiancati su una carta
 larga 140 pixel diventano una macchia da contare, e a quella misura non si contano: e' vero, ma
 risponde a una domanda che nessuno pone. Il valore lo dice l'indice, e in colonna il centro

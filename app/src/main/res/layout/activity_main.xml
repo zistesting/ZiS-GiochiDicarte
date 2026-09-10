@@ -34,7 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:text="v.3.6"
+        android:text="v.3.8"
         android:textColor="@color/silver"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -45,6 +45,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title" />
 
+    <!--
+      I QUATTRO GIOCHI SU DUE COLONNE, e sotto Esci.
+
+      Prima erano cinque pulsanti in fila: 5 x 56dp piu' quattro spazi da 12dp fanno 328dp
+      di altezza, che su un telefono da 640dp, con logo, titolo e riga in fondo, non lasciava
+      respiro a niente. Su due colonne diventano 192dp: 136dp in meno.
+
+      Le misure stanno in dimen.xml e non qui, perche' le usano sei pulsanti: cambiarne una
+      in un posto solo evita che la griglia si sfasi. La larghezza e' tale che due colonne
+      piu' lo spazio in mezzo entrino anche in uno schermo da 320dp.
+
+      Esci e' centrato e larga come gli altri: e' l'unico della sua riga, e lasciarlo
+      accostato a una delle due colonne sotto una griglia simmetrica sembra un errore.
+    -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -56,70 +70,82 @@
         app:layout_constraintTop_toBottomOf="@id/version"
         app:layout_constraintVertical_bias="0.46">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnScopa"
-            android:layout_width="240dp"
-            android:layout_height="56dp"
-            android:background="@drawable/btn_cartiglio"
-            android:text="@string/play_scopa"
-            android:textColor="@color/silver"
-            android:textSize="17sp"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:shadowColor="#000000"
-            android:shadowDy="2"
-            android:shadowRadius="4" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnBriscola"
-            android:layout_width="240dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/btn_cartiglio"
-            android:text="@string/play_briscola"
-            android:textColor="@color/silver"
-            android:textSize="17sp"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:shadowColor="#000000"
-            android:shadowDy="2"
-            android:shadowRadius="4" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnScopa"
+                android:layout_width="@dimen/home_btn_w"
+                android:layout_height="@dimen/home_btn_h"
+                android:background="@drawable/btn_cartiglio"
+                android:text="@string/play_scopa"
+                android:textColor="@color/silver"
+                android:textSize="17sp"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnTresette"
-            android:layout_width="240dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/btn_cartiglio"
-            android:text="@string/play_tresette"
-            android:textColor="@color/silver"
-            android:textSize="17sp"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:shadowColor="#000000"
-            android:shadowDy="2"
-            android:shadowRadius="4" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnBriscola"
+                android:layout_width="@dimen/home_btn_w"
+                android:layout_height="@dimen/home_btn_h"
+                android:layout_marginStart="@dimen/home_btn_gap"
+                android:background="@drawable/btn_cartiglio"
+                android:text="@string/play_briscola"
+                android:textColor="@color/silver"
+                android:textSize="17sp"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+        </LinearLayout>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnKlondike"
-            android:layout_width="240dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/btn_cartiglio"
-            android:text="@string/play_klondike"
-            android:textColor="@color/silver"
-            android:textSize="17sp"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:shadowColor="#000000"
-            android:shadowDy="2"
-            android:shadowRadius="4" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/home_btn_gap"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTresette"
+                android:layout_width="@dimen/home_btn_w"
+                android:layout_height="@dimen/home_btn_h"
+                android:background="@drawable/btn_cartiglio"
+                android:text="@string/play_tresette"
+                android:textColor="@color/silver"
+                android:textSize="17sp"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnKlondike"
+                android:layout_width="@dimen/home_btn_w"
+                android:layout_height="@dimen/home_btn_h"
+                android:layout_marginStart="@dimen/home_btn_gap"
+                android:background="@drawable/btn_cartiglio"
+                android:text="@string/play_klondike"
+                android:textColor="@color/silver"
+                android:textSize="17sp"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:shadowColor="#000000"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+        </LinearLayout>
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnQuit"
-            android:layout_width="240dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
+            android:layout_width="@dimen/home_btn_w"
+            android:layout_height="@dimen/home_btn_h"
+            android:layout_marginTop="@dimen/home_btn_gap"
             android:background="@drawable/btn_cartiglio"
             android:text="@string/quit"
             android:textColor="@color/silver"
