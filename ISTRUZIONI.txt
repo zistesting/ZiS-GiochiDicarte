@@ -1,4 +1,4 @@
-PARTE 3 di 5 - il mazzo bergamasco  (41 file)   -   versione 3.8
+PARTE 2 di 5 - mazzo ZiS, mazzo piacentino, loghi e sfondo  (89 file)   -   versione 3.8
 
 >>> QUESTE CINQUE PARTI SONO IL PROGETTO COMPLETO ALLA VERSIONE 3.8. <<<
 Sostituiscono in blocco tutti gli zip precedenti: 3.4, 3.5, 3.6, 3.7 e i pacchetti
@@ -9,25 +9,23 @@ adesso. Sono 309 file in cinque commit, nessuno oltre il limite di 100.
 
 --- cosa c'e' dentro ---
 
-  41  berg_0_1 ... berg_3_10 + berg_back
-
-Il foglio da cui vengono e lo script che le ritaglia stanno nella PARTE 1, in art/.
+  41  mazzo ZiS            card_0_1 ... card_3_10 + card_back
+  41  mazzo piacentino     trad_0_1 ... trad_3_10 + trad_back
+   7  loghi e sfondo       app_logo, btn_info, btn_settings, btn_stats,
+                           title_logo, zis_logo, velvet
 
 --- cosa e' cambiato rispetto alla 3.7 ---
 
-UNA carta su quarantuno: berg_0_1.webp, l'asso di denari.
+DUE carte su ottantanove: gli assi di denari.
 
-In questo tipo di mazzo l'asso di denari e' la carta su cui i fabbricanti mettono il
-proprio marchio, e nella copia usata il marchio era stato tolto: restava l'anello
-concentrico senza niente al centro, l'unica carta del mazzo che non diceva nulla. Adesso
-ci sta il marchio ZiS, con la scritta in fondo.
+  card_0_1.webp   mazzo ZiS      l'aquila stilizzata col marchio ZiS
+  trad_0_1.webp   piacentine     l'aquila d'epoca col marchio ZiS
 
-Le altre quaranta sono identiche a quelle che hai. Se preferisci, puoi caricare solo
-berg_0_1.webp invece di tutti e quarantuno.
+Tutte le altre ottantasette sono identiche a quelle che hai. Se preferisci, puoi caricare
+solo quei due file invece di tutti e ottantanove: il risultato e' lo stesso.
 
-Nota: nella 3.7 quel marchio lo metteva uno script, art/marchio_asso_berg.py. Adesso
-l'asso arriva gia' fatto da art/assi/ e quello script e' da cancellare dal repository:
-le istruzioni della Parte 1 spiegano come.
+Le immagini sorgente e lo script che le porta nel formato del mazzo (art/assi/ e
+art/assi_denari.py) stanno nella PARTE 1.
 
 --- caricamento ---
 
