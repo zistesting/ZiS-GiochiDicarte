@@ -1,0 +1,139 @@
+ZiS-GiochiDiCarte-app1  -  il programma  (93 file)  -  versione 3.9
+
+>>> QUESTI QUATTRO ZIP SONO IL PROGETTO COMPLETO, VERSIONE 3.9. <<<
+
+    ZiS-GiochiDiCarte-app1                     93 file   il programma
+    ZiS-GiochiDiCarte-piacentine-zis           82 file   mazzi piacentine e ZiS
+    ZiS-GiochiDiCarte-bergamasche-napoletane   82 file   mazzi bergamasche e napoletane
+    ZiS-GiochiDiCarte-francesi                 53 file   mazzo francese
+
+Sostituiscono TUTTI gli zip precedenti: le cinque "part", i pacchetti di correzione, i
+parziali. Quelli si possono buttare. Non c'e' nessun app2: il programma sta in 93 file,
+sotto il limite di 100 per commit.
+
+Caricandoli tutti e quattro il repository e' allineato alla 3.9, qualunque cosa ci sia
+adesso. Sono 310 file in quattro commit.
+
+Carica QUESTO PER PRIMO: e' quello che fa partire la build. Gli altri tre poi, in
+qualunque ordine.
+
+>>> CI SONO DUE COSE DA CANCELLARE A MANO. Vedi in fondo. <<<
+
+--- caricamento ---
+
+Uguale per tutti e quattro gli zip, e si fa sempre dalla pagina principale del
+repository, senza aprire cartelle:
+
+    Add file -> Upload files -> trascina il CONTENUTO di questa cartella
+    (non la cartella) -> Commit changes.
+
+Dentro lo zip i file sono nella stessa struttura del repository, e GitHub trascinando le
+cartelle mantiene i percorsi: quindi non c'e' da navigare fino a drawable-nodpi come nelle
+versioni precedenti. Un trascinamento, un commit.
+
+NON caricare questo ISTRUZIONI.txt.
+
+Attenzione a .github e .gitignore, che sono nascosti (su Windows: Visualizza -> Elementi
+nascosti).
+
+--- cosa c'e' dentro ---
+
+  .github/workflows/     la build su GitHub Actions
+  .github/dependabot.yml gli aggiornamenti proposti automaticamente
+  .gitignore
+  README.md              le note tecniche
+  app/build.gradle       versione 3.9, R8 acceso, le quattro librerie
+  app/src/main/          23 file Kotlin, 9 layout, le risorse, il manifest
+  app/src/main/res/drawable-nodpi/   i 7 file di grafica dell'app: app_logo, title_logo,
+                         zis_logo, btn_info, btn_settings, btn_stats, velvet
+  art/                   21 file: gli script che producono carte, dorsi e figure
+  verifica/              4 file: le prove del motore del Klondike in Python
+
+Le CARTE non stanno qui: stanno negli altri tre zip. Qui c'e' solo la grafica dell'app -
+loghi, sfondo, icone dei pulsanti - che non e' un mazzo.
+
+--- il margine sui 100 file ---
+
+93 su 100: ne restano 7. Se un giorno si sforasse, la divisione naturale in app1 e app2 e'
+questa: art/ (21 file) e verifica/ (4 file) vanno in app2, perche' non servono
+alla build - il workflow ignora art/** di proposito - e il programma vero scende sotto i
+settanta file. Non c'e' motivo di farlo adesso.
+
+--- IMPORTANTE: i salvataggi si perdono una volta ---
+
+Il formato dei salvataggi e' passato da 2 a 3 nella 3.8, perche' il salvataggio del
+Klondike ha una sezione in piu' (il mazzo distribuito, che serve a Ricomincia). I
+salvataggi vecchi verrebbero riletti sfalsati, quindi vengono buttati: la prima volta che
+apri questa versione PERDI le partite in corso di tutti e quattro i giochi. Le statistiche
+no, stanno in un altro file.
+
+--- le due cose da cancellare a mano ---
+
+Un caricamento non cancella niente, quindi questi vanno tolti dal repository a mano:
+aprili e clicca il cestino in alto a destra -> Commit changes.
+
+ 1. art/marchio_asso_berg.py
+    Superato. Metteva il marchio nel medaglione dell'asso bergamasco, e adesso l'asso
+    arriva gia' fatto da art/assi/. Se resta li' non fa danni - non lo chiama nessuno - ma
+    lanciandolo timbrerebbe un secondo marchio sopra a quello che c'e'.
+
+ 2. la cartella art/__pycache__ , se c'e'
+    Cancella i file che contiene (uno o due .pyc) e la cartella spariscce da sola. Sono
+    file di servizio di Python: occupano posti nei commit e non servono. Il .gitignore fa
+    in modo che non ci tornino.
+
+--- il tetto delle librerie: non alzarlo a caso ---
+
+Ogni AAR porta scritto dentro il minimo di compileSdk e di AGP che pretende, e AGP lo
+controlla in checkReleaseAarMetadata. Sforare ferma la build - e' successo, con la
+core-ktx 1.19.0. Con AGP 8.13.2 e compileSdk 36:
+
+    core-ktx 1.17.0    vuole AGP >= 8.9.1 e compileSdk 36   <- quello che c'e' adesso
+    core-ktx 1.18.0    vuole compileSdk 36.1
+    core-ktx 1.19.0    vuole compileSdk 37 e AGP >= 9.1.0
+
+material resta alla 1.12.0 di proposito: e' la sola delle quattro che puo' cambiare
+qualcosa a vista, e a quest'app la 1.13.0 non porta niente.
+
+Il tetto e' scritto in app/build.gradle e in .github/dependabot.yml, che ignora core dalla
+1.18.0 in su per non riproporre ogni mese un aggiornamento impossibile. Va TOLTO quando si
+passera' ad AGP 9.
+
+Il workflow gira anche sulle pull request, quindi una proposta di Dependabot che non
+compila lo dice dentro la PR, prima di unirla.
+
+--- R8 e' acceso: si prova sul release, non si deduce ---
+
+minifyEnabled e shrinkResources sono attivi. E' l'unica modifica del progetto che si puo'
+verificare soltanto provando l'APK, perche' e' l'unica che cambia il codice DOPO la
+compilazione. Il workflow compila solo il release, quindi l'APK che scarichi e' quello
+minificato: quello che provi e' quello giusto.
+
+Se qualcosa si rompe - il sintomo tipico e' un ClassNotFoundException o un
+NoSuchMethodException - la diagnosi e' corta e in quest'ordine:
+
+ 1. rimetti  minifyEnabled false  in app/build.gradle e ricompila. Se il problema sparisce
+    e' R8, se resta sono le librerie. Un build e sai da che parte guardare.
+ 2. se e' R8: minifyEnabled true e togli il cancelletto ad android.enableR8.fullMode=false
+    in gradle.properties.
+ 3. solo dopo, le regole in app/proguard-rules.pro (che spiega perche' non ne serve
+    nessuna).
+
+Sul peso non aspettarti miracoli: le immagini sono 9,9 MB su circa 12, cioe' l'82% del
+pacchetto, e R8 non le tocca. Per misurare basta confrontare l'APK nuovo con quello
+vecchio che hai gia'.
+
+--- COSA PROVARE ---
+
+ 1. Che compili. Il tentativo precedente si fermava in checkReleaseAarMetadata.
+ 2. LE BARRE DI SISTEMA, per core-ktx: che i margini in alto e in basso restino giusti in
+    tutte e cinque le schermate, che niente finisca sotto la barra di stato o sotto quella
+    di navigazione. Anche in orizzontale su un tablet e in schermo diviso.
+ 3. TUTTO IL RESTO, per R8: i quattro giochi dall'inizio alla fine, le impostazioni con
+    ogni mazzo, TalkBack sulle carte, uscire e rientrare per il salvataggio.
+ 4. Klondike, Ricomincia: qualche mossa, Ricomincia, conferma. Le carte devono tornare
+    ESATTAMENTE come erano, non una smazzata nuova.
+ 5. I tre pulsanti in fondo al Klondike: "Ricomincia" deve leggersi su una riga. Provalo
+    anche col carattere di sistema ingrandito.
+ 6. Home a due colonne, statistiche coi nomi interi, i quattro assi di denari col marchio.
+ 7. usage.txt nell'artefatto ZiS-GiochiDiCarte-R8: l'elenco di quello che R8 ha tolto.

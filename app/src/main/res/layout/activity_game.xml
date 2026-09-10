@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_velvet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <!-- Mano del Banco: sta per prima cosi' esce dal bordo alto (topMargin negativo da codice) -->
+        <LinearLayout
+            android:id="@+id/botHand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+        <!-- Riga della partita: stessa posizione e stesso testo di Briscola e Tresette -->
+        <TextView
+            android:id="@+id/txtMatch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:textColor="@color/celeste"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
+
+        <!-- situazione della mano (Banco) -->
+        <TextView
+            android:id="@+id/botScore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:textColor="@color/silver"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
+
+        <!-- status -->
+        <TextView
+            android:id="@+id/txtStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:textColor="@color/silver"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
+
+        <!-- Centro tavolo. Il mazzo non sta piu' dentro la griglia: e' ancorato al bordo
+             sinistro e sporge per meta' fuori schermo, come in Briscola. La griglia scende
+             a 3 colonne cosi' le carte in tavola non ci finiscono sopra. -->
+        <FrameLayout
+            android:id="@+id/centerArea"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/centerBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <GridLayout
+                        android:id="@+id/gridCenter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:columnCount="3" />
+                </LinearLayout>
+            </ScrollView>
+
+            <FrameLayout
+                android:id="@+id/deckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical" />
+        </FrameLayout>
+
+        <!-- your hand (face up) -->
+        <LinearLayout
+            android:id="@+id/youHand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+        <!-- bottom score row (you) -->
+        <TextView
+            android:id="@+id/youScore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:textColor="@color/silver"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <!-- Pulsante info: sta in un angolo sopra tutto, cosi' non sposta il tavolo -->
+    <ImageButton
+        android:id="@+id/btnInfo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="6dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/cd_info"
+        android:scaleType="fitCenter"
+        android:src="@drawable/btn_info"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

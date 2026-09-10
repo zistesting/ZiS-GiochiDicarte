@@ -1,0 +1,166 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// ---------------------------------------------------------------------------
+// VERSION CODE
+// Base fissa + numero della build di GitHub Actions. Il numero di Actions da solo
+// e' fragile: se un domani il repository viene ricreato il contatore riparte da 1 e
+// il Play Console rifiuta l'upload, perche' pretende un versionCode sempre crescente.
+// Con la base davanti c'e' margine per ripartire; se dovesse succedere basta alzare
+// VERSION_CODE_BASE di qualche migliaio.
+// La stringa vuota (variabile presente ma non valorizzata) va trattata come assente:
+// "".toInteger() sollevava NumberFormatException e faceva fallire la configurazione.
+// ---------------------------------------------------------------------------
+def VERSION_CODE_BASE = 1000
+def runNumber = (System.getenv("VERSION_CODE") ?: "").trim()
+def buildVersionCode = VERSION_CODE_BASE + (runNumber.isInteger() ? runNumber.toInteger() : 0)
+
+// ---------------------------------------------------------------------------
+// FIRMA
+// Nessuna password e nessun keystore dentro il repository. Le credenziali si
+// leggono, in ordine:
+//   1) dalle variabili d'ambiente  -> usate dalla CI, valorizzate dai GitHub Secrets
+//   2) dal file keystore.properties -> resta sul tuo PC, e' nel .gitignore
+// Se non c'e' nessuna delle due, il progetto compila lo stesso: debug e release
+// vengono firmati con la chiave di debug standard di Android. Un AAB firmato in
+// quel modo NON e' caricabile sul Play Store: per pubblicare servono i secret.
+// ---------------------------------------------------------------------------
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file("keystore.properties")
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+// getenv puo' restituire stringa vuota (secret non configurato su GitHub): la tratto
+// come assente, altrimenti l'elvis non ricadrebbe sul file locale.
+def env = { String name -> def v = System.getenv(name); return (v == null || v.isEmpty()) ? null : v }
+
+def ksFile      = file(env("KEYSTORE_FILE")     ?: keystoreProps.getProperty("storeFile", "scopa.keystore"))
+def ksStorePass = env("KEYSTORE_PASSWORD")      ?: keystoreProps.getProperty("storePassword")
+def ksAlias     = env("KEY_ALIAS")              ?: keystoreProps.getProperty("keyAlias")
+def ksKeyPass   = env("KEY_PASSWORD")           ?: keystoreProps.getProperty("keyPassword")
+def canSign     = ksFile.exists() && ksStorePass && ksAlias && ksKeyPass
+
+android {
+    namespace 'com.zis.scopa'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.zis.scopa"
+        minSdk 24
+        targetSdk 36
+        versionCode buildVersionCode
+        versionName "3.9"
+    }
+
+    signingConfigs {
+        if (canSign) {
+            common {
+                storeFile ksFile
+                storePassword ksStorePass
+                keyAlias ksAlias
+                keyPassword ksKeyPass
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            if (canSign) signingConfig signingConfigs.common
+        }
+        release {
+            // Senza questa riga, quando manca il keystore il release resta SENZA firma e
+            // AGP produce app-release-unsigned.apk, che il telefono si rifiuta di installare.
+            // Con il ripiego sulla chiave di debug l'APK e' sempre provabile; l'AAB firmato
+            // in quel modo pero' il Play Console lo rifiuta, quindi per pubblicare servono
+            // comunque i secret.
+            signingConfig = canSign ? signingConfigs.common : signingConfigs.debug
+            if (!canSign) {
+                logger.lifecycle("ZiS: nessun keystore configurato -> firma di debug, non caricabile sul Play Store.")
+            }
+            // R8: butta via il codice e le risorse che non si usano, e offusca i nomi.
+            //
+            // Il grosso di quello che se ne va non e' codice nostro: seimila righe di Kotlin
+            // diventano poche decine di KB di DEX. Sono le parti di appcompat, material e
+            // constraintlayout che quest'app non chiama mai, e sono la maggior parte di quelle
+            // librerie - di material si usano il tema e poco altro.
+            //
+            // shrinkResources non funziona senza minifyEnabled, e insieme fanno le due meta'
+            // dello stesso lavoro: uno il codice, l'altro i drawable, i layout e le stringhe
+            // che le librerie portano e nessuno guarda. Fra questi le traduzioni in ottanta
+            // lingue di appcompat e material.
+            //
+            // NON ci si aspetti un dimezzamento: le immagini sono 9,9 MB su circa 12, cioe'
+            // l'82% del pacchetto, e R8 non le tocca. Il guadagno sta nei due megabyte
+            // restanti.
+            //
+            // ATTENZIONE: e' l'unica modifica del progetto che si puo' verificare soltanto
+            // provando il release sul telefono, perche' e' l'unica che cambia il codice DOPO
+            // la compilazione. Se qualcosa si rompe, il primo passo e' rimettere qui
+            // minifyEnabled false e ricompilare: se il problema sparisce e' R8, se resta sono
+            // le librerie aggiornate. Il secondo passo sta in gradle.properties.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures { viewBinding true }
+}
+
+// Da Kotlin 2.2 il blocco kotlinOptions e' deprecato: la forma corrente e' questa.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+// Quattro librerie e nient'altro: niente Compose, Fragment, Navigation, Lifecycle,
+// RecyclerView, Room. E' il motivo per cui aggiornarle e' quasi sempre noioso - la
+// superficie su cui una correzione potrebbe toccarci e' piccolissima - con UNA eccezione,
+// core-ktx.
+//
+// core-ktx e' l'unica di cui l'app usa il COMPORTAMENTO e non solo qualche classe: dentro
+// ci sono WindowCompat, WindowInsetsCompat e ViewCompat.setOnApplyWindowInsetsListener,
+// cioe' tutto SystemBars.kt. Ed e' l'area che Android ha rimaneggiato piu' di ogni altra
+// fra API 35 e 36 con l'edge-to-edge obbligatorio.
+//
+// ---------------------------------------------------------------------------
+// IL TETTO: queste versioni NON si possono alzare a piacere.
+//
+// Ogni AAR porta scritto dentro (AAR metadata) il minimo di compileSdk e di AGP che
+// pretende, e AGP lo controlla nel task checkReleaseAarMetadata. Sforare non produce un
+// avviso: ferma la build.
+//
+// Con AGP 8.13.2 e compileSdk 36 - cioe' il massimo che questa AGP supporta - il tetto e':
+//
+//   core-ktx 1.17.0    vuole AGP >= 8.9.1 e compileSdk 36   <- esattamente il nostro caso
+//   core-ktx 1.18.0    vuole compileSdk 36.1
+//   core-ktx 1.19.0    vuole compileSdk 37 e AGP >= 9.1.0
+//
+// Il primo tentativo con la 1.19.0 e' finito cosi', con quattro errori di AAR metadata.
+// Per andare oltre la 1.17.0 servono AGP 9.x, Gradle 9.x e l'SDK di Android 17: e' una
+// migrazione a se', non un numero da cambiare.
+//
+// appcompat 1.7.1 e constraintlayout 2.2.1 sono di inizio 2025 e non chiedono piu' di
+// compileSdk 35: stanno larghe.
+//
+// material RESTA alla 1.12.0, e non per prudenza generica. E' la sola delle quattro che
+// puo' cambiare qualcosa a vista, perche' i suoi major rimescolano gli stili dei dialoghi,
+// e qui c'e' una giuntura insolita: AlertDialog.Builder di appcompat con un tema che
+// discende da Theme.MaterialComponents.Dialog.Alert e sopra gli override di DarkAlertDialog.
+// A quest'app la 1.13.0 non porta niente - si usano il tema e poco altro - quindi si
+// prenderebbe un rischio visivo in cambio di nulla. La si aggiornera' insieme ad AGP 9.
+// ---------------------------------------------------------------------------
+dependencies {
+    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+}

@@ -1,0 +1,161 @@
+<resources>
+    <string name="app_name">ZiS-GiochiDiCarte</string>
+
+    <!-- Home -->
+    <string name="title">Giochi di Carte</string>
+    <string name="play_scopa">Scopa</string>
+    <string name="quit">Esci</string>
+
+    <!-- Game -->
+    <string name="bot">Banco</string>
+    <string name="you">Tu</string>
+    <string name="your_turn">Tocca a te: gioca una carta</string>
+    <string name="bot_turn">Gioca il Banco…</string>
+    <string name="back_home">Menu</string>
+
+    <!-- TERMINOLOGIA, uguale in tutta l'app e nei tre giochi:
+           MANO     = un giro di carte in mano: tre in Scopa e Briscola, dieci nel Tresette.
+           PARTITA  = tutto il mazzo, dalla distribuzione al conteggio dei punti (una serie di mani).
+           INCONTRO = la serie di partite fino al traguardo scelto nelle impostazioni.
+         I nomi delle risorse (hand_*, match_*, round_over) sono rimasti quelli vecchi:
+         "hand" e "round" oggi vogliono dire partita, "match" vuol dire incontro. -->
+
+    <!-- Dialogo di fine partita -->
+    <string name="round_over">Fine partita</string>
+
+    <!-- Esiti e punteggi: gli stessi per Scopa, Briscola e Tresette -->
+    <string name="match_line">Incontro: Tu %1$d - %2$d Banco</string>
+    <string name="match_win_you">Hai vinto l\'incontro!</string>
+    <string name="match_win_bot">Il Banco vince</string>
+    <string name="you_points">Tu: %1$s</string>
+    <string name="bot_points">Banco: %1$s</string>
+    <string name="briscola_hands_label">Partite per vincere l\'incontro</string>
+    <string name="hands_5">5 partite</string>
+    <string name="hands_11">11 partite</string>
+    <string name="pt_carte">Carte</string>
+    <string name="pt_denari">Denari</string>
+    <string name="pt_settebello">Settebello</string>
+    <string name="pt_primiera">Primiera</string>
+    <string name="pt_totale">Totale</string>
+    <string name="pt_partita">Partita</string>
+    <string name="pt_incontro">Incontro</string>
+    <string name="pt_scope">Scope</string>
+    <string name="choose_capture">Scegli la presa</string>
+    <!-- Cartelli che compaiono al centro del tavolo dopo una presa -->
+    <string name="banner_scopa">SCOPA!</string>
+    <string name="banner_settebello">SETTEBELLO!</string>
+    <string name="banner_nice_take">Bella presa!</string>
+    <string name="cd_web">Sito ZiS</string>
+    <string name="cd_settings">Impostazioni</string>
+    <string name="settings_title">Impostazioni</string>
+    <string name="score_target_label">Punteggio per vincere l\'incontro</string>
+    <string name="target_11">11 punti</string>
+    <string name="target_21">21 punti</string>
+    <string name="continue_match">Continua</string>
+    <string name="new_match">Nuovo incontro</string>
+    <!-- Fine partita: torna all'inizio dell'ultima mano (3 carte a testa, 10 nel Tresette) -->
+    <string name="replay_last_deal">RIGIOCA l\'ultima mano</string>
+    <string name="play_briscola">Briscola</string>
+    <string name="you_take">Presa tua</string>
+    <string name="bot_take">Presa Banco</string>
+
+    <!-- Tresette -->
+    <string name="play_tresette">Tresette</string>
+    <string name="tre_points_third">%1$d e ⅓</string>
+    <string name="tre_points_twothirds">%1$d e ⅔</string>
+    <string name="tresette_target_label">Punteggio per vincere l\'incontro</string>
+    <string name="tre_target_21">21 punti</string>
+    <string name="tre_target_31">31 punti</string>
+    <string name="draw_seconds_label">Per quanto resta scoperta la carta pescata</string>
+    <string name="draw_1s">1 secondo</string>
+    <string name="draw_2s">2 secondi</string>
+    <string name="draw_3s">3 secondi</string>
+
+    <!-- Statistiche -->
+    <string name="cd_stats">Statistiche</string>
+    <string name="stats_title">Statistiche</string>
+    <string name="stat_played">Giocati</string>
+    <string name="stat_won">Vinte</string>
+    <string name="stat_lost">Perse</string>
+    <string name="stat_total">Totale</string>
+    <string name="stats_empty">Ancora niente da contare: gli incontri contro il Banco si contano quando arrivano al traguardo, le partite di Klondike quando le vinci o le abbandoni.</string>
+    <string name="stats_note">Le partite vinte sono in giallo. Negli incontri contro il Banco si conta solo chi arriva al traguardo: quelli lasciati a metà non contano. Nel Klondike una partita si conta persa solo se la abbandoni distribuendo di nuovo.</string>
+    <string name="stats_reset">Azzera</string>
+    <string name="stats_reset_ask">Vuoi azzerare tutte le statistiche? L\'operazione non si può annullare.</string>
+
+    <!-- Descrizioni per TalkBack: le carte sono disegnate a mano, quindi senza queste
+         chi non vede non ha modo di sapere che cosa c'e' sul tavolo. -->
+    <string name="cd_card_back">Carta coperta</string>
+    <string name="cd_card_disabled">%1$s, non giocabile</string>
+    <string name="cd_deck">Mazzo, %1$d carte</string>
+    <string name="cd_deck_empty">Mazzo finito</string>
+
+    <!-- Pulsanti info e spiegazioni -->
+    <string name="cd_info">Informazioni</string>
+    <string name="info_title">Come si gioca</string>
+    <string name="info_app_title">ZiS Giochi di Carte</string>
+    <string name="close">Chiudi</string>
+    <string name="yes">Sì</string>
+    <string name="no">No</string>
+    <string name="rules_scopa">Si gioca in due con il mazzo da 40 carte. Quattro carte scoperte in tavola, tre a testa in mano.\nA turno si cala una carta. Se in tavola c\'è una carta dello stesso valore, la si prende. Se non c\'è, si possono prendere più carte la cui somma sia pari al valore calato: l\'Asso vale 1, il Fante 8, il Cavallo 9, il Re 10. Se c\'è la carta singola dello stesso valore, quella ha la precedenza e va presa. Se non si prende niente, la carta resta in tavola.\nSvuotare la tavola con una presa vale una SCOPA, che è un punto. Non vale sull\'ultima carta della partita.\n\nFinite le tre carte in mano se ne danno altre tre a testa, finché il mazzo dura: ogni giro di tre carte è una mano. Quando il mazzo è finito e sono state giocate anche le ultime tre, la partita è conclusa: le carte rimaste in tavola vanno a chi ha preso per ultimo.\n\nA fine partita si contano quattro punti, uno ciascuno: più carte, più denari, il settebello (il 7 di denari), e la primiera. Più le scope. In caso di parità quel punto non lo prende nessuno.\nLa primiera si calcola prendendo la carta migliore per ogni seme e sommandone il valore: 7 vale 21, il 6 vale 18, l\'Asso 16, il 5 vale 15, il 4 vale 14, il 3 vale 13, il 2 vale 12, le figure 10. Chi non ha preso nemmeno una carta di un seme non concorre alla primiera.\n\nL\'incontro lo vince chi arriva per primo a 11 o a 21 punti, come scegli nelle impostazioni.</string>
+    <string name="rules_briscola">Si gioca in due con il mazzo da 40 carte. Tre carte a testa, il resto forma il mazzo. L\'ultima carta del mazzo si mette scoperta sotto: il suo seme è la briscola, e batte tutti gli altri semi.\nUno cala una carta, l\'altro risponde con quella che vuole: non c\'è obbligo di seme. Prende chi ha calato la briscola più alta, oppure, se non ce ne sono, la carta più alta del seme di apertura. Chi prende pesca per primo e apre la presa successiva. Finito il mazzo si gioca l\'ultima mano, tre carte a testa senza pescare.\n\n<b>Ordine di forza</b>: dalla più alta: Asso, 3, Re, Cavallo, Fante, 7, 6, 5, 4, 2.\n\n<b>Punti</b>: Asso 11, 3 vale 10, Re 4, Cavallo 3, Fante 2. Le altre carte non valgono niente. In tutto ci sono 120 punti: ne bastano 61 per vincere la partita, e a 60 pari la partita è patta.\n\nL\'incontro lo vince chi arriva per primo a 5 o a 11 partite vinte, come scegli nelle impostazioni.</string>
+    <string name="rules_tresette">Si gioca in due con il mazzo da 40 carte. Dieci carte a testa, venti restano nel tallone.\n\nChi risponde DEVE rispondere al seme di chi ha aperto. Può calare un altro seme solo se quel seme non ce l\'ha, ma in quel caso non prende.\n\nPrende chi ha calato la carta più alta del seme di apertura. Poi si pesca, prima chi ha preso, e la carta pescata si mostra all\'avversario: tienile d\'occhio, servono a capire cosa gli resta in mano. Finito il tallone si gioca l\'ultima mano: dieci prese senza pescare.\n\n<b>Ordine di forza</b>: dalla più alta: 3, 2, Asso, Re, Cavallo, Fante, 7, 6, 5, 4.\n\n<b>Punti</b>: l\'Asso vale un punto intero; il 2, il 3, il Fante, il Cavallo e il Re valgono un terzo ciascuno; dal 4 al 7 niente. L\'ultima presa vale un punto. A fine partita ogni giocatore scarta i terzi che gli avanzano, e la partita vale sempre 11 punti in tutto.\n\nL\'incontro lo vince chi arriva per primo a 21 o a 31 punti, come scegli nelle impostazioni.</string>
+    <string name="info_app"><b>GLOSSARIO</b>\n\n<b>Mano</b>: un giro di carte in mano, tre in Scopa e Briscola, dieci nel Tresette.\n<b>Partita</b>: tutto il mazzo, da quando si distribuisce a quando si contano i punti.\n<b>Incontro</b>: la serie di partite fino al traguardo. Le statistiche contano solo gli incontri conclusi.\n\n<b>RISPETTO DELLA TUA PRIVACY</b>\n\nQuesta app non raccoglie e non trasmette nulla. Non ci sono statistiche d\'uso del sistema, non ci sono pubblicità, non ci sono strumenti di tracciamento di terze parti e non chiede alcun permesso. Non ha accesso a internet, né alla rubrica, né alla posizione, né alla fotocamera, né ai file del telefono. Puoi verificarlo tu stesso in Impostazioni di Android, alla voce Autorizzazioni dell\'app.\nL\'unica cosa che l\'app salva sono le tue preferenze di gioco che restano sul tuo telefono.\n\n<b>GIOCO RESPONSABILE</b>\n\nQui non si scommette e non si vince nulla: si gioca a carte e basta. Resta comunque attivo un avviso fra un incontro e l\'altro, che si può disattivare dalle impostazioni.</string>
+
+    <!-- Pausa responsabile -->
+    <string name="test_section">Test</string>
+    <string name="auto_play">Gioco automatico</string>
+    <string name="show_bot_cards">Mostra carte del Banco</string>
+    <string name="show_bot_cards_desc">Le carte del Banco restano scoperte e per intero sullo schermo. Serve a verificare la logica di gioco.</string>
+    <string name="auto_play_desc">Il programma gioca da solo sia le carte del Banco sia le tue. Serve a provare in fretta il funzionamento.</string>
+    <string name="pause_section">Gioco responsabile</string>
+    <string name="pause_switch">Pausa di 1 minuto fra gli incontri</string>
+    <string name="pause_switch_desc">Al termine di ogni incontro compare un avviso e bisogna attendere un minuto prima di ricominciare. Se la disattivi, si riaccende da sola dopo un\'ora.</string>
+    <string name="pause_title">Prenditi una pausa</string>
+    <string name="pause_message">Giocare a lungo senza interruzioni può diventare un\'abitudine difficile da controllare. Fermati un minuto: alzati, bevi qualcosa, guarda che ora è.
+
+Se senti il bisogno di ricominciare subito, se stai giocando per rifarti di una sconfitta o se il gioco sta togliendo tempo ad altro, parlane con qualcuno.
+
+Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 558 822 (gratuito e anonimo, dal lunedì al venerdì dalle 10 alle 16).</string>
+    <string name="pause_countdown">Attendi %1$d s</string>
+    <string name="pause_wait">Attendi</string>
+    <string name="pause_off_info">Pausa disattivata. Si riattiva automaticamente fra %1$d min.</string>
+    <!-- Mazzo -->
+    <string name="deck_section">Mazzo</string>
+    <string name="deck_label">Aspetto delle carte</string>
+    <string name="deck_zis">ZiS theme</string>
+    <string name="deck_trad">Piacentine</string>
+    <string name="deck_berg">Bergamasche</string>
+    <string name="deck_nap">Napoletane</string>
+
+    <!-- Klondike -->
+    <string name="play_klondike">Klondike</string>
+    <string name="kl_undo">Annulla</string>
+    <!-- Ricomincia rimette la STESSA smazzata dall'inizio, e non conta niente in
+         statistica: e' un secondo tentativo, non una rinuncia. Rigioca, che invece
+         cambia smazzata, conta come partita persa. La differenza sta nelle due
+         domande, perche' i due pulsanti sono uno accanto all'altro. -->
+    <string name="kl_restart">Ricomincia</string>
+    <string name="kl_restart_ask">Vuoi rimettere le carte come all\' inizio di questa smazzata? Le mosse fatte si perdono, ma la partita non viene contata come persa.</string>
+    <string name="kl_deal">Rigioca</string>
+    <!-- Le due domande di RIGIOCA dicono la stessa cosa in due situazioni diverse: la
+         prima quando la partita conta come persa, la seconda quando non conta. Chi risponde
+         deve sapere quale delle due sta accettando. -->
+    <string name="kl_deal_ask">Vuoi abbandonare questa partita e distribuire di nuovo? Verra\' contata come partita persa.</string>
+    <string name="kl_deal_ask_free">Vuoi distribuire di nuovo? Hai fatto poche mosse, quindi questa partita non verra\' contata.</string>
+    <string name="kl_finish">Completa</string>
+    <string name="kl_status">Mosse: %1$d • mancano %2$d carte</string>
+    <!-- Compare quando non c'e' piu' nessuna mossa legale: la smazzata e' chiusa. -->
+    <string name="kl_no_moves">Non ci sono piu\' mosse: tocca RIGIOCA</string>
+    <!-- Il gioco automatico si ferma da solo quando non trova piu' mosse che facciano
+         progresso, anche se qualche mossa legale ci sarebbe ancora. -->
+    <string name="kl_auto_stop">Gioco automatico fermo: non trova altre mosse utili</string>
+    <string name="kl_won_title">Klondike riuscito</string>
+    <string name="kl_won">Hai messo a posto tutte e 52 le carte in %1$d mosse.</string>
+    <string name="kl_section">Klondike</string>
+    <string name="kl_draw_label">Carte da voltare dal tallone</string>
+    <string name="kl_draw_1">Una alla volta</string>
+    <string name="kl_draw_3">Tre alla volta</string>
+    <string name="rules_klondike">Si gioca da soli con il mazzo francese da 52 carte. Lo scopo e\' portare tutte e quattro le fondazioni, in alto a destra, dall\'Asso al Re.\n\nSette colonne: la prima con una carta, la settima con sette. Di ogni colonna e\' scoperta solo l\'ultima. Le 24 che restano formano il tallone, in alto a sinistra.\n\n<b>Le colonne</b> si costruiscono a scendere e a colori alternati: sul 9 rosso va l\'8 nero. Si puo\' spostare una carta sola oppure un gruppo gia\' in ordine.\n\n<b>Una colonna vuota accetta solo il Re.</b> E\' la regola piu\' severa del gioco: lo spazio libero e\' la cosa piu\' preziosa che hai, e possono usarlo quattro carte su cinquantadue.\n\n<b>Le fondazioni</b> si costruiscono a salire, un seme ciascuna, dall\'Asso al Re. Una carta gia\' salita puo\' tornare in gioco, se serve come appoggio: basta toccarla.\n\n<b>Il tallone</b> si volta toccandolo. Quando finisce, toccare il posto vuoto lo rigira: le carte tornano nello stesso ordine di prima. Quante se ne voltano per volta, una o tre, si sceglie nelle impostazioni.\n\n<b>Si gioca a tocchi</b>, senza trascinare. Tocchi una carta e va dove ha senso: prima la fondazione, poi una colonna. Se la destinazione non e\' quella che volevi, c\'e\' Annulla.\n\nQuando non restano piu\' carte coperte e il tallone e\' finito, compare <b>Completa</b>: da li\' in poi non ci sono piu\' scelte da fare, solo carte da far salire.\n\nNon tutte le smazzate si possono vincere, e non e\' colpa tua: circa una su undici e\' persa in partenza voltando una carta per volta, circa una su cinque voltandone tre.</string>
+    <string name="kl_draw_info">A tre alla volta e\' molto piu\' difficile: due terzi del tallone non passano mai in cima nel giro in corso, e le smazzate impossibili passano da circa una su undici a circa una su cinque.</string>
+</resources>

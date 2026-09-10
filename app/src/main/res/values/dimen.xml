@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Misure della griglia dei pulsanti in home.
+
+  Stanno qui e non nel layout perche' le usano sei pulsanti su tre righe: con i numeri
+  ripetuti sei volte, cambiarne uno e dimenticarne un altro sfasa la griglia.
+
+  138 + 12 + 138 = 288dp, che entrano anche in uno schermo da 320dp lasciando 16dp per
+  lato. La larghezza non e' scelta per far stare il testo appena appena: "Briscola" e
+  "Tresette" a 17sp grassetto stanno attorno ai 70dp, e il cartiglio si porta via 24dp di
+  padding interno, quindi il margine c'e'.
+-->
+<resources>
+    <dimen name="home_btn_w">138dp</dimen>
+    <dimen name="home_btn_h">56dp</dimen>
+    <dimen name="home_btn_gap">12dp</dimen>
+</resources>
