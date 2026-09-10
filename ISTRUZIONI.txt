@@ -1,26 +1,86 @@
-PARTE 4 di 5 - il mazzo napoletano  (41 file)   -   versione 3.5
+PARTE 1 di 5 - tutto il progetto tranne le immagini  (79 file)   -   versione 3.6
 
->>> NON SERVE RICARICARLA. <<<
+Questa parte SOSTITUISCE la Parte 1 della 3.5: contiene tutto quello che c'era in quella
+piu' le modifiche della 3.6. Se non hai ancora caricato la 3.5, salta direttamente a
+questa.
 
-Queste immagini sono IDENTICHE a quelle che hai gia' nel repository: dalla 3.4 alla 3.5
-non ne e' cambiata nessuna. La parte c'e' solo perche' il progetto resti completo in
-cinque pezzi. Se la carichi non fai danni - i nomi sono gli stessi, si sovrascrivono -
-ma stai caricando 41 file per niente.
+>>> VA RICARICATA ANCHE LA PARTE 5 <<<  Tutte e 52 le carte francesi sono cambiate.
+Le Parti 2, 3 e 4 restano quelle che hai: quelle immagini non sono mai state toccate.
+L'ordine fra Parte 1 e Parte 5 non conta.
 
-Della 3.5 servono solo la PARTE 1 (il codice) e la PARTE 5 (le carte francesi).
+>>> CI SONO FILE DA CANCELLARE A MANO. Vedi in fondo. <<<
 
-  41  nap_0_1 ... nap_3_10 + nap_back
+--- caricamento ---
 
-Il foglio da cui vengono e lo script che le ritaglia stanno nella Parte 1, in art/.
+Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
+di questa cartella (non la cartella) -> Commit changes.
 
---- se la carichi comunque ---
+NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
+(su Windows: Visualizza -> Elementi nascosti).
 
-Vai in  app/src/main/res/drawable-nodpi/  , poi Add file -> Upload files, e trascina
-dentro tutti i 41 file di questa cartella (non la cartella: il suo contenuto).
-NON caricare questo ISTRUZIONI.txt.
+--- cosa e' cambiato rispetto alla 3.5 ---
 
---- avvertenza di sempre ---
+Di questa parte cambiano quattro file: KlondikeActivity.kt, art/carte_francesi.py,
+README.md e i due della versione (build.gradle e activity_main.xml). Il resto e'
+identico alla 3.5, ma caricarlo tutto non fa danni.
 
-Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi,
-altrimenti Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
-Vale anche per i loghi.
+ 1. IL MAZZO FRANCESE HA UN INDICE SOLO, in alto a sinistra. Sulle carte vere ce ne sono
+    due perche' una carta in mano la puoi tenere in due versi; nel Klondike le carte
+    stanno in tavola sempre nello stesso verso, e quel mazzo lo usa solo lui. E non e'
+    che il secondo si vedesse poco: non si vedeva MAI. In colonna ogni carta e' coperta
+    dal basso da quella sotto, quindi si vede la fascia in alto; negli scarti le carte
+    vecchie sono coperte a destra da quella in cima, quindi si vede ancora l'angolo in
+    alto a sinistra; nelle fondazioni si vede solo la carta in cima. Costava un terzo
+    dell'altezza. Togliendolo il pannello centrale passa dal 30% al 64% e la figura
+    raddoppia in entrambi i versi.
+
+ 2. TORNA LA GRIGLIA TRADIZIONALE di simboli al posto del simbolo unico grande. Le
+    posizioni sono DISPOSIZIONI, che era gia' nel generatore e di cui prima si usavano
+    solo le chiavi: le coordinate erano dati morti.
+
+ 3. L'INDICE E' ALLINEATO SULL'INCHIOSTRO, non sulla linea di base, e questo corregge
+    due difetti che il mazzo aveva da sempre:
+      - sul 10 il simbolo del seme finiva sopra allo zero (cairosvg ignora textLength,
+        quindi il valore usciva a 321 px invece dei 212 chiesti e il simbolo, piazzato
+        dove textLength diceva, gli andava addosso);
+      - in colonna il J si leggeva come una I, perche' il gancio scendeva fino a 0,360
+        dell'altezza mentre la fascia visibile si fermava a 0,300.
+
+ 4. LO SFALSO DELLE CARTE SCOPERTE in colonna passa da 0,30 a 0,32 (SFALSO_SCOPERTA in
+    KlondikeActivity). Il numero lo fissa l'indice, non il gusto: l'inchiostro arriva a
+    0,310 dell'altezza, e deve starci dentro tutto. Costa niente: una colonna da sei
+    coperte e sette scoperte passa da 737 a 760 px sui 1130 disponibili di un telefono
+    da 360dp.
+
+ 5. README allineato: la sezione del Klondike raccontava ancora l'indice doppio, il
+    simbolo unico e lo sfalso al 30%.
+
+--- i file da cancellare ---
+
+Un caricamento non cancella niente, quindi questi vanno tolti a mano. Se nel repository
+c'e' la cartella  art/__pycache__  , cancella TUTTI i file che contiene: la cartella
+spariscce da sola quando resta vuota. Sono uno o due:
+
+    art/__pycache__/card_back.cpython-312.pyc
+    art/__pycache__/carte_francesi.cpython-312.pyc   <- solo se hai caricato la 3.5
+
+Il secondo era finito per errore nella Parte 1 della 3.5, rigenerato dallo script che
+produce le carte. Questa Parte 1 e' pulita e il .gitignore fa in modo che non ci
+tornino, ma quelli gia' nel repository restano finche' non li togli.
+
+Per cancellare: apri il file nel repository e clicca il cestino in alto a destra ->
+Commit changes.
+
+--- COSA PROVARE ---
+
+ 1. In colonna, guarda gli indici: il J deve avere il gancio (prima si leggeva come una
+    I) e sul 10 il simbolo del seme non deve toccare lo zero. Sono i due difetti che
+    questa versione corregge, e in colonna si vedono tutti e due.
+ 2. Che sotto l'indice, sulle carte coperte da quella sotto, non si veda nessuna punta
+    di simbolo: la griglia deve cominciare sotto la fascia visibile.
+ 3. Che nessuna figura tocchi l'indice, in nessuna delle dodici.
+ 4. Klondike su telefono in verticale: le carte devono restare 140x196 px su uno schermo
+    da 360dp. Lo sfalso e' cambiato, la misura della carta no.
+ 5. Tutte le prove della 3.5 valgono ancora: rotazione su tablet e schermo diviso,
+    Rigioca dopo una mossa sola, la vittoria ripresa dal background, TalkBack sulle
+    figure, la pausa del Tresette.

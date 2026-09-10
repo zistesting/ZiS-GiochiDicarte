@@ -1,6 +1,7 @@
 # ZiS – Giochi di Carte
 
-Scopa e Briscola contro il Banco. Progetto Android nativo (Kotlin + View Binding).
+Scopa, Briscola e Tresette contro il Banco, piu' il solitario Klondike. Progetto Android
+nativo (Kotlin + View Binding).
 
 - `minSdk 24` · `targetSdk 36` · `compileSdk 36`
 - AGP 8.13.2 · Gradle 8.13 · Kotlin 2.2.20 · JDK 17
@@ -261,7 +262,7 @@ Il dorso `trad_back` non viene dai fogli: resta quello disegnato in vettoriale i
 
 **I dorsi** sono disegnati in vettoriale: nascono gia' a 448x819, quindi non subiscono nessun
 ridimensionamento. Sono gli unici due file salvati in WebP **senza perdita**: su un disegno a
-tinte piatte il lossless pesa meno del lossy (74 KB contro 143 KB per `card_back`). Un solo disegno con tre palette: blu/argento per il mazzo ZiS, grigi scuri per quello
+tinte piatte il lossless pesa meno del lossy (74 KB contro 143 KB per `card_back`). Un solo disegno con una palette per mazzo: blu/argento per il mazzo ZiS, grigi scuri per quello
 tradizionale, piu' una versione chiara di scorta. Il sorgente sta in `art/`, fuori da `app/`, e per
 cambiare colori basta modificare il dizionario `PALETTES` in cima allo script.
 
@@ -399,7 +400,7 @@ mai. `SecureRandom` pesca entropia dal sistema operativo a ogni chiamata, senza 
 quindi ogni disposizione è realmente raggiungibile. `Collections.shuffle` è un Fisher-Yates,
 cioè uniforme: nessuna posizione è favorita.
 
-**Tempi di gioco.** Tutti in `Timing.kt`, uno solo per entrambi i giochi. Con il **gioco
+**Tempi di gioco.** Tutti in `Timing.kt`, uno solo per i tre giochi contro il Banco. Con il **gioco
 automatico** attivo valgono zero: niente animazioni, niente attese, niente cartelli SCOPA, e
 la partita scorre alla massima velocità. Le mosse passano comunque dall'`Handler` una alla
 volta, quindi non si annidano sullo stack e l'app resta reattiva.
@@ -453,23 +454,101 @@ mani sono `LinearLayout` e le carte figli in fila, ed e' una scelta obbligata: q
 sovrappongono a ventaglio con scarti diversi fra coperte e scoperte, e quello scarto va
 compresso quando la colonna si allunga. Un `LinearLayout` non sa fare niente di tutto questo.
 
-Sette colonne devono stare in larghezza, e questo decide tutto: la carta e' larga quanto resta
-diviso sette. Su un telefono comune viene 140 px per 196, con la proporzione 1,4 del mazzo
-francese invece dell'1,829 delle carte italiane — che e' il motivo per cui la misura non passa
-da `CardSize`, che quella proporzione ce l'ha cablata.
+La misura della carta e' il **minimo fra due vincoli**, come fa `CardSize` per gli altri tre
+giochi. In larghezza sette colonne devono stare affiancate, e su un telefono e' questo che
+comanda: viene 140 px per 196. In altezza devono starci la fila alta piu' una colonna di
+riferimento — sei coperte e sette scoperte, in tutto 4,76 altezze di carta, un numero che viene
+dagli sfalsamenti veri e non da una stima. Il secondo vincolo serve dove il primo da' un
+risultato assurdo: in orizzontale su un dispositivo grande la larghezza disponibile e' quasi il
+doppio, e guardando solo quella le carte venivano tanto alte che alle colonne non restava
+spazio. Quando comanda l'altezza le sette colonne non riempiono piu' la larghezza e il blocco
+si centra.
 
-Le coperte si sfalsano del 16% dell'altezza, le scoperte del 30%: di una coperta basta vedere
-che c'e', di una scoperta bisogna leggere l'angolo. Se la colonna sfora, i due scarti si
+La proporzione e' 1,4 e non l'1,829 delle carte italiane: e' il motivo per cui la misura non
+passa da `CardSize`, che quella proporzione ce l'ha cablata.
+
+**La geometria si ricalcola quando il contenitore cambia misura**, con un listener sul layout
+piu' `onConfigurationChanged`. Non e' un dettaglio: le carte non stanno nel layout, le
+posiziona il codice su queste misure, e calcolarle una volta sola alla creazione voleva dire
+che dopo una rotazione o l'apertura dello schermo diviso restavano alle coordinate della
+finestra precedente.
+
+Le coperte si sfalsano del 16% dell'altezza, le scoperte del **32%**: di una coperta basta
+vedere che c'e', di una scoperta bisogna leggere l'angolo. Il 32 non e' arrotondato a occhio,
+lo fissa l'indice: l'inchiostro dell'indice arriva a 0,310 dell'altezza della carta, e con lo
+sfalso al 30% restava tagliato il gancio del J, che senza il gancio si legge come una I. Se la colonna sfora, i due scarti si
 comprimono insieme. Verificato simulando il tavolo con le carte vere: una colonna da diciannove
 carte ci sta ancora senza comprimere niente.
 
-**Gli indici delle carte sono grandi, e c'e' un solo simbolo al centro.** Non e' una scelta
-estetica. In colonna di ogni carta si vede solo la fascia in alto, e su un telefono quella
-fascia e' larga una quarantina di punti: se il valore non si legge li', non si legge da nessuna
-parte, perche' il disegno al centro resta coperto. Per lo stesso motivo la griglia tradizionale
-di pip e' stata sostituita da un simbolo unico grande: dieci quadri affiancati su una carta
-larga 140 pixel diventano una macchia da contare, e a quella misura non si contano. Il valore
-lo dice l'indice; il simbolo serve solo a far riconoscere il seme con la coda dell'occhio.
+**Le tre figure** non sono disegnate in vettoriale: vengono da tre immagini piatte in
+`art/figure/`, normalizzate a quattro soli colori con lo sfondo trasparente e ricolorate per
+seme. Cosi' la ricolorazione e' una sostituzione esatta di quattro valori RGB e non un filtro:
+niente tinte intermedie da indovinare, nessun alone. La tabella sta in `CROMIA`, in cima a
+`art/carte_francesi.py`.
+
+Cuori carminio e oro, quadri vermiglio e ambra, fiori verde scuro e argento verde, picche
+ardesia e acciaio. Il vincolo non e' estetico: le colonne si costruiscono a **colori
+alternati**, quindi rosso e nero devono restare inconfondibili, e per questo i due semi rossi
+hanno due rossi e i due neri due scuri freddi. Tratto quasi nero e bianco del viso restano
+uguali in tutti e quattro, se no il disegno perde leggibilita'.
+
+La figura riempie il pannello centrale, che con un indice solo va da 0,325 a 0,965
+dell'altezza: comanda la larghezza, perche' con la proporzione di queste tre immagini
+l'altezza avanza sempre. E' appoggiata in basso, perche' e' un mezzo busto e la testa deve
+finire subito sotto l'indice.
+
+**Un indice solo, in alto a sinistra, e grande.** Non e' una scelta estetica. In colonna di
+ogni carta si vede solo la fascia in alto, e su un telefono quella fascia e' larga una
+quarantina di punti: se il valore non si legge li', non si legge da nessuna parte, perche' il
+disegno al centro resta coperto.
+
+Il secondo indice, quello in basso a destra, e' stato tolto. Sulle carte vere c'e' perche' una
+carta in mano la puoi tenere in due versi; qui le carte stanno in tavola sempre nello stesso
+verso, e questo mazzo lo usa solo il Klondike. E non e' che si vedesse poco: non si vedeva
+**mai**. In colonna ogni carta e' coperta dal basso da quella sotto, quindi si vede la fascia
+in alto; nel ventaglio degli scarti le carte vecchie sono coperte a destra da quella in cima,
+quindi si vede ancora l'angolo in alto a sinistra; nelle fondazioni si vede solo la carta in
+cima. L'unico caso in cui era visibile e' l'ultima carta di una colonna, dove sopra c'e' gia'
+quello giusto. Costava un terzo dell'altezza: togliendolo, il pannello centrale passa dal 30%
+al 64%, e la figura raddoppia in entrambi i versi.
+
+**L'indice e' allineato sull'inchiostro, non sulla linea di base.** Si rasterizza ogni valore e
+si misura (`ink` in `art/carte_francesi.py`), poi si scegle il font-size perche' il *corpo*
+venga uguale per tutti; da li' esce anche una sola linea di base, e il simbolo del seme si
+piazza dopo la larghezza **misurata** del valore. Si misura invece di leggere le metriche del
+font perche' le metriche richiederebbero di sapere quale font e' installato sulla macchina che
+genera i file, e il `font-family` e' un elenco con dei ripieghi.
+
+Serve a risolvere due difetti che il mazzo aveva e che non erano dettagli:
+
+- **sul 10 il simbolo del seme finiva sopra allo zero.** cairosvg ignora `textLength`, quindi
+  il valore usciva alla sua larghezza naturale - 321 px invece dei 212 chiesti - e il simbolo,
+  piazzato dove `textLength` diceva, gli andava addosso;
+- **in colonna il J si leggeva come una I**, perche' il gancio scendeva fino a 0,360
+  dell'altezza mentre la fascia visibile si fermava a 0,300. Alla Q capitava lo stesso con la
+  coda.
+
+Adesso l'inchiostro di qualunque valore sta dentro 0,030-0,310, verificato su tutte e 52, e lo
+sfalso delle scoperte e' 0,32: l'indice si vede sempre intero.
+
+**La griglia tradizionale di simboli** ha ripreso il posto del simbolo unico grande. Il
+ragionamento che aveva portato al simbolo unico era che dieci quadri affiancati su una carta
+larga 140 pixel diventano una macchia da contare, e a quella misura non si contano: e' vero, ma
+risponde a una domanda che nessuno pone. Il valore lo dice l'indice, e in colonna il centro
+della carta **non si vede affatto**, tranne che sull'ultima carta di ogni colonna. Quindi la
+scelta non e' fra due leggibilita', e' fra due decorazioni, e fra le due vince quella che fa
+sembrare una carta da gioco una carta da gioco.
+
+Le posizioni sono quelle di `DISPOSIZIONI`, che era gia' scritta nel generatore e di cui prima
+si usavano **solo le chiavi**, come test per distinguere numerali e figure: le coordinate erano
+dati morti. Le Y coprono 0,16-0,84 del riquadro di allora e qui si riportano nel pannello
+mandando i simboli estremi a toccarne esattamente i bordi, non con un fattore a occhio: con un
+fattore il primo simbolo finiva quindici pixel sopra il pannello, cioe' dentro la fascia che in
+colonna resta visibile, e sotto l'indice di ogni numerale comparivano due puntine scure. La
+meta' bassa dei simboli e' capovolta come nei mazzi veri: con un indice solo e' decorazione,
+ma e' quella che la fa leggere come una carta invece che come una griglia di icone. L'Asso fa
+storia a se', un simbolo solo e grande al centro, perche' con la misura degli altri diventava
+un puntino in mezzo al vuoto.
 
 **Il ventaglio degli scarti e' ancorato alla carta IN CIMA**, non alla prima. Le piu' vecchie
 si dispongono a scalare verso sinistra. La carta in cima e' l'unica giocabile, e ancorando la
@@ -627,7 +706,9 @@ il 3 anche quando c'è un asso da catturare, che è il difetto opposto.
 In **Scopa**, a mazzo finito restano al massimo sei giocate e si cerca la migliore con un
 minimax e taglio alfa-beta (`solve` in `ScopaGame.kt`). Cosi' il Banco sa se sta regalando una
 scopa, sa che conviene fare l'ultima presa (chi la fa si porta via il tavolo) e chiude bene
-primiera e denari. L'alfa-beta non e' un lusso: senza, l'albero e' cento volte piu' grande.
+primiera e denari. Sulla **primiera** vale la regola tradizionale: chi non ha preso nemmeno una
+carta di un seme non concorre, e se non concorre nessuno dei due il punto non viene assegnato,
+come in caso di parita'. L'alfa-beta non e' un lusso: senza, l'albero e' cento volte piu' grande.
 La ricerca costa 0,04 ms in media, quindi non si sente. C'e' comunque un tetto di 60.000 nodi
 che fa ricadere sull'euristica, ma su ventimila ricerche il massimo osservato e' stato 221.
 
@@ -689,8 +770,7 @@ guardando; con il gioco automatico attivo l'app macinava partite intere in backg
 ritorno, `onResume()` chiama `recover()`, cioè la stessa funzione del watchdog: la mossa
 interrotta viene rifatta da capo guardando lo stato reale della partita.
 
-**Dialoghi.** Riepilogo, scelta della presa, avviso della pausa e richiesta della password sono
-tenuti in un campo e chiusi in `onDestroy()`. I dialoghi creati con `AlertDialog.Builder` non si
+**Dialoghi.** Riepilogo, scelta della presa e avviso della pausa sono tenuti in un campo e chiusi in `onDestroy()`. I dialoghi creati con `AlertDialog.Builder` non si
 chiudono da soli: se il sistema distruggeva l'activity a dialogo aperto restavano appesi sia la
 finestra (`WindowLeaked`) sia, nel caso della pausa, il `CountDownTimer`, che continuava a
 scrivere su un pulsante ormai morto tenendo in vita l'intera activity.
@@ -756,10 +836,11 @@ lo stato della memoria a ogni fotogramma costerebbe più di quanto farebbe rispa
 stato reale della partita. Resta fermo mentre è aperto il dialogo della pausa, altrimenti
 cambierebbe lo stato dietro alla finestra.
 
-**Pausa fra le partite.** Attiva di serie in **entrambi** i giochi: a fine partita compare
-l'avviso sul gioco responsabile e bisogna aspettare un minuto. Si disattiva solo con la
-password e la disattivazione scade dopo un'ora. Non c'è più il pulsante "Nuova partita" a
-metà incontro in Briscola, che era l'unico modo di ricominciare saltando l'attesa.
+**Pausa fra gli incontri.** Attiva di serie in **tutti e tre** i giochi contro il Banco: a fine
+incontro compare l'avviso sul gioco responsabile e bisogna aspettare un minuto. Si disattiva
+dalle impostazioni, senza password (vedi "Pausa responsabile" qui sopra), e la disattivazione
+scade dopo un'ora. Non c'è più il pulsante "Nuovo incontro" a metà incontro in Briscola, che
+era l'unico modo di ricominciare saltando l'attesa.
 
 ## Cosa manca ancora
 
