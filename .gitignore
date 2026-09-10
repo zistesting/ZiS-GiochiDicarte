@@ -1,0 +1,20 @@
+# Build
+build/
+.gradle/
+local.properties
+*.apk
+*.aab
+
+# Chiavi di firma: NON devono mai finire nel repository
+*.keystore
+*.jks
+keystore.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Python degli script in art/ e verifica/
+__pycache__/
+*.pyc 
