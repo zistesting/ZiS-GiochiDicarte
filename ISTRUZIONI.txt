@@ -1,4 +1,4 @@
-PARTE 3 di 5 - il mazzo bergamasco  (41 file)   -   versione 3.5
+PARTE 4 di 5 - il mazzo napoletano  (41 file)   -   versione 3.5
 
 >>> NON SERVE RICARICARLA. <<<
 
@@ -9,7 +9,7 @@ ma stai caricando 41 file per niente.
 
 Della 3.5 servono solo la PARTE 1 (il codice) e la PARTE 5 (le carte francesi).
 
-  41  berg_0_1 ... berg_3_10 + berg_back
+  41  nap_0_1 ... nap_3_10 + nap_back
 
 Il foglio da cui vengono e lo script che le ritaglia stanno nella Parte 1, in art/.
 
