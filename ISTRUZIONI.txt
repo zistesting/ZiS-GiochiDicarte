@@ -1,86 +1,77 @@
-PARTE 1 di 5 - tutto il progetto tranne le immagini  (79 file)   -   versione 3.6
+PARTE 5 di 5 - il mazzo francese  (57 file)   -   versione 3.6
 
-Questa parte SOSTITUISCE la Parte 1 della 3.5: contiene tutto quello che c'era in quella
-piu' le modifiche della 3.6. Se non hai ancora caricato la 3.5, salta direttamente a
-questa.
+>>> VA RICARICATA. <<<  Sono cambiate TUTTE e 52 le carte, non solo le figure: e'
+cambiato l'indice, che sta su ogni carta. Il dorso fr_back e' invariato.
 
->>> VA RICARICATA ANCHE LA PARTE 5 <<<  Tutte e 52 le carte francesi sono cambiate.
-Le Parti 2, 3 e 4 restano quelle che hai: quelle immagini non sono mai state toccate.
-L'ordine fra Parte 1 e Parte 5 non conta.
+Questa parte SOSTITUISCE la Parte 5 della 3.5.
 
->>> CI SONO FILE DA CANCELLARE A MANO. Vedi in fondo. <<<
+  53  immagini  ->  app/src/main/res/drawable-nodpi/   (sovrascrivono le precedenti)
+   1  script    ->  art/carte_francesi.py
+   3  immagini  ->  art/figure/                        (le sorgenti delle figure)
+
+Gli ultimi quattro sono gli STESSI che stanno anche nella Parte 1: caricando entrambe le
+parti si sovrascrivono con lo stesso contenuto, non e' un problema. Stanno anche qui
+perche' la Parte 5 resti autosufficiente per il mazzo francese, com'era in origine.
 
 --- caricamento ---
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
-di questa cartella (non la cartella) -> Commit changes.
+I file finiscono in due posti diversi, quindi sono due caricamenti.
 
-NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
-(su Windows: Visualizza -> Elementi nascosti).
+ 1. Vai in  app/src/main/res/drawable-nodpi/  -> Add file -> Upload files -> trascina le
+    53 immagini fr_*.webp -> Commit changes.
+ 2. Torna alla pagina principale -> Add file -> Upload files -> trascina la cartella art
+    (con dentro carte_francesi.py e figure/) -> Commit changes.
 
---- cosa e' cambiato rispetto alla 3.5 ---
+NON caricare questo ISTRUZIONI.txt.
 
-Di questa parte cambiano quattro file: KlondikeActivity.kt, art/carte_francesi.py,
-README.md e i due della versione (build.gradle e activity_main.xml). Il resto e'
-identico alla 3.5, ma caricarlo tutto non fa danni.
+Nota: il secondo commit NON fa partire la build, perche' il workflow ignora art/**. E'
+voluto - sono sorgenti grafiche, non codice - e la build parte col primo.
 
- 1. IL MAZZO FRANCESE HA UN INDICE SOLO, in alto a sinistra. Sulle carte vere ce ne sono
-    due perche' una carta in mano la puoi tenere in due versi; nel Klondike le carte
-    stanno in tavola sempre nello stesso verso, e quel mazzo lo usa solo lui. E non e'
-    che il secondo si vedesse poco: non si vedeva MAI. In colonna ogni carta e' coperta
-    dal basso da quella sotto, quindi si vede la fascia in alto; negli scarti le carte
-    vecchie sono coperte a destra da quella in cima, quindi si vede ancora l'angolo in
-    alto a sinistra; nelle fondazioni si vede solo la carta in cima. Costava un terzo
-    dell'altezza. Togliendolo il pannello centrale passa dal 30% al 64% e la figura
-    raddoppia in entrambi i versi.
+--- cosa e' cambiato ---
 
- 2. TORNA LA GRIGLIA TRADIZIONALE di simboli al posto del simbolo unico grande. Le
-    posizioni sono DISPOSIZIONI, che era gia' nel generatore e di cui prima si usavano
-    solo le chiavi: le coordinate erano dati morti.
+UN INDICE SOLO, in alto a sinistra, GRIGLIA TRADIZIONALE di simboli al centro e FIGURA
+GRANDE. Il pannello centrale passa dal 30% al 64% dell'altezza.
 
- 3. L'INDICE E' ALLINEATO SULL'INCHIOSTRO, non sulla linea di base, e questo corregge
-    due difetti che il mazzo aveva da sempre:
-      - sul 10 il simbolo del seme finiva sopra allo zero (cairosvg ignora textLength,
-        quindi il valore usciva a 321 px invece dei 212 chiesti e il simbolo, piazzato
-        dove textLength diceva, gli andava addosso);
-      - in colonna il J si leggeva come una I, perche' il gancio scendeva fino a 0,360
-        dell'altezza mentre la fascia visibile si fermava a 0,300.
+L'INDICE E' ALLINEATO SULL'INCHIOSTRO. Si rasterizza ogni valore e si misura (funzione
+ink), poi si scegle il font-size perche' il CORPO venga uguale per tutti: da li' esce
+anche una sola linea di base, e il simbolo del seme si piazza dopo la larghezza MISURATA
+del valore. Si misura invece di leggere le metriche del font perche' le metriche
+richiederebbero di sapere quale font e' installato sulla macchina che genera i file.
 
- 4. LO SFALSO DELLE CARTE SCOPERTE in colonna passa da 0,30 a 0,32 (SFALSO_SCOPERTA in
-    KlondikeActivity). Il numero lo fissa l'indice, non il gusto: l'inchiostro arriva a
-    0,310 dell'altezza, e deve starci dentro tutto. Costa niente: una colonna da sei
-    coperte e sette scoperte passa da 737 a 760 px sui 1130 disponibili di un telefono
-    da 360dp.
+Corregge due difetti che il mazzo aveva da sempre:
 
- 5. README allineato: la sezione del Klondike raccontava ancora l'indice doppio, il
-    simbolo unico e lo sfalso al 30%.
+  - sul 10 il simbolo del seme finiva sopra allo zero. cairosvg ignora textLength,
+    quindi il valore usciva alla sua larghezza naturale, 321 px invece dei 212 chiesti;
+  - in colonna il J si leggeva come una I, perche' il gancio scendeva fino a 0,360
+    dell'altezza mentre la fascia visibile si fermava a 0,300. Alla Q capitava lo stesso
+    con la coda.
 
---- i file da cancellare ---
+Adesso l'inchiostro di qualunque valore sta dentro 0,030 - 0,310, verificato su tutte e
+52, e lo sfalso delle scoperte in colonna e' 0,32 (sta nella Parte 1): l'indice si vede
+sempre intero. Il corpo viene 154 px su 700, cioe' il 9% piu' piccolo di prima, ma
+UGUALE per tutti i valori, che e' quello che l'occhio legge come "della stessa
+grandezza".
 
-Un caricamento non cancella niente, quindi questi vanno tolti a mano. Se nel repository
-c'e' la cartella  art/__pycache__  , cancella TUTTI i file che contiene: la cartella
-spariscce da sola quando resta vuota. Sono uno o due:
+LA GRIGLIA usa le posizioni di DISPOSIZIONI, che era gia' scritta nel generatore e di
+cui prima si usavano solo le chiavi. Le Y coprono 0,16-0,84 del riquadro di allora e qui
+si riportano nel pannello mandando i simboli estremi a toccarne esattamente i bordi, non
+con un fattore a occhio: con un fattore il primo simbolo finiva quindici pixel sopra il
+pannello, cioe' dentro la fascia che in colonna resta visibile, e sotto l'indice di ogni
+numerale comparivano due puntine scure. La meta' bassa dei simboli e' capovolta come nei
+mazzi veri. L'Asso fa storia a se': un simbolo solo e grande al centro, perche' con la
+misura degli altri diventava un puntino in mezzo al vuoto.
 
-    art/__pycache__/card_back.cpython-312.pyc
-    art/__pycache__/carte_francesi.cpython-312.pyc   <- solo se hai caricato la 3.5
+LE FIGURE sono le stesse della 3.5 - le tre immagini in art/figure/ ricolorate per seme
+secondo CROMIA - ma adesso riempiono il pannello grande: comanda la larghezza, e sono
+appoggiate in basso perche' sono mezzi busti e la testa deve finire subito sotto
+l'indice.
 
-Il secondo era finito per errore nella Parte 1 della 3.5, rigenerato dallo script che
-produce le carte. Questa Parte 1 e' pulita e il .gitignore fa in modo che non ci
-tornino, ma quelli gia' nel repository restano finche' non li togli.
-
-Per cancellare: apri il file nel repository e clicca il cestino in alto a destra ->
-Commit changes.
+I 52 file pesano 867 KB in tutto (erano 824 con il simbolo unico).
 
 --- COSA PROVARE ---
 
- 1. In colonna, guarda gli indici: il J deve avere il gancio (prima si leggeva come una
-    I) e sul 10 il simbolo del seme non deve toccare lo zero. Sono i due difetti che
-    questa versione corregge, e in colonna si vedono tutti e due.
- 2. Che sotto l'indice, sulle carte coperte da quella sotto, non si veda nessuna punta
-    di simbolo: la griglia deve cominciare sotto la fascia visibile.
+ 1. In colonna: il J deve avere il gancio, e sul 10 il seme non deve toccare lo zero.
+ 2. Che sotto l'indice, sulle carte coperte, non si veda nessuna punta di simbolo.
  3. Che nessuna figura tocchi l'indice, in nessuna delle dodici.
- 4. Klondike su telefono in verticale: le carte devono restare 140x196 px su uno schermo
-    da 360dp. Lo sfalso e' cambiato, la misura della carta no.
- 5. Tutte le prove della 3.5 valgono ancora: rotazione su tablet e schermo diviso,
-    Rigioca dopo una mossa sola, la vittoria ripresa dal background, TalkBack sulle
-    figure, la pausa del Tresette.
+ 4. Sfoglia il mazzo: gli indici devono sembrare tutti della stessa grandezza. Il font
+    e' diverso da valore a valore proprio per ottenere questo.
