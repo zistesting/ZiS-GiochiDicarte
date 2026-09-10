@@ -1,95 +1,44 @@
-PARTE 1 di 5 - tutto il progetto tranne le immagini  (85 file)   -   versione 3.8
+PARTE 3 di 5 - il mazzo bergamasco  (41 file)   -   versione 3.8
 
-SOSTITUISCE la Parte 1 della 3.7. Se non l'hai ancora caricata, salta a questa.
+>>> QUESTE CINQUE PARTI SONO IL PROGETTO COMPLETO ALLA VERSIONE 3.8. <<<
+Sostituiscono in blocco tutti gli zip precedenti: 3.4, 3.5, 3.6, 3.7 e i pacchetti
+parziali. Quelli si possono buttare.
 
->>> LE IMMAGINI: solo QUATTRO carte sono cambiate, e stanno nello zip a parte
-    "assi-di-denari" (4 file). Le Parti 2, 3, 4 e 5 in versione integrale NON
-    servono: cambierebbero una o due immagini su ottantanove, quarantuno,
-    quarantuno e cinquantatre. <<<
+Caricandole tutte e cinque il repository e' allineato alla 3.8, qualunque cosa ci sia
+adesso. Sono 309 file in cinque commit, nessuno oltre il limite di 100.
 
->>> C'E' ANCHE UN FILE DA CANCELLARE A MANO. Vedi in fondo. <<<
+--- cosa c'e' dentro ---
 
---- caricamento ---
+  41  berg_0_1 ... berg_3_10 + berg_back
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
-di questa cartella (non la cartella) -> Commit changes.
-
-NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
-(su Windows: Visualizza -> Elementi nascosti).
+Il foglio da cui vengono e lo script che le ritaglia stanno nella PARTE 1, in art/.
 
 --- cosa e' cambiato rispetto alla 3.7 ---
 
- 1. IL PULSANTE "RICOMINCIA", fra Annulla e Rigioca. Rimette la STESSA smazzata
-    dall'inizio.
-    Non conta niente in statistica, ed e' la differenza con Rigioca: quello cambia
-    smazzata, cioe' rinuncia, e conta come partita persa; questo e' un secondo tentativo
-    sulle stesse carte. Le due domande di conferma lo dicono, perche' i due pulsanti sono
-    uno accanto all'altro.
-    Si spegne a smazzata appena distribuita: non c'e' niente da rimettere a posto, e un
-    pulsante che si puo' premere senza che accada nulla e' peggio di uno spento.
+UNA carta su quarantuno: berg_0_1.webp, l'asso di denari.
 
-    Il mazzo come e' stato distribuito viene salvato con la partita: se no, riprendendo una
-    partita da un'altra sessione, Ricomincia non avrebbe piu' niente da ricominciare. NON
-    sta dentro save() del motore, perche' quella la usa anche la pila dell'annulla, e
-    cinquantadue carte in piu' per ognuna delle cento fotografie sarebbero quindici
-    chilobyte di storia per un dato che non cambia mai: lo scrive l'activity.
+In questo tipo di mazzo l'asso di denari e' la carta su cui i fabbricanti mettono il
+proprio marchio, e nella copia usata il marchio era stato tolto: restava l'anello
+concentrico senza niente al centro, l'unica carta del mazzo che non diceva nulla. Adesso
+ci sta il marchio ZiS, con la scritta in fondo.
 
-    ATTENZIONE, effetto collaterale voluto ma da sapere: ricominciando si azzera anche il
-    contatore della vittoria, quindi una smazzata gia' vinta, ricominciata e rivinta conta
-    due vittorie. E' l'interpretazione coerente - una partita giocata, una partita vinta -
-    ma vuol dire che le statistiche si possono gonfiare. Se preferisci il contrario e' una
-    riga.
+Le altre quaranta sono identiche a quelle che hai. Se preferisci, puoi caricare solo
+berg_0_1.webp invece di tutti e quarantuno.
 
- 2. SALVATAGGI: IL FORMATO E' CAMBIATO, da versione 2 a 3, perche' il salvataggio del
-    Klondike ha una sezione in piu' (il mazzo distribuito). I salvataggi della 2 hanno una
-    sezione in meno e verrebbero riletti sfalsati, quindi vengono buttati: la prima volta
-    che apri la 3.8 PERDI le partite in corso di tutti e quattro i giochi. Le statistiche
-    no, quelle stanno in un altro file.
+Nota: nella 3.7 quel marchio lo metteva uno script, art/marchio_asso_berg.py. Adesso
+l'asso arriva gia' fatto da art/assi/ e quello script e' da cancellare dal repository:
+le istruzioni della Parte 1 spiegano come.
 
- 3. TRE PULSANTI IN FONDO al posto di due. Su uno schermo da 360dp restano circa 106dp per
-    pulsante e il cartiglio se ne prende 24 di padding interno: "Ricomincia" a 15sp non ci
-    starebbe. Da qui autoSizeTextType, che rimpicciolisce il testo fino a 11sp quanto basta
-    a starci invece di mandarlo a capo o farlo tagliare. Copre anche il caso che non posso
-    provare da qui, cioe' il carattere di sistema ingrandito.
+--- caricamento ---
 
- 4. I QUATTRO ASSI DI DENARI, con il marchio e la scritta ZiS. Le carte finite stanno nello
-    zip "assi-di-denari"; qui c'e' quello che le produce:
-      art/assi/               le quattro immagini sorgente, gia' a 448x819
-      art/assi_denari.py      le porta nel formato del mazzo
-    Uno script e non un ritaglio a mano per due motivi: le carte si ritagliano dai fogli
-    con estrai_foglio_bergamasche.py e compagnia, e il giorno che uno di quei fogli si
-    rigenera l'asso tornerebbe quello di serie senza che nessuno se ne accorga; e i PNG
-    hanno gli angoli trasparenti, che appiattiti sul nero invece che sul bianco farebbero
-    comparire quattro spicchi scuri agli angoli della carta.
+Vai in  app/src/main/res/drawable-nodpi/  nel repository -> Add file -> Upload files ->
+trascina dentro tutti i file .webp di questa cartella (non la cartella: il suo
+contenuto) -> Commit changes.
 
- 5. art/fogli_mazzo.py RIMESSO IN SESTO. Aveva percorsi di una vecchia sessione e non
-    girava piu'. Ora legge da drawable-nodpi, copre tutti e cinque i mazzi (francese
-    compreso) e la misura della carta la dettano le carte stesse, non una costante.
+NON caricare questo ISTRUZIONI.txt.
 
- 6. art/marchio_asso_berg.py TOLTO: e' superato. Metteva il marchio nel medaglione
-    dell'asso bergamasco, e adesso l'asso arriva gia' fatto da art/assi/.
+--- avvertenza di sempre ---
 
- 7. README allineato, e versione 3.8.
-
---- il file da cancellare ---
-
-    art/marchio_asso_berg.py
-
-Un caricamento non cancella niente: aprilo nel repository e clicca il cestino in alto a
-destra -> Commit changes. Se resta li' non fa danni - non lo chiama nessuno - ma se un
-giorno lo lanciassi ti timbrerebbe un secondo marchio sopra a quello che c'e' gia'.
-
-Controlla anche che non sia rimasta la cartella art/__pycache__ : se c'e', svuotala.
-
---- COSA PROVARE ---
-
- 1. Klondike, Ricomincia: fai qualche mossa, tocca Ricomincia e conferma. Le carte devono
-    tornare ESATTAMENTE come erano, stesse colonne e stesso tallone, non una smazzata
-    nuova. E' la cosa che conta piu' di tutte in questa versione.
- 2. Ricomincia a smazzata appena distribuita: il pulsante deve essere spento.
- 3. Ricomincia, poi esci con Menu e rientra, poi Ricomincia di nuovo: deve funzionare
-    ancora, perche' il mazzo distribuito e' salvato con la partita.
- 4. I tre pulsanti in fondo: "Ricomincia" deve leggersi tutto e su una riga. Provalo anche
-    col carattere di sistema ingrandito nelle impostazioni di Android.
- 5. Le statistiche: dopo un Ricomincia il contatore delle partite NON deve muoversi; dopo
-    un Rigioca sopra le cinque mosse deve segnare una persa.
+Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi, altrimenti
+Android le ingrandisce alla densita' dello schermo e l'app spreca memoria. Vale anche per
+i loghi.
