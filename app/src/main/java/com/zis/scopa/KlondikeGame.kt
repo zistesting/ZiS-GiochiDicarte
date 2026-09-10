@@ -99,7 +99,7 @@ class KlondikeGame(val drawCount: Int = 1) {
      * Il mazzo come e' stato distribuito, nell'ordine in cui e' uscito dal mescolamento.
      *
      * Serve a [ricomincia], e va salvato con la partita: senza, riprendendo una partita da
-     * un'altra sessione il pulsante Ricomincia non avrebbe piu' niente da ricominciare.
+     * un'altra sessione il pulsante "Rigioca" non avrebbe piu' niente da rimettere a posto.
      *
      * NON sta dentro save(): quella la usa anche snapshot() per la pila dell'annulla, e
      * cinquantadue carte in piu' per ognuna delle cento fotografie sarebbero quindici

@@ -95,6 +95,11 @@ class KlondikeActivity : AppCompatActivity() {
             val prima = HashMap(posizioni)
             if (game.undo()) render(prima)
         }
+        // LE ETICHETTE NON SONO I NOMI DEL CODICE, ed e' voluto: i nomi dicono cosa fanno i
+        // pulsanti, le etichette come si chiamano per chi gioca. Cercando "Rigioca" nel
+        // codice non si trova niente, quindi la corrispondenza sta qui:
+        //   pulsante "Rigioca" -> btnRestart -> chiediRicomincia() -> la STESSA smazzata
+        //   pulsante "Nuovo"   -> btnDeal    -> chiediNuovaPartita() -> una smazzata nuova
         b.btnRestart.setOnClickListener { chiediRicomincia() }
         b.btnDeal.setOnClickListener { chiediNuovaPartita() }
         b.btnFinish.setOnClickListener { completaDaSolo() }
@@ -472,7 +477,7 @@ class KlondikeActivity : AppCompatActivity() {
         }
         b.btnUndo.isEnabled = game.canUndo
         b.btnUndo.alpha = if (game.canUndo) 1f else 0.4f
-        // Ricomincia si spegne a smazzata appena distribuita: non c'e' niente da rimettere
+        // Rigioca si spegne a smazzata appena distribuita: non c'e' niente da rimettere
         // a posto, e un pulsante che si puo' premere senza che accada nulla e' peggio di uno
         // spento.
         val puoRicominciare = started && game.moves > 0
@@ -510,8 +515,8 @@ class KlondikeActivity : AppCompatActivity() {
     }
 
     private val passoAutomatico = Runnable {
-        // Non gioca dietro a una finestra aperta: la vittoria e la conferma di Rigioca
-        // aspettano una risposta, e vedere le carte muoversi da sole sotto un dialogo
+        // Non gioca dietro a una finestra aperta: la vittoria e le due conferme aspettano
+        // una risposta, e vedere le carte muoversi da sole sotto un dialogo
         // sarebbe solo confondente.
         if (autoPlay && started && !game.finished && !destroyed && openDialog?.isShowing != true) {
             val m = game.mossaAutomatica()
@@ -564,7 +569,7 @@ class KlondikeActivity : AppCompatActivity() {
         // affidabile. Distribuire di nuovo, invece, e' una rinuncia dichiarata.
         // La soglia e' la STESSA della conferma qui sotto, e devono restare la stessa cosa.
         // Con "almeno una mossa" bastava voltare una carta del tallone - che conta come
-        // mossa - e toccare Rigioca: la partita veniva ridistribuita senza chiedere niente,
+        // mossa - e toccare Nuovo: la partita veniva ridistribuita senza chiedere niente,
         // perche' sotto le cinque mosse la conferma non compare, e intanto in statistica
         // arrivava una sconfitta che nessuno aveva dichiarato.
         if (started && !game.finished && game.moves >= MOSSE_PER_ABBANDONO) {
@@ -585,7 +590,7 @@ class KlondikeActivity : AppCompatActivity() {
      * Ridistribuire chiede SEMPRE conferma, tranne a partita finita.
      *
      * Prima la chiedeva solo sopra le cinque mosse, e sotto ridistribuiva di colpo: ma un
-     * tocco per sbaglio su Rigioca butta via il lavoro comunque, e l'unico modo di
+     * tocco per sbaglio su Nuovo butta via il lavoro comunque, e l'unico modo di
      * accorgersene e' vedere le carte cambiare. A partita finita l'eccezione resta: non c'e'
      * niente da abbandonare, e far confermare dopo aver vinto e' attrito e niente altro.
      *
@@ -606,11 +611,12 @@ class KlondikeActivity : AppCompatActivity() {
     }
 
     /**
-     * Ricomincia la stessa smazzata, e chiede conferma perche' butta via le mosse fatte.
+     * Rimette la stessa smazzata, e chiede conferma perche' butta via le mosse fatte.
      *
-     * Non conta niente in statistica, ed e' la differenza con Rigioca: quello cambia
-     * smazzata, cioe' rinuncia, e conta come partita persa; questo e' un secondo tentativo
-     * sulle stesse carte. La domanda lo dice, perche' i due pulsanti sono accanto.
+     * E' il pulsante che a schermo dice "Rigioca". Non conta niente in statistica, ed e' la
+     * differenza con "Nuovo": quello cambia smazzata, cioe' rinuncia, e conta come partita
+     * persa; questo e' un secondo tentativo sulle stesse carte. La domanda lo dice, perche'
+     * i due pulsanti sono accanto.
      *
      * Sopra ci sta anche l'unico effetto collaterale: azzerando vittoriaContata, una
      * smazzata gia' vinta e poi ricominciata, se rivinta, conta una seconda vittoria. E'
@@ -665,7 +671,7 @@ class KlondikeActivity : AppCompatActivity() {
         // prima il numero di carte da pescare: serve per costruire il gioco, quindi va letto
         // prima dello stato
         w.int(game.drawCount)
-        // il mazzo come e' stato distribuito: serve a Ricomincia dopo una ripresa
+        // il mazzo come e' stato distribuito: serve a Rigioca dopo una ripresa
         w.cards(game.mazzoIniziale)
         game.save(w)
         SavedGame.write(this, SavedGame.KLONDIKE, w)

@@ -132,22 +132,38 @@ Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 55
     <!-- Klondike -->
     <string name="play_klondike">Klondike</string>
     <string name="kl_undo">Annulla</string>
-    <!-- Ricomincia rimette la STESSA smazzata dall'inizio, e non conta niente in
-         statistica: e' un secondo tentativo, non una rinuncia. Rigioca, che invece
-         cambia smazzata, conta come partita persa. La differenza sta nelle due
-         domande, perche' i due pulsanti sono uno accanto all'altro. -->
-    <string name="kl_restart">Ricomincia</string>
-    <string name="kl_restart_ask">Vuoi rimettere le carte come all\' inizio di questa smazzata? Le mosse fatte si perdono, ma la partita non viene contata come persa.</string>
-    <string name="kl_deal">Rigioca</string>
-    <!-- Le due domande di RIGIOCA dicono la stessa cosa in due situazioni diverse: la
+    <!--
+      LE ETICHETTE E I NOMI DELLE RISORSE NON COINCIDONO, ed e' voluto.
+
+      kl_restart dice "Rigioca" e kl_deal dice "Nuovo". I nomi delle risorse restano legati
+      a quello che i pulsanti FANNO - restart rimette la stessa smazzata, deal ne distribuisce
+      una nuova - perche' rinominarli vorrebbe dire toccare il layout e tre file Kotlin per
+      cambiare due parole a schermo. Chi cerca partendo dall'etichetta trova questo commento:
+
+          pulsante "Rigioca"  ->  kl_restart  ->  btnRestart  ->  la stessa smazzata
+          pulsante "Nuovo"    ->  kl_deal     ->  btnDeal     ->  una smazzata nuova
+
+      La differenza fra i due, quella che conta per chi gioca: "Rigioca" e' un secondo
+      tentativo sulle stesse carte e non conta niente in statistica, "Nuovo" e' una rinuncia
+      e conta come partita persa. Lo dicono le due domande di conferma, perche' i pulsanti
+      sono uno accanto all'altro.
+
+      "Rigioca" e' anche la stessa parola che i tre giochi contro il Banco usano per
+      "RIGIOCA l'ultima mano" (replay_last_deal), e con lo stesso senso: le stesse carte
+      un'altra volta.
+    -->
+    <string name="kl_restart">Rigioca</string>
+    <string name="kl_restart_ask">Vuoi rimettere le carte come all\'inizio di questa smazzata? Le mosse fatte si perdono, ma la partita non viene contata come persa.</string>
+    <string name="kl_deal">Nuovo</string>
+    <!-- Le due domande di NUOVO dicono la stessa cosa in due situazioni diverse: la
          prima quando la partita conta come persa, la seconda quando non conta. Chi risponde
          deve sapere quale delle due sta accettando. -->
     <string name="kl_deal_ask">Vuoi abbandonare questa partita e distribuire di nuovo? Verra\' contata come partita persa.</string>
     <string name="kl_deal_ask_free">Vuoi distribuire di nuovo? Hai fatto poche mosse, quindi questa partita non verra\' contata.</string>
     <string name="kl_finish">Completa</string>
-    <string name="kl_status">Mosse: %1$d • mancano %2$d carte</string>
+    <string name="kl_status">Mosse: %1$d   Carte: %2$d</string>
     <!-- Compare quando non c'e' piu' nessuna mossa legale: la smazzata e' chiusa. -->
-    <string name="kl_no_moves">Non ci sono piu\' mosse: tocca RIGIOCA</string>
+    <string name="kl_no_moves">Non ci sono piu\' mosse: RIGIOCA o NUOVO</string>
     <!-- Il gioco automatico si ferma da solo quando non trova piu' mosse che facciano
          progresso, anche se qualche mossa legale ci sarebbe ancora. -->
     <string name="kl_auto_stop">Gioco automatico fermo: non trova altre mosse utili</string>

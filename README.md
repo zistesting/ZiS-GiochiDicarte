@@ -590,19 +590,27 @@ posiziona il codice su queste misure, e calcolarle una volta sola alla creazione
 che dopo una rotazione o l'apertura dello schermo diviso restavano alle coordinate della
 finestra precedente.
 
-**Ricomincia** rimette la stessa smazzata dall'inizio, e sta fra Annulla e Rigioca. Non è una
+**Rigioca** rimette la stessa smazzata dall'inizio, e sta fra Annulla e Nuovo. Non è una
 comodità: una smazzata su undici è impossibile, il giocatore non vede le ventuno carte coperte
 e l'annulla si ferma a cento mosse, quindi una scelta irreversibile presa presto butta via la
-partita senza rimedio. Con Ricomincia si riprova.
+partita senza rimedio. Con Rigioca si riprova.
 
-Non conta niente in statistica, ed è la differenza con Rigioca: quello cambia smazzata, cioè
+Non conta niente in statistica, ed è la differenza con **Nuovo**: quello cambia smazzata, cioè
 rinuncia, e conta come partita persa. Il mazzo come è stato distribuito viene salvato con la
 partita, se no dopo una ripresa non ci sarebbe più niente da ricominciare; non sta dentro
 `save()` del motore, perché quella la usa anche la pila dell'annulla e cinquantadue carte per
 ognuna delle cento fotografie sarebbero quindici chilobyte per un dato che non cambia mai.
 
+I nomi nel codice non seguono le etichette, ed è voluto: `btnRestart` è il pulsante che dice
+*Rigioca* e rimette la stessa smazzata, `btnDeal` è quello che dice *Nuovo* e ne distribuisce
+una nuova. I nomi dicono cosa fanno, le etichette come si chiamano per chi gioca; la
+corrispondenza è scritta accanto al punto dove i due pulsanti si collegano, perché cercando
+"Rigioca" nel codice non si troverebbe niente. *Rigioca* è del resto la stessa parola che i tre
+giochi contro il Banco usano per «RIGIOCA l'ultima mano», e con lo stesso senso: le stesse
+carte un'altra volta.
+
 Tre pulsanti dove prima ce n'erano due lasciano circa 106dp per pulsante su uno schermo da
-360dp, e il cartiglio se ne prende 24 di padding interno: "Ricomincia" a 15sp non ci starebbe.
+360dp, e il cartiglio se ne prende 24 di padding interno: le etichette lunghe non ci starebbero.
 Da qui `autoSizeTextType`, che rimpicciolisce il testo fino a 11sp quanto basta a starci
 invece di mandarlo a capo. Copre anche il carattere di sistema ingrandito.
 
@@ -617,7 +625,7 @@ Il rischio di un giocatore automatico non e' giocare male, e' girare in tondo: p
 colonne si muove solo quando la mossa scopre una carta coperta o svuota una colonna, cioe' solo
 quando non si puo' disfare, e non riporta mai giu' una carta dalla fondazione.
 
-**Rigioca chiede sempre conferma**, tranne a partita finita, e la domanda dice se la partita in
+**Nuovo chiede sempre conferma**, tranne a partita finita, e la domanda dice se la partita in
 corso contera' come persa: sopra le cinque mosse si', sotto no. Una conferma che non informa
 chiede solo di ripetere il tocco.
 

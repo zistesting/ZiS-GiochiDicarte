@@ -1,86 +1,78 @@
-ZiS-GiochiDiCarte-app1  -  il programma  (95 file)  -  versione 4.0
+ZiS-GiochiDiCarte-app1  -  il programma  (95 file)  -  versione 4.1
 
-SOSTITUISCE ZiS-GiochiDiCarte-app1 della 3.9.
+SOSTITUISCE ZiS-GiochiDiCarte-app1 della 4.0.
 
 >>> GLI ALTRI TRE ZIP RESTANO QUELLI DELLA 3.9. <<<
-Nessuna carta e' cambiata: piacentine-zis, bergamasche-napoletane e francesi vanno bene
-come sono. Tieni quegli zip.
+Nessuna immagine e' cambiata: piacentine-zis, bergamasche-napoletane e francesi vanno bene
+come sono.
 
 --- caricamento ---
 
-Pagina principale del repository -> Add file -> Upload files -> trascina il CONTENUTO
-di questa cartella (non la cartella) -> Commit changes.
+Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
+ZiS-GiochiDiCarte-app1 e trascina QUELLO CHE C'E' DENTRO (app, art, verifica, .github,
+.gitignore, README.md, build.gradle, gradle, gradle.properties, gradlew, gradlew.bat,
+settings.gradle) -> Commit changes.
+
+E in fondo alla pagina, prima di confermare, controlla che sia selezionato
+"Commit directly to the main branch" e NON "Create a new branch...": e' quello che l'altra
+volta ha fatto finire i file su un ramo, lasciando main con la versione vecchia.
 
 NON caricare questo ISTRUZIONI.txt. Attenzione a .github e .gitignore, che sono nascosti
 (su Windows: Visualizza -> Elementi nascosti).
 
---- cosa e' cambiato rispetto alla 3.9 ---
+--- cosa e' cambiato rispetto alla 4.0 ---
 
- 1. VIA LA RIGA DELLA PARTITA nei tre giochi contro il Banco. "Incontro: Tu x - x Banco"
-    non c'e' piu': la TextView e' stata tolta dai tre layout e le due righe di codice che
-    la scrivevano sono spartite. Il dato non si perde, il riepilogo di fine partita lo
-    mostra alla voce Incontro.
+Sette file, tutti nel Klondike o di contorno. Nessuna immagine, nessun layout.
 
- 2. VIA "TOCCA A TE: GIOCA UNA CARTA". La riga di stato adesso resta vuota quando tocca a
-    te.
+ 1. LA BARRA IN ALTO adesso dice  "Mosse: 42   Carte: 30"  invece di
+    "Mosse: 42 - mancano 30 carte". Il secondo numero e' lo stesso di prima: le carte che
+    non sono ancora in fondazione, da 52 a zero.
 
-    LA RIGA PERO' NON L'HO TOLTA, e vale la pena spiegare perche'. Su quella riga passano
-    tre messaggi, non uno: "Tocca a te", "Gioca il Banco..." e - in Briscola e Tresette -
-    chi ha preso la mano, "Prendi tu" o "Prende il Banco". Gli ultimi due non sono ovvi: il
-    primo spiega perche' i tocchi non rispondono mentre il Banco muove, il secondo dice chi
-    ha vinto il giro prima che le carte vengano raccolte. Togliere la riga li avrebbe
-    portati via insieme al testo inutile.
+ 2. IL PULSANTE "RICOMINCIA" ADESSO DICE "RIGIOCA".
+ 3. IL PULSANTE "RIGIOCA" ADESSO DICE "NUOVO".
 
-    E la riga resta ALTA una riga anche da vuota (android:lines="1" nei tre layout). Se
-    collassasse, il tavolo salterebbe su e giu' di una ventina di punti a ogni cambio di
-    turno, mentre le carte si muovono: peggio del testo che si e' tolto.
+    Le due cose non si sono scambiate di posto ne' di funzione: sono nello stesso ordine di
+    prima - Annulla, Rigioca, Nuovo - e fanno quello che facevano. Cambiano solo i nomi.
+      "Rigioca" rimette la STESSA smazzata. Non conta niente in statistica.
+      "Nuovo"   distribuisce una smazzata NUOVA. Sopra le cinque mosse conta una persa.
 
-    Se la vuoi via del tutto e' una TextView per layout e tre righe di Kotlin, ma perdi
-    "Prendi tu" e "Prende il Banco".
+    Nota: "Rigioca" e' la stessa parola che Scopa, Briscola e Tresette usano nel dialogo di
+    fine mano, "RIGIOCA l'ultima mano", e con lo stesso senso - le stesse carte un'altra
+    volta. Quindi il Klondike adesso e' allineato al resto dell'app, non in contrasto.
 
- 3. IL LOGO NUOVO. Sostituisce app_logo, che serve in due posti:
-      - il logo in cima alla schermata iniziale
-      - il foreground dell'icona adattiva (Android 8+), rientrato di 18dp su 108
-    e le cinque icone classiche del lanciatore, mipmap-mdpi ... mipmap-xxxhdpi, che servono
-    ancora perche' minSdk e' 24 e Android 7 non conosce le icone adattive. Erano il punto
-    facile da dimenticare: cambiando solo app_logo, sui telefoni vecchi sarebbe rimasta
-    l'icona precedente.
+ 4. IL MESSAGGIO DI SMAZZATA CHIUSA e' cambiato per forza. Diceva "Non ci sono piu' mosse:
+    tocca RIGIOCA", e RIGIOCA voleva dire "distribuisci di nuovo": con i nomi nuovi quella
+    frase avrebbe mandato l'utente sul pulsante sbagliato. Adesso dice "Non ci sono piu'
+    mosse: RIGIOCA o NUOVO", che sono le due cose sensate da fare - riprovare le stesse
+    carte, o cambiarle.
 
-    Le fa tutte e sei art/icona_app.py, nuovo, dal sorgente art/logo_app.png. Un file e sei
-    destinazioni: farlo a mano vuol dire ridimensionare sei volte e ricordarsi le cinque
-    densita'.
+ 5. Corretto un errore di battitura mio nella conferma di Rigioca: c'era "all' inizio" con
+    uno spazio dopo l'apostrofo.
 
-    L'alfa si conserva: il logo e' un quadrato con gli angoli arrotondati e trasparenti, e
-    appiattirlo su un fondo farebbe comparire quattro spicchi negli angoli. Nell'icona
-    adattiva il fondo lo mette il lanciatore.
+ 6. I COMMENTI DEL CODICE allineati, e non e' pignoleria. I nomi nel codice restano legati
+    a quello che i pulsanti FANNO (btnRestart, btnDeal, chiediRicomincia), non alle
+    etichette, perche' rinominarli vorrebbe dire toccare il layout e tre file per cambiare
+    due parole a schermo. Ma cosi' chi cerca "Rigioca" nel codice non trova niente: la
+    corrispondenza e' scritta accanto al punto dove i pulsanti si collegano.
 
- 4. Due stringhe in meno (match_line e your_turn), README allineato, versione 4.0.
+ 7. README allineato, e versione 4.1.
+
+--- un effetto collaterale gradito ---
+
+Le etichette nuove sono piu' corte: "Rigioca" invece di "Ricomincia", "Nuovo" invece di
+"Rigioca". I tre pulsanti hanno autoSizeTextType, cioe' rimpiccioliscono il testo quanto
+basta a starci, e con etichette piu' corte adesso dovrebbero restare tutti alla misura
+piena di 15sp invece di stringersi. Se prima "Ricomincia" ti sembrava piccolo, ora non
+dovrebbe piu' esserlo.
 
 --- COSA PROVARE ---
 
- 1. L'ICONA sul telefono: che sia quella nuova. Se resta la vecchia, di solito e' la cache
-    del lanciatore: disinstalla e reinstalla, o riavvia.
- 2. Il logo in cima alla schermata iniziale.
- 3. SCOPA, BRISCOLA, TRESETTE: sopra il tavolo devono restare la situazione della mano del
-    Banco e una riga sola di stato, vuota quando tocchi tu.
- 4. Che il tavolo NON salti quando il turno passa da te al Banco e viceversa: e' la cosa
-    che android:lines="1" deve impedire, e si vede solo giocando.
- 5. BRISCOLA e TRESETTE: a fine giro deve comparire "Prendi tu" o "Prende il Banco". Se non
-    compaiono piu', ho tolto troppo.
- 6. Il riepilogo di fine partita: la voce Incontro deve esserci, perche' e' l'unico posto
-    dove ora si legge il punteggio dell'incontro.
-
---- quello che vale ancora dalla 3.9 ---
-
- - Se non l'hai ancora fatto: cancella a mano art/marchio_asso_berg.py e la cartella
-   art/__pycache__ , che un caricamento non puo' togliere.
- - Il tetto delle librerie: core-ktx si ferma alla 1.17.0 con AGP 8.13.2 e compileSdk 36.
-   E' scritto in app/build.gradle e in .github/dependabot.yml.
- - R8 e' acceso. Se qualcosa si rompesse solo nel release: minifyEnabled false, ricompila,
-   e sai se e' R8 o le librerie.
-
---- il margine sui 100 file ---
-
-95 su 100: ne restano 5, due meno della 3.9 (due file nuovi in art/). Se si sforasse, la
-divisione naturale e' art/ e verifica/ in un app2: non servono alla build, il workflow
-ignora art/** di proposito, e il programma vero scende sotto i settanta file.
+ 1. La barra in alto: "Mosse: N   Carte: N", e il secondo numero deve scendere quando le
+    carte vanno in fondazione, fino a zero quando vinci.
+ 2. I tre pulsanti: Annulla, Rigioca, Nuovo - in quest'ordine, e tutti leggibili su una
+    riga. Provalo anche col carattere di sistema ingrandito.
+ 3. Rigioca: qualche mossa, poi Rigioca e conferma. Le carte devono tornare ESATTAMENTE
+    come erano. E il contatore delle partite nelle statistiche NON deve muoversi.
+ 4. Nuovo: qualche mossa (piu' di cinque), poi Nuovo e conferma. Deve arrivare una smazzata
+    diversa, e in statistica una partita persa.
+ 5. Bloccati apposta pescando a tre: il messaggio in alto deve dire "RIGIOCA o NUOVO".
