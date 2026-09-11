@@ -280,7 +280,15 @@ abstract class BotGameActivity : AppCompatActivity() {
      * La guardia sta qui una volta sola. Quella del blocco differito chiama [recover], che e'
      * la cosa importante: se nel frattempo la situazione e' cambiata, `busy` va rimesso a
      * posto da qualcuno, e se non lo fa questa riga lo fa il watchdog quattro secondi dopo.
-     * E' esattamente la differenza che c'era fra le tre schermate.
+     * E' esattamente la differenza che c'era fra le tre schermate: il Tresette qui tornava
+     * indietro senza chiamarlo.
+     *
+     * `ending` e' ripetuto dentro al blocco differito, e non per simmetria: se la mano si
+     * chiude o si apre un dialogo fra il post e la sua esecuzione, qui non si deve giocare
+     * nessuna carta. [recover] in quel caso non fa niente di proposito - a finestra aperta il
+     * gioco sta fermo - e `busy` resta acceso, che e' giusto: a rimetterlo a posto sara' chi
+     * chiude la finestra. Delle tre schermate era il Tresette a fare cosi'; le altre due
+     * avrebbero giocato la carta, e in quel caso giocarla e' la cosa sbagliata.
      */
     protected fun maybeAutoPlay() {
         if (!autoPlay || busy || destroyed || ending) return
@@ -288,7 +296,7 @@ abstract class BotGameActivity : AppCompatActivity() {
         busy = true
         armWatchdog()
         post(t.think) {
-            if (gameFinished || isBotTurn || youHandEmpty) { recover(); return@post }
+            if (ending || gameFinished || isBotTurn || youHandEmpty) { recover(); return@post }
             autoPlayMove()
         }
     }
