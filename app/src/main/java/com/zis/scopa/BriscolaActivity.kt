@@ -1,135 +1,55 @@
 package com.zis.scopa
 
-import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.doOnLayout
 import com.zis.scopa.databinding.ActivityBriscolaBinding
 import com.zis.scopa.databinding.DialogResultBinding
 
-class BriscolaActivity : AppCompatActivity() {
+/**
+ * Briscola in due col tallone.
+ *
+ * Il ciclo di vita, il salvataggio, il watchdog, la fine mano e la cornice del riepilogo
+ * stanno in [BotGameActivity], insieme a Scopa e Tresette. Qui resta solo quello che e' di
+ * questo gioco:
+ *
+ *  - la briscola coricata sotto il mazzo, che si vede finche' nel tallone ci sono carte;
+ *  - la presa a due carte, con la pausa a carte scoperte e il volo verso il mazzetto di chi
+ *    ha vinto;
+ *  - l'incontro che si conta a **mani vinte** e non a punti, da cui il [matchOver] proprio.
+ */
+class BriscolaActivity : BotGameActivity() {
 
     private lateinit var b: ActivityBriscolaBinding
     private val game = BriscolaGame()
-    private var busy = false
-    private var youStartNext = true
 
-    // match (first to N hands wins), N from settings (5 or 11)
-    private var matchYou = 0
-    private var matchBot = 0
-    private var matchTarget = 5
-
-    /** Tutti i tempi di gioco: a zero quando gioca il programma. */
-    private val t = Timing()
-
-    // Misure delle carte: vedi CardSize, dipendono da larghezza e altezza dello schermo.
-    private val cardW get() = CardSize.width(resources)
-    private val cardH get() = CardSize.height(resources)
-
-    // watchdog (never let a turn freeze)
-    private val ui = Handler(Looper.getMainLooper())
-    private var ending = false
-
-    /**
-     * Vero quando i punti della mano sono gia' stati sommati all'incontro e registrati.
-     *
-     * Serve solo al ripristino, ed e' l'unico dato che non si potrebbe ricavare guardando la
-     * partita: a mano finita, lo stato del motore e' identico prima e dopo l'assegnazione dei
-     * punti. Senza questo, riprendere una partita chiusa col riepilogo aperto rifarebbe i
-     * conti una seconda volta, raddoppiando i punti dell'incontro e la vittoria registrata
-     * nelle statistiche.
-     */
-    private var roundScored = false
-
-    /** Vero da quando le carte sono in tavola: prima non c'e' niente da salvare. */
-    private var started = false
-    private var destroyed = false
-
-    /** Vero fra onStop e il ritorno in primo piano: vedi onStop e onResume. */
-    private var stopped = false
-
-    /**
-     * Riferimento all'ultimo dialogo aperto, per chiuderlo in onDestroy.
-     * I dialoghi creati con AlertDialog.Builder non si chiudono da soli quando l'activity
-     * muore: restano appesi al suo contesto, il log segna WindowLeaked e l'activity non
-     * viene liberata. Non ce n'e' mai piu' di uno aperto insieme, quindi basta un campo.
-     */
-    private var openDialog: AlertDialog? = null
-    private var autoPlay = false
-    private var showBot = false
     /** Vero mentre scorre l'animazione della presa: le carte appena pescate restano nascoste. */
     private var hideDrawn = false
 
-    /** Come in Scopa: il watchdog interviene solo se il gioco non si e' mosso da solo. */
-    private var moveSeq = 0
-    private var watchdogSeq = -1
+    // ---- quello che la base ha bisogno di sapere ----
+    override val rootView: View get() = b.root
+    override val overlay: FrameLayout get() = b.overlay
+    override val statusView: TextView get() = b.txtStatus
+    override val saveKey: String get() = SavedGame.BRISCOLA
+    override val statsKey: String get() = Prefs.GAME_BRISCOLA
+    override val rulesText: Int get() = R.string.rules_briscola
 
-    // ---- rigioca le ultime carte: cosa serve per riportare indietro l'orologio ----
-    /** Punteggi della partita prima che la mano appena finita venisse sommata. */
-    private var matchBeforeEnd = Pair(0, 0)
-    /** Esito registrato nelle statistiche a fine partita (null se la partita non e' finita). */
-    private var recordedWin: Boolean? = null
-    /** Valore di last_match_end prima di questa fine partita, per rimetterlo se si rigioca. */
-    private var prevMatchEnd = 0L
-
-    /**
-     * Annulla la registrazione fatta a fine partita: la partita torna aperta, quindi
-     * l'esito esce dalle statistiche e la pausa fra le partite non parte.
-     */
-    private fun undoMatchRecord(gameKey: String) {
-        recordedWin?.let {
-            Prefs.unrecordMatch(this, gameKey, it)
-            Prefs.setLastMatchEnd(this, prevMatchEnd)
-            recordedWin = null
-        }
-    }
-
-    private val watchdog = Runnable {
-        if (destroyed || ending) return@Runnable
-        if (moveSeq != watchdogSeq) return@Runnable
-        recover()
-    }
-
-    private fun armWatchdog() {
-        ui.removeCallbacks(watchdog)
-        if (destroyed || ending) return
-        if (busy || game.finished || game.turn == 1) {
-            watchdogSeq = moveSeq
-            ui.postDelayed(watchdog, 4000)
-        }
-    }
-
-    private fun recover() {
-        if (destroyed || ending) return
-        when {
-            game.finished -> { busy = true; render(); endGame() }
-            game.turn == 1 -> { busy = true; render(); post(t.think) { botPlay() } }
-            busy -> { busy = false; render(); b.txtStatus.text = ""; maybeAutoPlay() }
-            else -> maybeAutoPlay()
-        }
-    }
+    override val gameFinished: Boolean get() = game.finished
+    override val isBotTurn: Boolean get() = game.turn == 1
+    override val youHandEmpty: Boolean get() = game.hands[0].isEmpty()
+    override val hasLastDeal: Boolean get() = game.lastDealState != null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         b = ActivityBriscolaBinding.inflate(layoutInflater)
         setContentView(b.root)
-        applySystemBars(b.root)
-        b.btnInfo.setOnClickListener { track(InfoDialog.show(this, R.string.info_title, R.string.rules_briscola)) }
-        autoPlay = Prefs.autoPlay(this)
-        showBot = Prefs.showBotCards(this)
-        t.fast = autoPlay
-        CardView.setDeck(Prefs.deck(this))
-        placeCards()
+        // Dopo setContentView: rootView e overlay sono getter su b, che e' lateinit.
+        setupCommon(b.btnInfo)
         // Se c'e' una partita lasciata a meta' si riprende quella, altrimenti se ne comincia una.
         if (!restoreState()) startMatch()
     }
@@ -141,7 +61,7 @@ class BriscolaActivity : AppCompatActivity() {
      *  - il mazzo esce per meta' dal bordo sinistro
      *  - la briscola resta nascosta per un terzo sotto al mazzo
      */
-    private fun placeCards() {
+    override fun placeCards() {
         // I margini si RIASSEGNANO e non si modificano in posto: setLayoutParams chiama
         // requestLayout() da sola, mutare i campi dell'oggetto esistente no. Prima
         // funzionava solo perche' il render() che segue cambia comunque qualche misura e
@@ -177,184 +97,32 @@ class BriscolaActivity : AppCompatActivity() {
         b.deckBox.translationZ = 1f   // il mazzo copre la briscola, non il contrario
     }
 
-    override fun onResume() {
-        super.onResume()
-        autoPlay = Prefs.autoPlay(this)
-        showBot = Prefs.showBotCards(this)
-        t.fast = autoPlay
-        CardView.setDeck(Prefs.deck(this))
-        placeCards()
-        if (stopped) {
-            // Si torna da un onStop. hideDrawn va rimesso a posto per forza: se ci si ferma
-            // a meta' dell'animazione della presa resterebbe acceso e le carte appena pescate
-            // sparirebbero dalla mano per il resto della partita. Poi si riparte guardando lo
-            // stato reale, come fa il watchdog; se e' aperto un dialogo recover() non fa nulla.
-            stopped = false
-            hideDrawn = false
-            render()
-            recover()
-        } else {
-            render()
-            maybeAutoPlay()
-        }
-    }
-
-    /** Modalita' test: il programma gioca anche le carte dell'utente. */
-    private fun maybeAutoPlay() {
-        if (!autoPlay || busy || destroyed || ending) return
-        if (game.finished || game.turn != 0 || game.hands[0].isEmpty()) return
-        busy = true
-        armWatchdog()
-        post(t.think) {
-            if (game.finished || game.turn != 0 || game.hands[0].isEmpty()) { recover(); return@post }
-            val card = game.botChoose()
-            val view = findHandCardView(card)
-            val start = if (view != null) {
-                view.visibility = View.INVISIBLE
-                topLeftInOverlay(view)
-            } else centerInOverlay(b.youHand)
-            playAnimated(card, start.first, start.second)
-        }
-    }
-
-    private fun findHandCardView(card: Card): View? {
-        for (i in 0 until b.youHand.childCount) {
-            val ch = b.youHand.getChildAt(i)
-            if (ch is CardView && ch.card == card) return ch
-        }
-        return null
-    }
-
     /**
-     * Rotazione o ridimensionamento della finestra su un dispositivo grande: l'activity non
-     * viene ricreata (vedi configChanges nel manifest), quindi la partita in corso resta viva.
-     * Basta ricalcolare le misure delle carte e ridisegnare.
+     * Se ci si ferma a meta' dell'animazione della presa, hideDrawn resterebbe acceso e le
+     * carte appena pescate sparirebbero dalla mano per il resto della partita.
      */
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        placeCards()
-        render()
-    }
-
-    /**
-     * Sospende la partita appena la schermata smette di essere visibile.
-     *
-     * I turni avanzano con postDelayed: senza questa pulizia il Banco continuava a giocare
-     * mentre l'utente era altrove e a fine partita il dialogo si apriva su una schermata che
-     * nessuno stava guardando. Con il gioco automatico attivo l'app macinava partite intere
-     * in background. Le carte in volo vengono tolte: al ritorno la mossa interrotta viene
-     * rifatta da capo.
-     */
-    override fun onStop() {
-        stopped = true
-        // Prima di tutto il resto: onStop e' l'ultimo momento garantito prima che Android
-        // possa uccidere il processo, e lo stato qui e' ancora coerente.
-        saveState()
-        ui.removeCallbacksAndMessages(null)
-        b.overlay.removeAllViews()
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-        // I turni avanzano con callback differiti: se l'utente esce a meta' mano, senza questa
-        // pulizia il callback parte comunque e il dialogo di fine partita fa crashare l'app.
-        destroyed = true
-        // Uscire dal Menu o col tasto indietro e' una scelta: la partita si butta. Chiudere
-        // l'app non passa di qui, quindi in quel caso il salvataggio resta.
-        if (isFinishing) SavedGame.clear(this, SavedGame.BRISCOLA)
-        ui.removeCallbacksAndMessages(null)
-        closeDialog()
-        super.onDestroy()
-    }
-
-    // ---------------- salvataggio e ripristino ----------------
-
-    private fun saveState() {
-        if (!started) return
-        val w = SavedGame.Writer()
-        game.save(w)
-        w.ints(listOf(matchTarget, matchYou, matchBot, if (youStartNext) 1 else 0))
-        w.ints(listOf(matchBeforeEnd.first, matchBeforeEnd.second))
-        w.int(when (recordedWin) { true -> 1; false -> 0; null -> -1 })
-        w.long(prevMatchEnd)
-        w.bool(roundScored)
-        SavedGame.write(this, SavedGame.BRISCOLA, w)
-    }
-
-    /**
-     * Vero se c'era una partita da riprendere. Le sezioni si rileggono nello stesso ordine in
-     * cui saveState le ha scritte; se il testo non torna si butta il salvataggio e si
-     * ricomincia, che e' meglio che ripartire da uno stato a meta'.
-     */
-    private fun restoreState(): Boolean {
-        val r = SavedGame.read(this, SavedGame.BRISCOLA) ?: return false
-        try {
-            game.load(r)
-            val m = r.ints()
-            matchTarget = m[0]; matchYou = m[1]; matchBot = m[2]; youStartNext = m[3] == 1
-            val mb = r.ints(); matchBeforeEnd = Pair(mb[0], mb[1])
-            recordedWin = when (r.int()) { 1 -> true; 0 -> false; else -> null }
-            prevMatchEnd = r.long()
-            roundScored = r.bool()
-        } catch (e: Exception) {
-            SavedGame.clear(this, SavedGame.BRISCOLA)
-            return false
-        }
-        started = true
-        moveSeq++
+    override fun clearAnimationState() {
         hideDrawn = false
-        render()
-        if (roundScored) {
-            // La mano era gia' chiusa e i punti gia' assegnati: si rimette solo il riepilogo.
-            resumeRoundDialog()
-        } else {
-            // busy a true fa prendere a recover() il ramo che ripulisce la mossa interrotta
-            // e restituisce il turno, esattamente come al ritorno da un onStop.
-            busy = true
-            recover()
-        }
-        return true
     }
 
-    /** postDelayed sicuro: il blocco non viene eseguito se l'activity nel frattempo e' morta. */
-    private fun post(delayMs: Long, action: () -> Unit) {
-        ui.postDelayed({ if (!destroyed && !isFinishing) action() }, delayMs)
-    }
+    /**
+     * Nella Briscola l'incontro si conta a mani vinte, una per volta: arrivare al bersaglio
+     * in parita' non e' un caso che possa darsi, quindi qui non c'e' la condizione sulla
+     * parita' che hanno Scopa e Tresette.
+     */
+    override fun matchOver(): Boolean = matchYou >= matchTarget || matchBot >= matchTarget
 
-    /** Registra il dialogo appena aperto, cosi' onDestroy sa cosa chiudere. */
-    private fun track(d: AlertDialog?): AlertDialog? {
-        openDialog = d
-        return d
-    }
+    // ---------------------------------------------------------- l'incontro
 
-    private fun closeDialog() {
-        openDialog?.let { if (it.isShowing) it.dismiss() }
-        openDialog = null
-    }
-
-    private fun startMatch() {
-        val wait = Prefs.pauseRemaining(this)
-        if (wait > 0) {
-            // Nessuna mano in corso finche' il dialogo resta aperto: senza questo il watchdog
-            // scattava dopo 4 secondi e cambiava lo stato dietro alla finestra.
-            ending = true
-            busy = true
-            ui.removeCallbacks(watchdog)
-            track(PauseDialog.show(this, wait, onReady = { beginMatch() }, onLeave = { finish() }))
-            return
-        }
-        beginMatch()
-    }
-
-    private fun beginMatch() {
+    override fun beginMatch() {
         matchTarget = Prefs.briscolaTarget(this)
         matchYou = 0
         matchBot = 0
         youStartNext = true
-        startGame()
+        startRound()
     }
 
-    private fun startGame() {
+    override fun startRound() {
         game.newGame(youStart = youStartNext)
         youStartNext = !youStartNext
         ending = false
@@ -369,67 +137,35 @@ class BriscolaActivity : AppCompatActivity() {
         // come in Scopa: il gioco riparte su un timer fisso, non alla fine dell'animazione
         post(t.deal) {
             if (destroyed || ending) return@post
-            if (game.turn == 1) {
-                botPlay()
+            if (isBotTurn) {
+                playBot()
             } else {
                 busy = false
                 render()
-                b.txtStatus.text = ""
+                clearStatus()
                 maybeAutoPlay()
             }
         }
     }
 
-    /**
-     * Distribuzione iniziale: le sei carte partono dal mazzo e raggiungono la loro mano.
-     * Sposta le viste vere con translationX/Y: nessuna copia da rimuovere, e se un render()
-     * le ricrea a meta' animazione non resta nulla di sospeso.
-     */
+    /** Le sei carte partono dal mazzo e raggiungono la loro mano. */
     private fun dealAnimation() {
-        if (t.fast) return
-        b.root.doOnLayout {
-            if (destroyed) return@doOnLayout
-            if (b.deckBox.width == 0) return@doOnLayout
+        dealFrom(b.deckBox) {
             val views = ArrayList<View>()
             for (i in 0 until b.botHand.childCount) views.add(b.botHand.getChildAt(i))
             for (i in 0 until b.youHand.childCount) views.add(b.youHand.getChildAt(i))
-            val (dx, dy) = topLeftInOverlay(b.deckBox)
-            var delay = 0L
-            for (v in views) {
-                if (v.width == 0) continue
-                val (tx, ty) = topLeftInOverlay(v)
-                v.alpha = 0f
-                v.translationX = dx - tx
-                v.translationY = dy - ty
-                v.animate().translationX(0f).translationY(0f).alpha(1f)
-                    .setStartDelay(delay).setDuration(t.dealDur).start()
-                delay += t.dealStep
-            }
+            views
         }
     }
 
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
-
-    // ---------- riuso delle viste ----------
-    //
-    // Prima render() faceva removeAllViews() e ricostruiva tutto a ogni chiamata. CardView era
-    // gia' pensata per essere riusata (i setter di card e faceUp chiamano invalidate()) ma
-    // nessuno la riusava. Adesso le viste restano e si aggiornano le proprieta'.
-    //
-    // L'unica attenzione: le animazioni lasciano stato sulla vista (visibility a INVISIBLE,
-    // translation, alpha, scale). Prima lo azzerava la ricostruzione, ora lo azzera resetCard.
-
-    /** Rimette una vista riusata nello stato "appena creata". */
-    private fun resetCard(cv: CardView) {
-        cv.animate().cancel()
-        cv.visibility = View.VISIBLE
-        cv.alpha = 1f
-        cv.translationX = 0f
-        cv.translationY = 0f
-        cv.scaleX = 1f
-        cv.scaleY = 1f
-        cv.rotation = 0f
+    /** A sessanta pari la mano non va a nessuno. */
+    override fun awardHand() {
+        val you = game.scoreFor(0)
+        val bot = game.scoreFor(1)
+        if (you > bot) matchYou++ else if (bot > you) matchBot++
     }
+
+    // ------------------------------------------------------------- disegno
 
     /** Allinea una fila di carte al contenuto voluto, riusando le viste gia' presenti. */
     private fun syncRow(row: LinearLayout, cards: List<Card>, faceUp: Boolean, clickable: Boolean) {
@@ -463,7 +199,17 @@ class BriscolaActivity : AppCompatActivity() {
     private var deckCount: TextView? = null
     private var trumpView: CardView? = null
 
-    private fun render(trickOverride: List<Card>? = null) {
+    override fun render() = renderWith(null)
+
+    /**
+     * Il disegno del tavolo. [trickOverride] tiene in vista entrambe le carte della presa
+     * durante la pausa a carte scoperte, quando il motore ha gia' svuotato la presa.
+     *
+     * Non e' piu' render(trickOverride: List<Card>? = null) come prima, perche' una funzione
+     * con parametro predefinito non implementa un abstract fun render(): alla base serve una
+     * funzione senza parametri, e quella qui sopra e' la sua unica riga.
+     */
+    private fun renderWith(trickOverride: List<Card>?) {
         b.botScore.text = getString(R.string.bot_points, game.scoreFor(1).toString())
         b.youScore.text = getString(R.string.you_points, game.scoreFor(0).toString())
 
@@ -553,6 +299,8 @@ class BriscolaActivity : AppCompatActivity() {
         }
     }
 
+    // ------------------------------------------------------------ giocate
+
     private fun onPlayerCard(card: Card, fromView: View) {
         if (busy || game.turn != 0 || game.finished) return
         busy = true; armWatchdog()
@@ -561,14 +309,32 @@ class BriscolaActivity : AppCompatActivity() {
         playAnimated(card, sx, sy)
     }
 
-    private fun botPlay() {
+    override fun playBot() {
         if (destroyed || ending) return
-        if (game.finished) { busy = true; endGame(); return }
+        if (game.finished) { busy = true; endRound(); return }
         if (game.hands[1].isEmpty()) { recover(); return }
         val card = game.botChoose()
         val src: View = botHandView(card) ?: b.botHand
         val (sx, sy) = topLeftInOverlay(src)
         playAnimated(card, sx, sy)
+    }
+
+    override fun autoPlayMove() {
+        val card = game.botChoose()
+        val view = findHandCardView(card)
+        val start = if (view != null) {
+            view.visibility = View.INVISIBLE
+            topLeftInOverlay(view)
+        } else centerInOverlay(b.youHand)
+        playAnimated(card, start.first, start.second)
+    }
+
+    private fun findHandCardView(card: Card): View? {
+        for (i in 0 until b.youHand.childCount) {
+            val ch = b.youHand.getChildAt(i)
+            if (ch is CardView && ch.card == card) return ch
+        }
+        return null
     }
 
     /**
@@ -612,15 +378,15 @@ class BriscolaActivity : AppCompatActivity() {
     }
 
     private fun afterLead() {
-        if (game.turn == 1) {
+        if (isBotTurn) {
             busy = true
             render()   // trickRow now shows the single leader card
-            b.txtStatus.setText(R.string.bot_turn)
-            post(t.trickPause) { botPlay() }
+            statusView.setText(R.string.bot_turn)
+            post(t.trickPause) { playBot() }
         } else {
             busy = false
             render()
-            b.txtStatus.text = ""
+            clearStatus()
             maybeAutoPlay()
         }
     }
@@ -629,25 +395,25 @@ class BriscolaActivity : AppCompatActivity() {
         // le carte pescate restano nascoste finche' l'animazione della presa non e' finita
         hideDrawn = true
         busy = true
-        render(listOf(lead, follow))   // keep BOTH cards visible during the pause
-        b.txtStatus.setText(if (winner == 0) R.string.you_take else R.string.bot_take)
+        renderWith(listOf(lead, follow))   // keep BOTH cards visible during the pause
+        statusView.setText(if (winner == 0) R.string.you_take else R.string.bot_take)
         armWatchdog()
         post(t.trickPause) {
             sweepTrick(winner) {
                 hideDrawn = false
                 when {
-                    game.finished -> { render(); endGame() }
-                    game.turn == 1 -> {
+                    game.finished -> { render(); endRound() }
+                    isBotTurn -> {
                         render()   // ora compaiono le carte pescate
-                        b.txtStatus.setText(R.string.bot_turn)
-                        post(t.trickPause) { botPlay() }
+                        statusView.setText(R.string.bot_turn)
+                        post(t.trickPause) { playBot() }
                     }
                     // busy PRIMA di render(), come in Scopa: cosi' la schermata viene
                     // ridisegnata gia' nello stato "tocca a te"
                     else -> {
                         busy = false
                         render()
-                        b.txtStatus.text = ""
+                        clearStatus()
                         maybeAutoPlay()
                     }
                 }
@@ -691,84 +457,18 @@ class BriscolaActivity : AppCompatActivity() {
         }
     }
 
+    // --------------------------------------------------------- fine mano
 
     /**
-     * Riporta la mano all'inizio delle ultime carte (vedi la fotografia nel motore), rimette
-     * i punteggi della partita com'erano e fa ripartire il gioco da li'. Il Banco non tira
-     * a caso: le sue carte saranno le stesse, cambia solo quello che decidi tu.
+     * La tabella del riepilogo: la stessa della Scopa con due righe invece di sette, perche'
+     * qui la partita e' un numero solo e non una somma di quattro punti. Colonne, caratteri e
+     * allineamento sono gli stessi, cosi' passando da un gioco all'altro il riepilogo sta
+     * sempre allo stesso posto.
      */
-    private fun replayLastDeal() {
-        if (!game.restoreLastDeal()) return
-        matchYou = matchBeforeEnd.first
-        matchBot = matchBeforeEnd.second
-        undoMatchRecord(Prefs.GAME_BRISCOLA)
-        ending = false
-        roundScored = false
-        moveSeq++
-        busy = true
-        statoTurno()
-        // recover() legge lo stato reale: fa giocare il Banco se tocca a lui, altrimenti
-        // libera la mano per la tua giocata
-        recover()
-    }
-
-    private fun matchOver(): Boolean = matchYou >= matchTarget || matchBot >= matchTarget
-
-    /**
-     * Fine mano: assegna la partita, la registra se l'incontro e' finito, e mostra il
-     * riepilogo.
-     *
-     * L'assegnazione e la finestra sono separate perche' il ripristino ha bisogno solo della
-     * seconda: riprendendo una mano chiusa col riepilogo aperto, la partita e' gia' stata
-     * assegnata e rifarlo significherebbe contarla due volte.
-     */
-    private fun endGame() {
-        if (ending || destroyed || isFinishing) return
-        ending = true
-        ui.removeCallbacks(watchdog)
-        busy = true
-        matchBeforeEnd = Pair(matchYou, matchBot)
-        // award the hand to the winner (a 60-60 draw counts for no one)
-        val you = game.scoreFor(0)
-        val bot = game.scoreFor(1)
-        if (you > bot) matchYou++ else if (bot > you) matchBot++
-
-        val over = matchOver()
-        recordedWin = null
-        if (over) {
-            prevMatchEnd = Prefs.lastMatchEnd(this)
-            Prefs.markMatchEnded(this)
-            recordedWin = matchYou > matchBot
-            Prefs.recordMatch(this, Prefs.GAME_BRISCOLA, matchYou > matchBot)
-        }
-        roundScored = true
-        render()
-        showRoundDialog(over)
-    }
-
-    /** Rimette il riepilogo dopo un ripristino, senza toccare il punteggio. */
-    private fun resumeRoundDialog() {
-        ending = true
-        busy = true
-        render()
-        showRoundDialog(matchOver())
-    }
-
-    /**
-     * Il riepilogo della mano. I punti si rileggono dal motore invece di essere passati come
-     * parametri: a mano finita lo stato non cambia piu', quindi il conto e' lo stesso sia che
-     * si arrivi da endGame sia da un ripristino, e non c'e' un secondo posto da tenere
-     * allineato.
-     */
-    private fun showRoundDialog(over: Boolean) {
-        if (destroyed || isFinishing) return
+    override fun buildResultView(over: Boolean): View {
         val you = game.scoreFor(0)
         val bot = game.scoreFor(1)
 
-        // Stessa tabella della Scopa, con due righe invece di sette: qui la partita e' un
-        // numero solo, non una somma di quattro punti. Colonne, caratteri e allineamento sono
-        // gli stessi, cosi' passando da un gioco all'altro il riepilogo sta sempre allo
-        // stesso posto.
         val v = DialogResultBinding.inflate(layoutInflater)
         v.youHand.text = you.toString();                 v.botHand.text = bot.toString()
         v.youMatch.text = matchYou.toString();           v.botMatch.text = matchBot.toString()
@@ -776,66 +476,22 @@ class BriscolaActivity : AppCompatActivity() {
         // Le due righe prendono il colore di chi e' avanti, ma su due conti diversi: la
         // Partita guarda questa mano, l'Incontro la serie. Possono risultare di colori
         // opposti, ed e' giusto cosi'.
-        for (t in listOf(v.lblHand, v.youHand, v.botHand)) t.tintByScore(you, bot)
-        for (t in listOf(v.lblMatch, v.youMatch, v.botMatch)) t.tintByScore(matchYou, matchBot)
+        for (tv in listOf(v.lblHand, v.youHand, v.botHand)) tv.tintByScore(you, bot)
+        for (tv in listOf(v.lblMatch, v.youMatch, v.botMatch)) tv.tintByScore(matchYou, matchBot)
         if (over) {
             v.txtWinner.text = if (matchYou > matchBot) getString(R.string.match_win_you)
                                else getString(R.string.match_win_bot)
             v.txtWinner.tintByOutcome(matchYou > matchBot)
             v.txtWinner.visibility = View.VISIBLE
         }
-
-        val builder = AlertDialog.Builder(this)
-            .setTitle(R.string.round_over)
-            .setView(v.root)
-            .setCancelable(false)
-            .setNegativeButton(R.string.back_home) { _, _ -> finish() }
-        if (over) {
-            builder.setPositiveButton(R.string.new_match) { _, _ -> startMatch() }
-        } else {
-            // Niente "Nuovo incontro" a meta' incontro: era l'unico modo di ricominciare
-            // saltando la pausa di un minuto. Come in Scopa restano continua e menu.
-            builder.setPositiveButton(R.string.continue_match) { _, _ -> startGame() }
-        }
-        if (game.lastDealState != null) {
-            builder.setNeutralButton(R.string.replay_last_deal) { _, _ -> replayLastDeal() }
-        }
-        val dialog = builder.show()
-        // I pulsanti dei dialoghi sono in maiuscolo per impostazione del tema, e "RIGIOCA
-        // L'ULTIMA MANO" tutto maiuscolo non ci sta: veniva troncato in "RIGIOCA L'ULTIMA
-        // MA...". Spegnendo il maiuscolo solo su questo pulsante il testo entra per intero e
-        // resta la parola RIGIOCA in evidenza, che e' quella che conta.
-        dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.isAllCaps = false
-        track(dialog)
+        return v.root
     }
 
-    // ---- animation helpers ----
-    private fun topLeftInOverlay(v: View): Pair<Float, Float> {
-        val loc = IntArray(2); v.getLocationInWindow(loc)
-        val o = IntArray(2); b.overlay.getLocationInWindow(o)
-        return Pair((loc[0] - o[0]).toFloat(), (loc[1] - o[1]).toFloat())
-    }
+    // ------------------------------------------- salvataggio (parte motore)
 
-    private fun centerInOverlay(v: View): Pair<Float, Float> {
-        val (x, y) = topLeftInOverlay(v)
-        val w = if (v.width > 0) v.width else cardW
-        val h = if (v.height > 0) v.height else cardH
-        return Pair(x + w / 2f, y + h / 2f)
-    }
-    /**
-     * La riga di stato per il turno: VUOTA quando tocca a te.
-     *
-     * "Tocca a te: gioca una carta" non informava nessuno - a gioco fermo tocca sempre a te -
-     * e la riga della partita ("Incontro: Tu x - x Banco") portava via spazio al tavolo per un
-     * dato che il riepilogo di fine partita mostra comunque, alla voce Incontro.
-     *
-     * La riga pero' NON e' stata tolta, perche' ci passano due cose che ovvie non sono: che
-     * sta giocando il Banco, e chi ha preso la mano. E nel layout ha android:lines="1", cioe'
-     * resta alta una riga anche da vuota: se collassasse, il tavolo salterebbe su e giu' di
-     * venti punti a ogni cambio di turno, che e' peggio del testo che si e' tolto.
-     */
-    private fun statoTurno() {
-        if (game.turn == 1) b.txtStatus.setText(R.string.bot_turn) else b.txtStatus.text = ""
-    }
+    override fun saveGame(w: SavedGame.Writer) = game.save(w)
 
+    override fun loadGame(r: SavedGame.Reader) = game.load(r)
+
+    override fun restoreLastDeal(): Boolean = game.restoreLastDeal()
 }
