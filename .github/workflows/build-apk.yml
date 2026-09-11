@@ -5,10 +5,20 @@ on:
     # Solo il ramo principale: prima bastava spingere un ramo di prova per far partire una
     # build completa e consumare minuti per un APK che nessuno avrebbe scaricato.
     branches: [main]
-    # Niente build per le modifiche che non toccano l'app: README e sorgenti grafici
+    # Niente build per le modifiche che non toccano l'app. Le tre voci coprono tutto
+    # quello che nel repository NON entra nell'APK:
+    #   **.md      README e note
+    #   **.txt     le istruzioni di caricamento
+    #   art/**     gli script che generano carte, dorsi, loghi e icone
+    #   verifica/** il porting in Python delle regole del Klondike, che serve a provarle
+    #              fuori dall'app e non viene compilato da nessuno
+    # verifica/ mancava: un push che toccava solo quei file faceva partire una build
+    # intera di release, APK e AAB compresi, per poi buttare via tutto.
     paths-ignore:
       - '**.md'
+      - '**.txt'
       - 'art/**'
+      - 'verifica/**'
   # Anche sulle pull request, e serve a una cosa precisa: le proposte di Dependabot
   # arrivano come PR, e senza questa riga non venivano compilate. Il primo tentativo di
   # aggiornare le librerie e' fallito su un numero di versione che pretendeva un'AGP piu'
@@ -21,7 +31,9 @@ on:
     branches: [main]
     paths-ignore:
       - '**.md'
+      - '**.txt'
       - 'art/**'
+      - 'verifica/**'
   workflow_dispatch:
 
 # Due push ravvicinati facevano partire due build intere, e quella vecchia continuava a girare
