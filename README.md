@@ -11,14 +11,27 @@ nativo (Kotlin + View Binding).
 ## Compilare
 
 **Su GitHub:** il workflow `.github/workflows/build-apk.yml` parte a ogni push e produce
-sempre due artefatti, scaricabili da **Actions → ultimo run → Artifacts**:
+sempre tre artefatti, scaricabili da **Actions → ultimo run → Artifacts**:
 
 | Artefatto | Cos'e' | A cosa serve |
 |---|---|---|
-| `ZiS-GiochiDiCarte-APK` | `app-release.apk` | si installa a mano sul telefono, per provare |
-| `ZiS-GiochiDiCarte-AAB` | `app-release.aab` | si carica sul Play Console per pubblicare |
+| `ZiS-GiochiDiCarte.apk` | l'APK, **non compresso** | si scarica e si installa sul telefono, per provare |
+| `ZiS-GiochiDiCarte.aab` | l'AAB, **non compresso** | si carica sul Play Console per pubblicare |
+| `ZiS-GiochiDiCarte-R8` | uno zip con `mapping.txt`, `usage.txt` e il resto | serve a leggere una stack trace offuscata (vedi piu' sotto) |
 
-Entrambi escono dalla variante **release**, cioe' esattamente il codice che finisce agli
+I primi due si scaricano **cosi' come sono**, non dentro uno zip da aprire: e' il parametro
+`archive: false` di `upload-artifact` v7, che vale per gli artefatti composti da un file solo
+e fa prendere all'artefatto il nome del file. Prima arrivava `ZiS-GiochiDiCarte-APK.zip` e
+bisognava scompattarlo per tirare fuori l'APK, che e' un passaggio in mezzo fra la build e il
+telefono. Per la stessa ragione il workflow rinomina anche il bundle: con quel parametro il
+nome dell'artefatto lo decide il file, quindi `app-release.aab` sarebbe comparso con il nome
+che ha il bundle di qualunque app al mondo.
+
+Il terzo resta zippato, e deve: quel passo raccoglie **piu'** file con un jolly, e il
+caricamento diretto ne gestisce uno solo. Non e' un problema, perche' quei file non si
+installano: si aprono quando serve.
+
+APK e AAB escono dalla variante **release**, cioe' esattamente il codice che finisce agli
 utenti. Senza i secret della firma vengono firmati con la chiave di debug: l'APK si installa
 lo stesso, l'AAB invece il Play Console lo rifiuta.
 
@@ -1052,3 +1065,22 @@ era l'unico modo di ricominciare saltando l'attesa.
 ## Cosa manca ancora
 
 - Nessun suono, nessuna modalità a 4 giocatori.
+
+- **L'impalcatura delle tre activity contro il Banco va messa in comune.** Fra
+  `BriscolaActivity` e `TresetteActivity` ci sono **424 righe di codice identiche su 576**, il
+  74%, e trentadue funzioni con lo stesso nome esistono in tutte e tre: `armWatchdog`,
+  `recover`, `post`, `track`, `closeDialog`, `saveState`, `restoreState`, `replayLastDeal`,
+  `undoMatchRecord`, `resetCard`, `topLeftInOverlay`, `centerInOverlay` e le altre.
+
+  Non e' una questione di eleganza, e il motivo per cui sta scritto qui e' che il difetto si
+  e' gia' visto: la guardia del blocco differito di `maybeAutoPlay` chiama `recover()` in
+  Scopa e in Briscola e non lo chiama nel Tresette, dove quindi `busy` resterebbe acceso e
+  sarebbe il watchdog a sbloccare la partita quattro secondi dopo. Oggi quel ramo non e'
+  raggiungibile, ma e' la dimostrazione di come nasce il prossimo: una correzione applicata a
+  due file su tre. Lo stesso e' capitato ai margini di `placeCards`, sistemati in tre punti
+  quando ne erano stati segnalati due.
+
+  Da fare: una classe base astratta con il watchdog e `moveSeq`, il ciclo di vita, la busta
+  del salvataggio (bersaglio, punteggi, `recordedWin`, `prevMatchEnd`, `roundScored`), lo
+  scheletro di fine mano e gli aiuti per le coordinate. Circa 600 righe in meno, e una
+  correzione che vale per tre schermate invece che per due.
