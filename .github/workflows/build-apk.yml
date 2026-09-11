@@ -59,13 +59,25 @@ jobs:
     # Versioni delle action: tutte quelle qui sotto girano su Node 24.
     # GitHub ha smesso di supportare il runtime Node 20 e da giugno 2026 forza comunque le
     # action a Node 24, quindi la build funzionava lo stesso ma con due avvisi a ogni run.
-    # Attenzione a upload-artifact: la v5 NON basta. Dichiara ancora runs.using node20 e ha
-    # solo un supporto preliminare a Node 24; la prima versione che gira su Node 24 per
-    # impostazione predefinita e' la v6. Le altre tre invece passano a Node 24 gia' al primo
-    # major successivo.
+    # Per upload-artifact la v5 non bastava - dichiarava ancora runs.using node20 - e la
+    # prima a girare su Node 24 di serie e' stata la v6.
+    #
+    # Da qui in avanti sono alla v7, e le due novita' contano entrambe:
+    #
+    #  - upload-artifact v7 aggiunge "archive: false" per i file SINGOLI: l'artefatto non
+    #    viene piu' compresso e prende il nome del file. E' quello che fa scaricare
+    #    direttamente ZiS-GiochiDiCarte.apk invece di un .zip da scompattare prima di
+    #    installarlo sul telefono. Vale per APK e AAB; NON per i referti di R8, che sono un
+    #    jolly su piu' file, e dove il parametro farebbe fallire il passo.
+    #
+    #  - checkout v7 rifiuta di scaricare il codice di una pull request proveniente da un
+    #    fork quando il workflow e' innescato da pull_request_target o workflow_run: sono i
+    #    due trigger con cui si combinano i "pwn request". Qui non si usano ne' l'uno ne'
+    #    l'altro - solo push e pull_request - quindi il cambiamento non tocca niente, ma e'
+    #    il motivo per cui vale la pena stare sulla major nuova invece che restare indietro.
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -120,27 +132,42 @@ jobs:
       - name: Build APK and AAB
         run: ./gradlew assembleRelease bundleRelease --stacktrace
 
-      # mv e non cp: con cp restavano due APK identici nella stessa cartella e l'unico
+      # mv e non cp: con cp restavano due file identici nella stessa cartella e l'unico
       # effetto era il dubbio, guardando la cartella, su quale dei due fosse quello buono.
-      - name: Rename APK
-        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
+      #
+      # Adesso si rinomina anche l'AAB, e non e' un vezzo: con "archive: false" il nome
+      # dell'artefatto NON lo decide piu' il campo name, lo decide il nome del file. Senza
+      # questa riga, nella pagina del run l'AAB comparirebbe come "app-release.aab", cioe'
+      # con lo stesso nome che ha il bundle di qualunque altra app al mondo.
+      - name: Rename APK and AAB
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
+          mv app/build/outputs/bundle/release/app-release.aab app/build/outputs/bundle/release/ZiS-GiochiDiCarte.aab
 
-      # APK: da installare a mano sul telefono per le prove
+      # APK: da installare a mano sul telefono per le prove.
+      #
+      # archive: false -> si scarica il .apk e non un .zip che lo contiene. Il campo name
+      # con questo parametro viene ignorato (l'artefatto prende il nome del file, cioe'
+      # ZiS-GiochiDiCarte.apk); lo lascio scritto perche' se un domani il parametro non
+      # venisse applicato - runner vecchio, ritorno a una major precedente - l'artefatto
+      # tornerebbe a chiamarsi come prima invece che "artifact".
       - name: Upload APK
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ZiS-GiochiDiCarte-APK
           path: app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
+          archive: false
           if-no-files-found: error
 
       # AAB: il formato che il Play Console richiede per pubblicare
       - name: Upload AAB
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ZiS-GiochiDiCarte-AAB
-          path: app/build/outputs/bundle/release/app-release.aab
+          path: app/build/outputs/bundle/release/ZiS-GiochiDiCarte.aab
+          archive: false
           if-no-files-found: error
 
       # I referti di R8. Da quando minifyEnabled e' acceso, i nomi delle classi nel release
@@ -155,9 +182,15 @@ jobs:
       #
       # if-no-files-found: warn e non error, perche' se un giorno minifyEnabled tornasse
       # false la cartella non esisterebbe e la build non deve fallire per questo.
+      #
+      # Qui NIENTE archive: false, ed e' il solo passo dei tre in cui non ci va: il percorso
+      # e' un jolly che prende piu' file (mapping.txt, usage.txt, seeds.txt, ...) e il
+      # caricamento diretto gestisce un file solo, quindi il passo fallirebbe. Questi tre o
+      # quattro file zippati stanno benissimo: non si installano, si aprono quando serve
+      # leggere una stack trace offuscata.
       - name: Upload referti R8
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ZiS-GiochiDiCarte-R8
           path: app/build/outputs/mapping/release/*
