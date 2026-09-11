@@ -32,11 +32,38 @@ updates:
     # DA TOGLIERE quando si passera' ad AGP 9.x: e' l'unico posto dove questo vincolo e'
     # scritto in modo che Dependabot lo rispetti, quindi va rivisto insieme all'AGP e non
     # dopo.
+    #
+    # AGGIORNATO: adesso i tetti sono quattro, e i primi tre dicono la stessa cosa.
+    #
+    #   core-ktx / core   la 1.18.0 pretende compileSdk 36.1, la 1.19.0 compileSdk 37
+    #   com.android.application   la 9.x pretende Gradle 9.x e l'SDK di Android 17
+    #   org.jetbrains.kotlin.android   R8 8.13.19, quello che porta l'AGP 8.13.2, dichiara
+    #     di supportare Kotlin fino alla 2.3: con minifyEnabled acceso e' R8 a leggere il
+    #     metadata di Kotlin, quindi il vincolo e' lui e non il compilatore
+    #
+    # Sono lo stesso muro visto da tre parti: AGP, Gradle, Kotlin e l'SDK si muovono
+    # INSIEME. Tolte le regole una per volta si ottiene solo una build rotta per volta.
+    # DA TOGLIERE tutte e tre in un colpo, il giorno che si fa la migrazione.
+    #
+    # material e' un caso diverso, e il motivo sta in app/build.gradle: i suoi rilasci
+    # rimescolano gli stili dei dialoghi, e qui c'e' la giuntura fra AlertDialog.Builder di
+    # appcompat, un tema che discende da Theme.MaterialComponents.Dialog.Alert e gli
+    # override di DarkAlertDialog. Quest'app e' fatta di dialoghi - riepilogo, scelta della
+    # presa, pausa, statistiche, informazioni, le due conferme del Klondike - e dalla 1.14
+    # non le arriva niente che usi. Sarebbe un rischio visivo in cambio di nulla, e una
+    # build verde non dice niente su come si VEDE un dialogo. Si aggiornera' insieme
+    # all'AGP 9, guardandoli uno per uno sul telefono.
     ignore:
       - dependency-name: "androidx.core:core-ktx"
         versions: [">=1.18.0"]
       - dependency-name: "androidx.core:core"
         versions: [">=1.18.0"]
+      - dependency-name: "com.android.application"
+        versions: [">=9.0.0"]
+      - dependency-name: "org.jetbrains.kotlin.android"
+        versions: [">=2.3.0"]
+      - dependency-name: "com.google.android.material:material"
+        versions: [">=1.13.0"]
 
   # Anche le azioni del workflow invecchiano, e quando succede la build si ferma con un
   # messaggio su Node che non dice quale azione sia. Vedi il commento sopra
