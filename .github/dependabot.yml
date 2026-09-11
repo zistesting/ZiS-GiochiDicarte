@@ -64,6 +64,12 @@ updates:
         versions: [">=2.3.0"]
       - dependency-name: "com.google.android.material:material"
         versions: [">=1.13.0"]
+      # Il wrapper di Gradle: Dependabot lo aggiorna come fosse una dipendenza, e la
+      # proposta di passare dalla 8.13 alla 9.7.1 e' l'unica su cui la build e' fallita -
+      # un minuto netto, contro i due e mezzo di una build che arriva in fondo. Gradle 9 va
+      # con l'AGP 9, quindi il tetto e' lo stesso muro degli altri e si toglie con loro.
+      - dependency-name: "gradle-wrapper"
+        versions: [">=9.0.0"]
 
   # Anche le azioni del workflow invecchiano, e quando succede la build si ferma con un
   # messaggio su Node che non dice quale azione sia. Vedi il commento sopra
