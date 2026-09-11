@@ -142,10 +142,18 @@ class BriscolaActivity : AppCompatActivity() {
      *  - la briscola resta nascosta per un terzo sotto al mazzo
      */
     private fun placeCards() {
+        // I margini si RIASSEGNANO e non si modificano in posto: setLayoutParams chiama
+        // requestLayout() da sola, mutare i campi dell'oggetto esistente no. Prima
+        // funzionava solo perche' il render() che segue cambia comunque qualche misura e
+        // il layout lo chiede lui - una dipendenza da un ordine di chiamate che sta in un
+        // altro metodo. La briscola era gia' scritta cosi' qui sotto; queste due no.
         // se le carte del Banco sono scoperte devono restare tutte visibili
-        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = if (showBot) 0 else -cardH / 2
-        b.botHand.requestLayout()
-        (b.deckRow.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
+        val bot = b.botHand.layoutParams as LinearLayout.LayoutParams
+        bot.topMargin = if (showBot) 0 else -cardH / 2
+        b.botHand.layoutParams = bot
+        val row = b.deckRow.layoutParams as FrameLayout.LayoutParams
+        row.marginStart = -cardW / 2
+        b.deckRow.layoutParams = row
 
         // La briscola sta coricata sotto il mazzo, quindi il suo riquadro ha le misure
         // scambiate: largo quanto e' alta una carta, alto quanto e' larga.

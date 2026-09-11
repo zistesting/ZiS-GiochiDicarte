@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il plurale in inglese.
+
+  Senza questo file la quantita' ricadeva su res/values/plurals.xml, cioe' sull'italiano:
+  l'app in inglese scriveva "You: 2 scope". Non si rompeva niente - Android usa comunque le
+  regole di quantita' dell'inglese, one e other - ma la parola restava italiana, ed era
+  l'unico pezzo di testo che non si traduceva dopo il lavoro sulle 114 stringhe.
+
+  La SCOPA come mossa diventa SWEEP, che e' il termine inglese corrente per "svuotare il
+  tavolo con una presa": lo usavano gia' pt_scope ("Sweeps") e le regole. Il nome del gioco
+  resta Scopa, perche' quello e' un nome proprio e non una descrizione: play_scopa, il
+  glossario e i riferimenti al gioco nelle regole non si toccano.
+-->
+<resources>
+    <plurals name="scope_n">
+        <item quantity="one">%d sweep</item>
+        <item quantity="other">%d sweeps</item>
+    </plurals>
+</resources>

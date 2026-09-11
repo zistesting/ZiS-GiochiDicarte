@@ -2,160 +2,214 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_velvet">
 
-    <ImageView
-        android:id="@+id/logo"
-        android:layout_width="92dp"
-        android:layout_height="92dp"
-        android:layout_marginTop="40dp"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/app_logo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/title"
-        android:layout_width="330dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/title"
-        android:src="@drawable/title_logo"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/logo" />
-
-    <TextView
-        android:id="@+id/version"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="v.4.2"
-        android:textColor="@color/silver"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:shadowColor="#000000"
-        android:shadowDy="2"
-        android:shadowRadius="6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title" />
-
     <!--
-      I QUATTRO GIOCHI SU DUE COLONNE, e sotto Esci.
+      PERCHE' ADESSO C'E' UNO SCROLLVIEW, che prima non c'era.
 
-      Prima erano cinque pulsanti in fila: 5 x 56dp piu' quattro spazi da 12dp fanno 328dp
-      di altezza, che su un telefono da 640dp, con logo, titolo e riga in fondo, non lasciava
-      respiro a niente. Su due colonne diventano 192dp: 136dp in meno.
+      Sommando le altezze: logo 40+92, titolo circa 50, versione circa 20, la griglia dei
+      pulsanti 204 (tre righe da 56 piu' tre spazi da 12) e la riga in fondo 66. Fanno circa
+      480dp di altezza utile, piu' gli inset delle barre di sistema. Su un telefono in
+      verticale ce ne sono 640 e ne avanzano; il guaio e' altrove.
 
-      Le misure stanno in dimen.xml e non qui, perche' le usano sei pulsanti: cambiarne una
-      in un posto solo evita che la griglia si sfasi. La larghezza e' tale che due colonne
-      piu' lo spazio in mezzo entrino anche in uno schermo da 320dp.
+      In MULTI-FINESTRA android:screenOrientation="portrait" non vale - il sistema lo ignora,
+      e da targetSdk 36 lo ignora anche sui dispositivi con lato corto da 600dp - quindi
+      questa schermata puo' ritrovarsi alta 300dp. Con il vecchio layout il blocco dei
+      pulsanti era wrap_content vincolato fra la versione e la barra in fondo: un
+      ConstraintLayout in quella situazione NON stringe il figlio, lo lascia della sua
+      altezza naturale, quindi i pulsanti finivano sopra la versione e sotto la barra. Le
+      altre schermate se la cavano da sole perche' i giochi usano i pesi e le impostazioni
+      hanno gia' uno ScrollView: la schermata iniziale era l'unica senza via d'uscita.
 
-      Esci e' centrato e larga come gli altri: e' l'unico della sua riga, e lasciarlo
-      accostato a una delle due colonne sotto una griglia simmetrica sembra un errore.
+      Due dettagli tengono l'aspetto identico a prima quando lo spazio c'e':
+
+        - fillViewport="true": se il contenuto e' piu' basso della finestra, lo ScrollView
+          allunga il figlio fino a riempirla, ed e' quello che fa funzionare i pesi qui
+          sotto. Senza, il contenuto si accatasterebbe in alto lasciando un buco in fondo.
+
+        - i due Space con peso 0,46 e 0,54 riproducono esattamente il
+          layout_constraintVertical_bias="0.46" di prima: il blocco dei pulsanti sta al 46%
+          dello spazio che avanza. Quando lo spazio NON avanza i pesi non distribuiscono
+          niente, i due Space restano alti zero e si scorre.
+
+      La barra in fondo resta ancorata al fondo della finestra e fuori dallo ScrollView: i
+      cinque pulsanti devono stare sempre allo stesso posto, anche a schermata scorsa.
     -->
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
+    <ScrollView
+        android:id="@+id/homeScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/bottomBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/version"
-        app:layout_constraintVertical_bias="0.46">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnScopa"
-                android:layout_width="@dimen/home_btn_w"
-                android:layout_height="@dimen/home_btn_h"
-                android:background="@drawable/btn_cartiglio"
-                android:text="@string/play_scopa"
-                android:textColor="@color/silver"
-                android:textSize="17sp"
-                android:textAllCaps="false"
-                android:textStyle="bold"
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:layout_marginTop="40dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/app_logo" />
+
+            <ImageView
+                android:id="@+id/title"
+                android:layout_width="330dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/title"
+                android:src="@drawable/title_logo" />
+
+            <!--
+              Il numero di versione lo scrive MainActivity leggendolo dal PackageManager,
+              cioe' da versionName in build.gradle. Qui c'e' solo tools:text, che si vede
+              nell'anteprima e non finisce nell'APK: con android:text il numero era scritto
+              in due posti e bisognava ricordarsi di cambiarlo in entrambi.
+            -->
+            <TextView
+                android:id="@+id/version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
                 android:shadowColor="#000000"
                 android:shadowDy="2"
-                android:shadowRadius="4" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnBriscola"
-                android:layout_width="@dimen/home_btn_w"
-                android:layout_height="@dimen/home_btn_h"
-                android:layout_marginStart="@dimen/home_btn_gap"
-                android:background="@drawable/btn_cartiglio"
-                android:text="@string/play_briscola"
+                android:shadowRadius="6"
                 android:textColor="@color/silver"
-                android:textSize="17sp"
-                android:textAllCaps="false"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:shadowColor="#000000"
-                android:shadowDy="2"
-                android:shadowRadius="4" />
+                tools:text="v.4.2" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.46" />
+
+            <!--
+              I QUATTRO GIOCHI SU DUE COLONNE, e sotto Esci.
+
+              Prima erano cinque pulsanti in fila: 5 x 56dp piu' quattro spazi da 12dp fanno
+              328dp di altezza, che su un telefono da 640dp, con logo, titolo e riga in fondo,
+              non lasciava respiro a niente. Su due colonne diventano 192dp: 136dp in meno.
+
+              Le misure stanno in dimen.xml e non qui, perche' le usano sei pulsanti:
+              cambiarne una in un posto solo evita che la griglia si sfasi. La larghezza e'
+              tale che due colonne piu' lo spazio in mezzo entrino anche in uno schermo da
+              320dp.
+
+              Esci e' centrato e largo come gli altri: e' l'unico della sua riga, e lasciarlo
+              accostato a una delle due colonne sotto una griglia simmetrica sembra un errore.
+            -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnScopa"
+                        android:layout_width="@dimen/home_btn_w"
+                        android:layout_height="@dimen/home_btn_h"
+                        android:background="@drawable/btn_cartiglio"
+                        android:shadowColor="#000000"
+                        android:shadowDy="2"
+                        android:shadowRadius="4"
+                        android:text="@string/play_scopa"
+                        android:textAllCaps="false"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnBriscola"
+                        android:layout_width="@dimen/home_btn_w"
+                        android:layout_height="@dimen/home_btn_h"
+                        android:layout_marginStart="@dimen/home_btn_gap"
+                        android:background="@drawable/btn_cartiglio"
+                        android:shadowColor="#000000"
+                        android:shadowDy="2"
+                        android:shadowRadius="4"
+                        android:text="@string/play_briscola"
+                        android:textAllCaps="false"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/home_btn_gap"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnTresette"
+                        android:layout_width="@dimen/home_btn_w"
+                        android:layout_height="@dimen/home_btn_h"
+                        android:background="@drawable/btn_cartiglio"
+                        android:shadowColor="#000000"
+                        android:shadowDy="2"
+                        android:shadowRadius="4"
+                        android:text="@string/play_tresette"
+                        android:textAllCaps="false"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnKlondike"
+                        android:layout_width="@dimen/home_btn_w"
+                        android:layout_height="@dimen/home_btn_h"
+                        android:layout_marginStart="@dimen/home_btn_gap"
+                        android:background="@drawable/btn_cartiglio"
+                        android:shadowColor="#000000"
+                        android:shadowDy="2"
+                        android:shadowRadius="4"
+                        android:text="@string/play_klondike"
+                        android:textAllCaps="false"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnQuit"
+                    android:layout_width="@dimen/home_btn_w"
+                    android:layout_height="@dimen/home_btn_h"
+                    android:layout_marginTop="@dimen/home_btn_gap"
+                    android:background="@drawable/btn_cartiglio"
+                    android:shadowColor="#000000"
+                    android:shadowDy="2"
+                    android:shadowRadius="4"
+                    android:text="@string/quit"
+                    android:textAllCaps="false"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.54" />
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/home_btn_gap"
-            android:orientation="horizontal">
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnTresette"
-                android:layout_width="@dimen/home_btn_w"
-                android:layout_height="@dimen/home_btn_h"
-                android:background="@drawable/btn_cartiglio"
-                android:text="@string/play_tresette"
-                android:textColor="@color/silver"
-                android:textSize="17sp"
-                android:textAllCaps="false"
-                android:textStyle="bold"
-                android:shadowColor="#000000"
-                android:shadowDy="2"
-                android:shadowRadius="4" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnKlondike"
-                android:layout_width="@dimen/home_btn_w"
-                android:layout_height="@dimen/home_btn_h"
-                android:layout_marginStart="@dimen/home_btn_gap"
-                android:background="@drawable/btn_cartiglio"
-                android:text="@string/play_klondike"
-                android:textColor="@color/silver"
-                android:textSize="17sp"
-                android:textAllCaps="false"
-                android:textStyle="bold"
-                android:shadowColor="#000000"
-                android:shadowDy="2"
-                android:shadowRadius="4" />
-        </LinearLayout>
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnQuit"
-            android:layout_width="@dimen/home_btn_w"
-            android:layout_height="@dimen/home_btn_h"
-            android:layout_marginTop="@dimen/home_btn_gap"
-            android:background="@drawable/btn_cartiglio"
-            android:text="@string/quit"
-            android:textColor="@color/silver"
-            android:textSize="16sp"
-            android:textAllCaps="false"
-            android:textStyle="bold"
-            android:shadowColor="#000000"
-            android:shadowDy="2"
-            android:shadowRadius="4" />
-    </LinearLayout>
+    </ScrollView>
 
     <!-- Riga in fondo: lingua, info, statistiche, impostazioni, logo ZiS. Cinque pulsanti
          da @dimen/home_bar_btn, in un contenitore wrap_content centrato: cosi' restano

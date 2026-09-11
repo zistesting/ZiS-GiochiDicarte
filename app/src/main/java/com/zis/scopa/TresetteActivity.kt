@@ -153,9 +153,16 @@ class TresetteActivity : AppCompatActivity() {
      * alto: sono carte coperte, non serve vederle intere, e lo spazio guadagnato va al tavolo.
      */
     private fun placeCards() {
-        (b.botHand.layoutParams as FrameLayout.LayoutParams).topMargin = if (showBot) 0 else -handH / 2
-        b.botHand.requestLayout()
-        (b.deckBox.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
+        // Come in Scopa e Briscola: i margini si riassegnano, non si modificano in posto.
+        // setLayoutParams chiama requestLayout(), mutare i campi dell'oggetto che la vista
+        // sta gia' usando no - e appoggiarsi al render() che segue vuol dire dipendere da
+        // un ordine di chiamate scritto in un altro metodo.
+        val bot = b.botHand.layoutParams as FrameLayout.LayoutParams
+        bot.topMargin = if (showBot) 0 else -handH / 2
+        b.botHand.layoutParams = bot
+        val deck = b.deckBox.layoutParams as FrameLayout.LayoutParams
+        deck.marginStart = -cardW / 2
+        b.deckBox.layoutParams = deck
     }
 
     override fun onResume() {

@@ -174,11 +174,27 @@ class GameActivity : AppCompatActivity() {
      * dello schermo: mano del Banco per meta' fuori dal bordo alto, mazzo per meta' fuori
      * dal bordo sinistro, griglia del tavolo rientrata cosi' non finisce sopra al mazzo.
      */
+    /**
+     * I margini si RIASSEGNANO, non si modificano in posto.
+     *
+     * `(view.layoutParams as X).topMargin = n` cambia il valore dentro l'oggetto che la
+     * vista sta gia' usando, e nessuno se ne accorge: setLayoutParams chiama
+     * requestLayout() da sola, mutare i campi no. Finora funzionava per un effetto
+     * collaterale - subito dopo placeCards() arriva sempre un render() che cambia la
+     * misura di qualche carta, e quello il layout lo chiede - ma e' una dipendenza da un
+     * ordine di chiamate che sta in un altro metodo: il giorno che render() non cambia
+     * nessuna misura (stesse carte, stesse dimensioni, per esempio tornando dalle
+     * impostazioni dopo aver solo spento "mostra carte del Banco") la mano del Banco
+     * resterebbe dov'era. Costa una riga, e il difetto non puo' piu' ripresentarsi.
+     */
     private fun placeCards() {
         // se le carte del Banco sono scoperte devono restare tutte visibili
-        (b.botHand.layoutParams as LinearLayout.LayoutParams).topMargin = if (showBot) 0 else -cardH / 2
-        b.botHand.requestLayout()
-        (b.deckBox.layoutParams as FrameLayout.LayoutParams).marginStart = -cardW / 2
+        val bot = b.botHand.layoutParams as LinearLayout.LayoutParams
+        bot.topMargin = if (showBot) 0 else -cardH / 2
+        b.botHand.layoutParams = bot
+        val deck = b.deckBox.layoutParams as FrameLayout.LayoutParams
+        deck.marginStart = -cardW / 2
+        b.deckBox.layoutParams = deck
         b.centerBox.setPaddingRelative(cardW / 2, 0, 0, 0)   // Relative: rispetta supportsRtl
     }
 

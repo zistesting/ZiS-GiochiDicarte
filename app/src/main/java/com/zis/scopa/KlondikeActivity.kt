@@ -470,9 +470,18 @@ class KlondikeActivity : AppCompatActivity() {
         // non si muovesse niente. La risposta e' prudente per costruzione - dice di no solo
         // quando non resta proprio niente da toccare - quindi si puo' mostrare senza il
         // rischio di dire "hai perso" a chi invece poteva ancora vincere.
+        // autoFermo da solo non basta a giustificare il messaggio, e serve la congiunzione
+        // con autoPlay: quel flag ha DUE usi. Lo accende passoAutomatico quando non trova
+        // piu' mosse utili - ed e' il caso di cui parla kl_auto_stop - ma lo accende anche
+        // completaDaSolo, per impedire che le due catene di mosse si sovrappongano. Senza
+        // autoPlay davanti, per tutti i dieci secondi del completamento la riga diceva
+        // "gioco automatico fermo" mentre le carte salivano da sole, e lo diceva anche a
+        // gioco automatico spento, cioe' quasi sempre. La congiunzione copre anche il caso
+        // opposto: se il gioco automatico si pianta e poi lo spegni dalle impostazioni, il
+        // messaggio se ne va invece di restare a schermo a parlare di una cosa spenta.
         b.txtStatus.text = when {
             !game.finished && !game.hasAnyMove() -> getString(R.string.kl_no_moves)
-            autoFermo && !game.finished -> getString(R.string.kl_auto_stop)
+            autoPlay && autoFermo && !game.finished -> getString(R.string.kl_auto_stop)
             else -> getString(R.string.kl_status, game.moves, rimaste)
         }
         b.btnUndo.isEnabled = game.canUndo

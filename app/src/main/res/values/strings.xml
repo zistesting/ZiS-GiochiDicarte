@@ -6,6 +6,20 @@
     <string name="play_scopa">Scopa</string>
     <string name="quit">Esci</string>
 
+    <!--
+      Il numero di versione sotto al titolo.
+
+      Il numero NON sta qui: lo legge MainActivity dal PackageManager, cioe' da versionName
+      in app/build.gradle, che e' l'unico posto dove e' scritto. Qui c'e' solo la forma.
+      Prima il testo era "v." concatenato nel codice piu' un android:text="v.4.2" nel
+      layout: due posti da tenere allineati a mano a ogni versione, e il secondo si vedeva
+      per un istante all'apertura se il PackageManager tardava.
+
+      translatable="false" perche' non c'e' niente da tradurre, e cosi' non serve la copia
+      in values-en: le due lingue restano a 114 stringhe pari.
+    -->
+    <string name="version_fmt" translatable="false">v.%1$s</string>
+
     <!-- Game -->
     <string name="bot">Banco</string>
     <string name="you">Tu</string>
@@ -167,11 +181,7 @@
     <string name="pause_switch">Pausa di 1 minuto fra gli incontri</string>
     <string name="pause_switch_desc">Al termine di ogni incontro compare un avviso e bisogna attendere un minuto prima di ricominciare. Se la disattivi, si riaccende da sola dopo un\'ora.</string>
     <string name="pause_title">Prenditi una pausa</string>
-    <string name="pause_message">Giocare a lungo senza interruzioni può diventare un\'abitudine difficile da controllare. Fermati un minuto: alzati, bevi qualcosa, guarda che ora è.
-
-Se senti il bisogno di ricominciare subito, se stai giocando per rifarti di una sconfitta o se il gioco sta togliendo tempo ad altro, parlane con qualcuno.
-
-Telefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 558 822 (gratuito e anonimo, dal lunedì al venerdì dalle 10 alle 16).</string>
+    <string name="pause_message">Giocare a lungo senza interruzioni può diventare un\'abitudine difficile da controllare. Fermati un minuto: alzati, bevi qualcosa, guarda che ora è.\n\nSe senti il bisogno di ricominciare subito, se stai giocando per rifarti di una sconfitta o se il gioco sta togliendo tempo ad altro, parlane con qualcuno.\n\nTelefono Verde Nazionale per le problematiche legate al gioco d\'azzardo: 800 558 822 (gratuito e anonimo, dal lunedì al venerdì dalle 10 alle 16).</string>
     <string name="pause_countdown">Attendi %1$d s</string>
     <string name="pause_wait">Attendi</string>
     <string name="pause_off_info">Pausa disattivata. Si riattiva automaticamente fra %1$d min.</string>

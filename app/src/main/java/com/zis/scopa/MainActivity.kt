@@ -42,7 +42,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(b.root)
         applySystemBars(b.root)
 
-        b.version.text = "v." + appVersion()
+        // Il "v." veniva concatenato qui e c'era anche un android:text="v.4.2" nel layout:
+        // due posti da aggiornare a mano a ogni versione. Ora la forma sta in una stringa
+        // (version_fmt) e il numero viene solo da versionName in build.gradle.
+        b.version.text = getString(R.string.version_fmt, appVersion())
         b.btnScopa.setOnClickListener { startActivity(Intent(this, GameActivity::class.java)) }
         b.btnBriscola.setOnClickListener { startActivity(Intent(this, BriscolaActivity::class.java)) }
         b.btnTresette.setOnClickListener { startActivity(Intent(this, TresetteActivity::class.java)) }

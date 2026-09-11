@@ -64,6 +64,22 @@ class CardView(context: Context) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private val clip = Path()
 
+    /**
+     * I due rettangoli di onDraw sono campi e non variabili locali.
+     *
+     * Non e' micro-ottimizzazione per sport: onDraw viene chiamata per OGNI carta a ogni
+     * fotogramma, e nel Klondike le carte a schermo sono cinquantadue. Due RectF nuovi per
+     * disegno facevano qualche migliaio di oggetti al secondo da dare al garbage collector
+     * durante le animazioni, cioe' esattamente nel momento in cui una pausa del GC si vede
+     * come uno scatto. Riusarli costa due campi e un set() al posto del costruttore.
+     *
+     * [bordo] e' rientrato di un pixel per lato, cosi' la linea di contorno (larga 2) non
+     * viene tagliata a meta' dal bordo della vista; [pieno] e' la vista intera, ed e' dove
+     * va disegnata l'immagine.
+     */
+    private val bordo = RectF()
+    private val pieno = RectF()
+
     init {
         describe()
     }
@@ -191,27 +207,28 @@ class CardView(context: Context) : View(context) {
         val w = width.toFloat()
         val h = height.toFloat()
         val r = min(w, h) * 0.10f
-        val rect = RectF(1f, 1f, w - 1f, h - 1f)
+        bordo.set(1f, 1f, w - 1f, h - 1f)
 
         clip.reset()
-        clip.addRoundRect(rect, r, r, Path.Direction.CW)
+        clip.addRoundRect(bordo, r, r, Path.Direction.CW)
         canvas.save()
         canvas.clipPath(clip)
 
         val bm = bitmapFor(context, resIdFor(card, faceUp), width)
         if (bm != null) {
-            canvas.drawBitmap(bm, null, RectF(0f, 0f, w, h), paint)
+            pieno.set(0f, 0f, w, h)
+            canvas.drawBitmap(bm, null, pieno, paint)
         } else {
             paint.style = Paint.Style.FILL
             paint.color = Color.WHITE
-            canvas.drawRect(rect, paint)
+            canvas.drawRect(bordo, paint)
         }
         canvas.restore()
 
         paint.style = Paint.Style.STROKE
         paint.color = Color.rgb(0x60, 0x60, 0x60)
         paint.strokeWidth = 2f
-        canvas.drawRoundRect(rect, r, r, paint)
+        canvas.drawRoundRect(bordo, r, r, paint)
         paint.style = Paint.Style.FILL
     }
 }
