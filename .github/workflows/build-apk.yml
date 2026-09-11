@@ -128,7 +128,7 @@ jobs:
       # APK: da installare a mano sul telefono per le prove
       - name: Upload APK
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ZiS-GiochiDiCarte-APK
           path: app/build/outputs/apk/release/ZiS-GiochiDiCarte.apk
@@ -137,7 +137,7 @@ jobs:
       # AAB: il formato che il Play Console richiede per pubblicare
       - name: Upload AAB
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ZiS-GiochiDiCarte-AAB
           path: app/build/outputs/bundle/release/app-release.aab
@@ -157,7 +157,7 @@ jobs:
       # false la cartella non esisterebbe e la build non deve fallire per questo.
       - name: Upload referti R8
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ZiS-GiochiDiCarte-R8
           path: app/build/outputs/mapping/release/*
