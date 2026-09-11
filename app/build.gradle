@@ -148,8 +148,25 @@ kotlin {
 // Per andare oltre la 1.17.0 servono AGP 9.x, Gradle 9.x e l'SDK di Android 17: e' una
 // migrazione a se', non un numero da cambiare.
 //
-// appcompat 1.7.1 e constraintlayout 2.2.1 sono di inizio 2025 e non chiedono piu' di
-// compileSdk 35: stanno larghe.
+// appcompat 1.8.0 e constraintlayout 2.2.2 non chiedono piu' di compileSdk 36: stanno
+// larghe. Il dubbio su appcompat 1.8.0 era un altro e non si poteva risolvere leggendo il
+// changelog: se si portasse dietro un androidx.core sopra la 1.17.0, il tetto qui sopra
+// salterebbe per via transitiva - la regola ignore di Dependabot gli impedisce di
+// PROPORRE core 1.18, non impedisce a un'altra libreria di TRASCINARSELO. Ha risposto la
+// build sulla pull request: verde, quindi non lo trascina.
+//
+// KOTLIN si ferma alla 2.2.21 e il vincolo non e' il compilatore, e' R8: l'AGP 8.13.2
+// porta R8 8.13.19, che dichiara di supportare Kotlin fino alla 2.3. Con minifyEnabled
+// acceso e' R8 a leggere il metadata di Kotlin, quindi e' lui a decidere. La 2.2.21 e'
+// anche la versione che l'AGP 8.13.2 usa come esempio nella propria documentazione.
+//
+// GRADLE resta alla 8.13. Non e' prudenza: la 9.7.1 e' stata provata, ed e' la sola
+// proposta di Dependabot su cui la build e' fallita - un minuto netto, contro i due e
+// mezzo di una build che arriva in fondo. Va con l'AGP 9, come tutto il resto.
+//
+// I TETTI SONO SCRITTI ANCHE IN .github/dependabot.yml, che e' il solo posto dove
+// Dependabot li rispetta: AGP >= 9, Kotlin >= 2.3, core >= 1.18, material >= 1.13 e
+// gradle-wrapper >= 9. Se si alza un numero qui, va rivisto anche li'.
 //
 // material RESTA alla 1.12.0, e non per prudenza generica. E' la sola delle quattro che
 // puo' cambiare qualcosa a vista, perche' i suoi major rimescolano gli stili dei dialoghi,
@@ -160,7 +177,7 @@ kotlin {
 // ---------------------------------------------------------------------------
 dependencies {
     implementation 'androidx.core:core-ktx:1.17.0'
-    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
 }

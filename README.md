@@ -4,7 +4,7 @@ Scopa, Briscola e Tresette contro il Banco, piu' il solitario Klondike. Progetto
 nativo (Kotlin + View Binding).
 
 - `minSdk 24` · `targetSdk 36` · `compileSdk 36`
-- AGP 8.13.2 · Gradle 8.13 · Kotlin 2.2.20 · JDK 17
+- AGP 8.13.2 · Gradle 8.13 · Kotlin 2.2.21 · JDK 17
 
 ---
 
@@ -119,7 +119,7 @@ una proroga dal Play Console fino al **1° novembre 2026**.
 
 Cosa è già stato fatto:
 
-1. `compileSdk 36`, `targetSdk 36`, AGP 8.13.2, Gradle 8.13, Kotlin 2.2.20.
+1. `compileSdk 36`, `targetSdk 36`, AGP 8.13.2, Gradle 8.13, Kotlin 2.2.21.
    L'API massima supportata da AGP 8.9 è la 35: con `compileSdk 36` la build funzionava
    lo stesso ma fuori configurazione supportata, e a ogni run usciva l'avviso «We recommend
    using a newer Android Gradle plugin». AGP 8.13 arriva all'API 36.1 e pretende Gradle 8.13.
@@ -205,17 +205,37 @@ errori di AAR metadata: per andare oltre servono AGP 9.x, Gradle 9.x e l'SDK di 
 che è una migrazione a sé e non un numero da cambiare.
 
 `material` **resta alla 1.12.0**, e non per prudenza generica. È la sola delle quattro che può
-cambiare qualcosa a vista, perché i suoi major rimescolano gli stili dei dialoghi, e qui c'è
+cambiare qualcosa a vista, perché i suoi rilasci rimescolano gli stili dei dialoghi, e qui c'è
 una giuntura insolita: `AlertDialog.Builder` di appcompat con un tema che discende da
 `Theme.MaterialComponents.Dialog.Alert` e sopra gli override di `DarkAlertDialog`. A
-quest'app la 1.13.0 non porta niente — si usano il tema e poco altro — quindi sarebbe un
-rischio visivo in cambio di nulla. Si aggiornerà insieme ad AGP 9.
+quest'app la 1.14.0 non porta niente — si usano il tema e poco altro — quindi sarebbe un
+rischio visivo in cambio di nulla, e su un'app fatta di dialoghi (riepilogo di fine mano,
+scelta della presa, pausa, statistiche, informazioni, le due conferme del Klondike) una build
+verde non dice niente su come si **vedono**. Si aggiornerà insieme ad AGP 9, guardandoli uno
+per uno sul telefono.
+
+`appcompat` e `constraintlayout`, invece, si aggiornano: **1.8.0** e **2.2.2**. Su appcompat
+1.8.0 il dubbio non era il suo AAR metadata ma quello che si porta dietro — se pretendesse un
+`androidx.core` sopra la 1.17.0, il tetto salterebbe per via transitiva, perché la regola
+`ignore` impedisce a Dependabot di *proporre* core 1.18 ma non impedisce a un'altra libreria
+di *trascinarselo*. È il genere di domanda a cui il changelog non risponde e la CI sì: la
+build sulla pull request è verde, quindi non lo trascina.
 
 Da qui in avanti ci pensa **Dependabot** (`.github/dependabot.yml`): apre una pull request al
 mese col numero di versione giusto e il changelog allegato, librerie raggruppate in una PR
-sola, più le azioni del workflow. Il file contiene anche il tetto su `core`, da togliere
-quando si passerà ad AGP 9: senza, Dependabot riproporrebbe ogni mese un aggiornamento che
-non può funzionare.
+sola, più le azioni del workflow e il wrapper di Gradle. Il file contiene anche i **tetti**,
+che sono il solo posto dove Dependabot li rispetta: `core` ≥ 1.18, `com.android.application`
+≥ 9, `org.jetbrains.kotlin.android` ≥ 2.3, `material` ≥ 1.13 e `gradle-wrapper` ≥ 9. I primi
+quattro sono lo stesso muro visto da quattro parti — AGP, Gradle, Kotlin e l'SDK si muovono
+insieme — e vanno togliesti tutti in un colpo il giorno della migrazione; il quinto è una
+scelta, e resta anche dopo.
+
+Le proposte di Dependabot **non si uniscono mai**, e non è pignoleria: questo progetto si
+aggiorna caricando file dal PC, cioè sovrascrivendo, quindi il pacchetto locale è la verità e
+il repository è una macchina che compila. Unire una PR scrive nel repository e rompe
+l'invariante: il numero tornerebbe indietro al primo caricamento successivo, senza un avviso.
+Le PR si leggono, il numero si cambia nel file locale, si carica come sempre; al controllo
+dopo Dependabot vede che la versione c'è già e chiude la sua proposta da sé.
 
 E il workflow gira **anche sulle pull request**, il che è la metà che mancava. Le proposte di
 Dependabot arrivano come PR, e senza quel trigger non venivano compilate: un numero di
