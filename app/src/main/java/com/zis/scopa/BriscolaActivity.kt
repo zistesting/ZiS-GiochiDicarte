@@ -252,8 +252,28 @@ class BriscolaActivity : BotGameActivity() {
         }
         // finche' le carte pescate restano nascoste, il contatore non deve calare in anticipo
         val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
-        val extra = game.deck.size + pending - 1   // cards on top of the briscola
-        val visible = if (extra > 0) View.VISIBLE else View.GONE
+
+        // Le carte che restano da pescare, BRISCOLA COMPRESA.
+        //
+        // Prima qui c'era un - 1: il numero contava le sole coperte impilate SOPRA la
+        // briscola, che non era nel conto perche' si vede da se', coricata di fianco. Con due
+        // carte in tutto il numero diceva percio' 1, e sopra un mazzo un numero vuol dire
+        // quante carte restano - tanto che la prossima presa ne fa pescare due, la coperta a
+        // chi vince e la briscola a chi perde. Cosi' e' anche lo stesso conto della Scopa
+        // (deck.size) e del Tresette (deck.size + pending), ed e' l'unico che rende vera la
+        // descrizione per TalkBack, cd_deck, che dice "Mazzo, %d carte": chi non vede la
+        // briscola sporgere non ha modo di accorgersi che ce n'e' una in piu'.
+        val left = game.deck.size + pending
+
+        // La visibilita' del mazzetto coperto NON cambia rispetto a prima, in nessuno stato
+        // raggiungibile: il mazzo si svuota due carte per volta, perche' a ogni presa pescano
+        // tutti e due, quindi le carte che restano sono sempre in numero pari e lo stato "c'e'
+        // solo la briscola" non si da'. Il mazzetto compare finche' il mazzo non e' vuoto e
+        // sparisce quando lo e', esattamente come col - 1. Il confronto e' con 1 e non con 0
+        // per essere una rete: se un giorno si pescasse una carta per volta, il numero non
+        // arriverebbe a dire "1" avendo in vista la sola briscola - e lo direbbe anche male,
+        // perche' cd_deck e' una frase unica al plurale.
+        val visible = if (left > 1) View.VISIBLE else View.GONE
         deckBack?.let {
             val lp = it.layoutParams as FrameLayout.LayoutParams
             if (lp.width != cardW || lp.height != cardH) {
@@ -261,9 +281,9 @@ class BriscolaActivity : BotGameActivity() {
             }
         }
         deckCount?.let {
-            it.text = extra.toString()
+            it.text = left.toString()
             it.contentDescription =
-                if (extra > 0) getString(R.string.cd_deck, extra) else getString(R.string.cd_deck_empty)
+                if (left > 0) getString(R.string.cd_deck, left) else getString(R.string.cd_deck_empty)
         }
         (deckBack?.parent as? View)?.visibility = visible
     }
