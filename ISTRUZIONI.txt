@@ -1,4 +1,4 @@
-ZiS-GiochiDiCarte-francesi  -  mazzo francese  (53 file)  -  carte invariate dalla 3.9
+ZiS-GiochiDiCarte-piacentine-zis  -  mazzi piacentine e ZiS  (82 file)  -  carte invariate dalla 3.9
 
 >>> QUESTO PACCHETTO NON E' CAMBIATO DALLA 3.9, ed e' giusto cosi': sono carte, e le
     carte non si toccano. Cambia solo questo foglio di istruzioni, che era rimasto a
@@ -22,7 +22,8 @@ file per volta, ed e' la ragione per cui i pacchetti sono divisi cosi'.
 
 --- cosa c'e' dentro ---
 
-  53  fr_0_1 ... fr_3_13 + fr_back
+  41  mazzo ZiS          card_0_1 ... card_3_10 + card_back
+  41  mazzo piacentino   trad_0_1 ... trad_3_10 + trad_back
 
 Vanno tutti in app/src/main/res/drawable-nodpi/ , e il percorso e' gia' nello zip.
 
@@ -31,12 +32,14 @@ app1 ma nel pacchetto ZiS-GiochiDiCarte-app2.
 
 --- cosa e' cambiato rispetto agli zip precedenti ---
 
-NIENTE: il mazzo francese e' identico a quello della "part5" della 3.8. C'e' perche' i
-quattro zip insieme sono il progetto completo.
+DUE carte su ottantadue: gli assi di denari, card_0_1.webp e trad_0_1.webp, che ora hanno
+il marchio e la scritta ZiS - l'aquila stilizzata per il mazzo ZiS, quella d'epoca per le
+piacentine. Le altre ottanta sono quelle di sempre.
 
-Rispetto a quella part5, qui NON ci sono piu' art/carte_francesi.py e art/figure/: erano
-duplicati, stanno in ZiS-GiochiDiCarte-app1 insieme a tutto il resto di art/. Era una
-sovrapposizione che confondeva e non serviva a niente.
+I loghi e lo sfondo dell'app (app_logo, title_logo, zis_logo, btn_*, velvet) NON stanno
+piu' qui: sono passati in ZiS-GiochiDiCarte-app1, perche' sono grafica dell'app e non
+carte da gioco. Se avevi caricato la vecchia "part2" sono gia' nel repository e non
+cambiano.
 
 --- caricamento ---
 
@@ -51,22 +54,6 @@ cartelle mantiene i percorsi: quindi non c'e' da navigare fino a drawable-nodpi 
 versioni precedenti. Un trascinamento, un commit.
 
 NON caricare questo ISTRUZIONI.txt.
-
---- com'e' fatto questo mazzo ---
-
-UN INDICE SOLO, in alto a sinistra, e grande. Nel Klondike le carte non si girano mai e in
-colonna di ogni carta si vede solo la fascia in alto: l'indice in basso a destra non era
-visibile MAI e si mangiava un terzo dell'altezza.
-
-L'INDICE E' ALLINEATO SULL'INCHIOSTRO, non sulla linea di base: si rasterizza ogni valore,
-si misura, e si scegle il font-size perche' il corpo venga uguale per tutti. Serve al 10,
-su cui il simbolo del seme finiva sopra allo zero, e al J, che in colonna si leggeva come
-una I perche' il gancio scendeva sotto la fascia visibile.
-
-LE TRE FIGURE vengono da tre immagini piatte ricolorate per seme: cuori carminio e oro,
-quadri vermiglio e ambra, fiori verde e argento, picche ardesia e acciaio. Il vincolo non
-e' estetico: nel Klondike le colonne si costruiscono a colori alternati, quindi rosso e
-nero devono restare inconfondibili.
 
 --- avvertenza di sempre ---
 
