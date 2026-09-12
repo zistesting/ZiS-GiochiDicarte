@@ -299,14 +299,71 @@ class TresetteGame {
      *
      * In breve: sotto 1,0 il Banco spreca le carte alte, sopra 2,8 se le tiene anche quando
      * servirebbero. 1,3 sta comodo in mezzo.
+     *
+     * NOTA, aggiunta dopo: i quattro casi qui sopra sono stati misurati quando il valore di
+     * controllo di una carta imbattibile era 2,0 e basta. Adesso [keepValue] gli somma anche
+     * ACE_KEEP quando in quel seme gira ancora l'asso, quindi il primo caso e' cambiato di
+     * suo - il Banco non esce di 3 per incassare una scartina - e i numeri scritti sopra
+     * valgono come storia di come si e' arrivati a 1,3, non come misura di oggi. Gli altri
+     * tre casi restano quelli descritti: la riserva non li tocca, perche' l'asso GIA' CALATO
+     * sta nella presa in corso e unseenBy non lo conta piu' fra le carte in giro.
      */
     private val KEEP_WEIGHT = 1.3
 
-    private fun keepValue(c: Card, unseen: List<Card>): Double {
+    /**
+     * Quanto vale tenere una carta imbattibile finche' in quel seme gira ancora l'asso.
+     *
+     * IL DIFETTO. Il valore di controllo di una carta imbattibile era 2,0, che con
+     * KEEP_WEIGHT fa 2,6; nel ramo dell'apertura una presa sicura vale 6,0 piu' i punti,
+     * cioe' circa 7. Uscire di 3 conveniva quindi sempre, anche quando fruttava soltanto il
+     * terzo della carta stessa perche' l'avversario rispondeva con una scartina. Il Banco si
+     * bruciava i 3 nelle prime prese e poi non aveva piu' con che catturare gli assi, che
+     * valgono un punto intero, cioe' tre volte tanto. La taratura di KEEP_WEIGHT aveva
+     * sistemato la scelta FRA DUE PRESE SICURE, che e' un caso diverso: non quella fra una
+     * presa sicura e il buttare una carta senza valore.
+     *
+     * IL NUMERO. Misurato con le due versioni del Banco che si giocano mani vere contro
+     * (2.500 mani per riga, lati scambiati a meta'): contro il Banco senza questa riserva la
+     * versione con riserva a 6 vince il 74% delle mani, 51.400 terzi contro 36.100. La curva
+     * sale fino a 6 e poi si ferma: 6 contro 9 da' 50,8%, 6 contro 15 da' 51,3%, e il
+     * controllo di due versioni identiche da' 48,9%. Sopra 6 il termine domina comunque tutte
+     * le alternative, quindi il comportamento non cambia piu'. Sei e' percio' il valore piu'
+     * basso che ottiene l'effetto intero, e lascia agli altri termini la possibilita' di
+     * avere la meglio nei casi estremi. A 3 non basta: 3 contro 6 perde 63 a 37.
+     *
+     * IL RISCHIO OPPOSTO non si presenta, e per costruzione: se l'avversario ha CALATO
+     * l'asso, quella carta e' nella presa in corso e unseenBy la conta fra le carte note,
+     * quindi qui non risulta piu' "in giro" e la riserva non scatta. Il Banco continua a
+     * prenderlo. Misurato: la percentuale di assi catturati resta fra il 75 e il 78% mentre
+     * le occasioni di catturarne uno quadruplicano.
+     */
+    private val ACE_KEEP = 6.0
+
+    /**
+     * [incassoOra] spegne la riserva quando l'asso lo si incassa con questa stessa giocata:
+     * tenersi la carta per catturarlo piu' avanti non ha senso se uscendo di li' lo si
+     * cattura adesso. E' il terzo dei quattro casi tarati insieme a KEEP_WEIGHT - "uscire di
+     * 3 quando in quel seme l'avversario ha SOLO l'asso e deve calarlo" - che senza questa
+     * eccezione si perderebbe.
+     *
+     * In aggregato l'eccezione non si vede: con o senza, il risultato e' lo stesso entro il
+     * rumore (50,8% con, contro un controllo a 48,9%). Resta perche' e' il ragionamento
+     * giusto e perche' quel caso era gia' stato misurato e scritto: lasciarlo cadere in
+     * silenzio sarebbe la deriva che questo file cerca di evitare. La prima versione
+     * dell'eccezione era piu' larga - bastava che l'asso fosse la carta piu' economica fra
+     * quelle plausibili - e in quella forma PEGGIORAVA, perche' scattava su una stima invece
+     * che su una certezza: 52,5% a favore della versione stretta.
+     */
+    private fun keepValue(c: Card, unseen: List<Card>, incassoOra: Boolean = false): Double {
         val higher = unseen.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
         // il valore in punti che perderei, piu' il valore di controllo: una carta che nessuno
         // puo' piu' battere e' una presa sicura piu' avanti
-        return thirds(c) + if (higher == 0) 2.0 else maxOf(0.0, 1.2 - 0.4 * higher)
+        var v = thirds(c) + if (higher == 0) 2.0 else maxOf(0.0, 1.2 - 0.4 * higher)
+        // la riserva: questa carta batte tutto in quel seme, e in quel seme c'e' ancora un
+        // asso da catturare (tre terzi contro il terzo che incasso calandola adesso)
+        if (higher == 0 && c.value != 1 && !incassoOra &&
+            unseen.any { it.suit == c.suit && it.value == 1 }) v += ACE_KEEP
+        return v
     }
 
     /**
@@ -353,6 +410,8 @@ class TresetteGame {
         // seconda che tocchi a lui aprire o rispondere.
         var best = legal.first(); var bestScore = -1e9
         for (c in legal) {
+            // vero solo se l'asso di quel seme viene calato per forza ADESSO: vedi keepValue
+            var incassoAsso = false
             val higherKnown = known.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
             val higherUnknown = unknown.count { it.suit == c.suit && strength(it.value) > strength(c.value) }
             val base = if (higherKnown == 0 && higherUnknown == 0) {
@@ -362,6 +421,14 @@ class TresetteGame {
                 val knownSuit = known.filter { it.suit == c.suit }
                 val cheapest = (if (knownSuit.isNotEmpty()) knownSuit else unknown.filter { it.suit == c.suit })
                     .minOfOrNull { thirds(it) } ?: 0
+                // Certezza, non stima: l'asso l'ho VISTO in mano sua (quindi non e' nel
+                // tallone) e non puo' rispondere con altro in quel seme, o perche' in quel
+                // seme non gli resta nient'altro di ignoto, o perche' la sua mano la conosco
+                // tutta. Con la stima al posto della certezza questa eccezione peggiorava.
+                val semeIgnoto = unseen.filter { it.suit == c.suit }
+                val asso = semeIgnoto.firstOrNull { it.value == 1 }
+                incassoAsso = asso != null && asso in known &&
+                    (semeIgnoto.size == 1 || (hiddenSlots == 0 && knownSuit.size == 1))
                 6.0 + thirds(c) + cheapest
             } else {
                 // una carta piu' alta vista in mano sua e' una certezza, non una probabilita'
@@ -369,7 +436,7 @@ class TresetteGame {
                            else minOf(1.0, higherUnknown.toDouble() * hiddenSlots / maxOf(1, unknown.size))
                 -(thirds(c) * 2.0 + 0.5) * risk - 0.03 * strength(c.value)
             }
-            val s = base - keepValue(c, unseen) * KEEP_WEIGHT
+            val s = base - keepValue(c, unseen, incassoAsso) * KEEP_WEIGHT
             if (s > bestScore) { bestScore = s; best = c }
         }
         return best
