@@ -1,7 +1,5 @@
 package com.zis.scopa
 
-import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -194,9 +192,8 @@ class BriscolaActivity : BotGameActivity() {
         }
     }
 
-    // Mazzo e briscola: create una volta sola, poi si aggiornano.
-    private var deckBack: CardView? = null
-    private var deckCount: TextView? = null
+    // La briscola coricata: creata una volta sola, poi si aggiorna. Il mazzetto col
+    // contatore lo tiene la base, che lo condivide col Tresette.
     private var trumpView: CardView? = null
 
     override fun render() = renderWith(null)
@@ -229,27 +226,12 @@ class BriscolaActivity : BotGameActivity() {
     private fun visibleHand(p: Int): List<Card> =
         game.hands[p].filter { !(hideDrawn && it == game.lastDrawn[p]) }
 
-    /** Mazzo: le carte sopra la briscola, col numero rimasto. */
+    /**
+     * Mazzo: le carte sopra la briscola, col numero rimasto. Il disegno del mazzetto e del
+     * contatore sta nella base, che lo condivide col Tresette; qui resta il conto, che e'
+     * l'unica cosa di questo gioco.
+     */
     private fun renderDeck() {
-        if (deckBack == null) {
-            val fl = FrameLayout(this)
-            val back = CardView(this).apply { faceUp = false }
-            fl.addView(back, FrameLayout.LayoutParams(cardW, cardH))
-            val tv = TextView(this)
-            tv.setTextColor(getColor(R.color.silver)); tv.textSize = 14f
-            tv.setTypeface(tv.typeface, Typeface.BOLD)
-            tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
-            tv.setPadding(dp(5), dp(1), dp(5), dp(1))
-            val tp = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-            tp.marginEnd = dp(6)
-            fl.addView(tv, tp)
-            b.deckBox.addView(fl)
-            deckBack = back
-            deckCount = tv
-        }
         // finche' le carte pescate restano nascoste, il contatore non deve calare in anticipo
         val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
 
@@ -273,19 +255,7 @@ class BriscolaActivity : BotGameActivity() {
         // per essere una rete: se un giorno si pescasse una carta per volta, il numero non
         // arriverebbe a dire "1" avendo in vista la sola briscola - e lo direbbe anche male,
         // perche' cd_deck e' una frase unica al plurale.
-        val visible = if (left > 1) View.VISIBLE else View.GONE
-        deckBack?.let {
-            val lp = it.layoutParams as FrameLayout.LayoutParams
-            if (lp.width != cardW || lp.height != cardH) {
-                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
-            }
-        }
-        deckCount?.let {
-            it.text = left.toString()
-            it.contentDescription =
-                if (left > 0) getString(R.string.cd_deck, left) else getString(R.string.cd_deck_empty)
-        }
-        (deckBack?.parent as? View)?.visibility = visible
+        renderDeckBox(b.deckBox, left, pileVisible = left > 1)
     }
 
     /**
@@ -419,7 +389,7 @@ class BriscolaActivity : BotGameActivity() {
         statusView.setText(if (winner == 0) R.string.you_take else R.string.bot_take)
         armWatchdog()
         post(t.trickPause) {
-            sweepTrick(winner) {
+            sweepTrick(b.trickRow, if (winner == 0) b.youHand else b.botHand) {
                 hideDrawn = false
                 when {
                     game.finished -> { render(); endRound() }
@@ -438,42 +408,6 @@ class BriscolaActivity : BotGameActivity() {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Le due carte della presa scivolano verso chi ha vinto la mano: in alto se ha preso
-     * il Banco, in basso se hai preso tu. Rimpicciolendosi e sfumando danno l'idea della
-     * carta che finisce nel mazzetto delle prese.
-     */
-    private fun sweepTrick(winner: Int, onDone: () -> Unit) {
-        if (t.fast) { onDone(); return }
-        val temps = ArrayList<CardView>()
-        for (i in 0 until b.trickRow.childCount) {
-            val child = b.trickRow.getChildAt(i) as? CardView ?: continue
-            val (x, y) = topLeftInOverlay(child)
-            val tmp = CardView(this)
-            tmp.card = child.card; tmp.faceUp = true
-            b.overlay.addView(tmp, FrameLayout.LayoutParams(cardW, cardH))
-            tmp.x = x; tmp.y = y
-            child.visibility = View.INVISIBLE
-            temps.add(tmp)
-        }
-        if (temps.isEmpty()) { onDone(); return }
-
-        val dest = if (winner == 0) b.youHand else b.botHand
-        val (cx, cy) = centerInOverlay(dest)
-        var last = 0L
-        for ((i, tmp) in temps.withIndex()) {
-            val delay = i * t.sweepStep
-            tmp.animate().x(cx - cardW / 2f).y(cy - cardH / 2f)
-                .scaleX(0.5f).scaleY(0.5f).alpha(0f)
-                .setStartDelay(delay).setDuration(t.sweepDur).start()
-            last = maxOf(last, delay + t.sweepDur)
-        }
-        post(last + 40) {
-            for (tmp in temps) b.overlay.removeView(tmp)
-            onDone()
         }
     }
 

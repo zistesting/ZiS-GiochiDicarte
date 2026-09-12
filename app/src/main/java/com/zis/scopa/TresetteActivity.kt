@@ -1,7 +1,5 @@
 package com.zis.scopa
 
-import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -284,45 +282,17 @@ class TresetteActivity : BotGameActivity() {
         }
     }
 
-    // Il tallone: creato una volta sola, poi cambia solo il numero sopra.
-    private var deckBack: CardView? = null
-    private var deckCount: TextView? = null
-
+    /**
+     * Il tallone col numero delle carte rimaste. Il disegno del mazzetto e del contatore sta
+     * nella base, che lo condivide con la Briscola; qui resta il conto.
+     */
     private fun renderDeck() {
-        if (deckBack == null) {
-            val fl = FrameLayout(this)
-            val back = CardView(this).apply { faceUp = false }
-            fl.addView(back, FrameLayout.LayoutParams(cardW, cardH))
-            val tv = TextView(this)
-            tv.setTextColor(getColor(R.color.silver)); tv.textSize = 14f
-            tv.setTypeface(tv.typeface, Typeface.BOLD)
-            tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
-            tv.setPadding(dp(5), dp(1), dp(5), dp(1))
-            val tp = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
-            )
-            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
-            tp.marginEnd = dp(6)
-            fl.addView(tv, tp)
-            b.deckBox.addView(fl)
-            deckBack = back
-            deckCount = tv
-        }
+        // finche' le carte pescate restano nascoste, il contatore non deve calare in anticipo
         val pending = if (hideDrawn) game.lastDrawn.count { it != null } else 0
         val left = game.deck.size + pending
-        deckBack?.let {
-            val lp = it.layoutParams as FrameLayout.LayoutParams
-            if (lp.width != cardW || lp.height != cardH) {
-                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
-            }
-        }
-        deckCount?.let {
-            it.text = left.toString()
-            // il numero da solo non dice niente a TalkBack
-            it.contentDescription =
-                if (left > 0) getString(R.string.cd_deck, left) else getString(R.string.cd_deck_empty)
-        }
-        (deckBack?.parent as? View)?.visibility = if (left > 0) View.VISIBLE else View.GONE
+        // Qui la soglia e' zero e non uno: sotto al tallone non c'e' nessuna briscola
+        // coricata, quindi quando il mazzo e' vuoto non resta niente da mostrare.
+        renderDeckBox(b.deckBox, left, pileVisible = left > 0)
     }
 
     override fun render() = renderWith(null)
@@ -450,7 +420,7 @@ class TresetteActivity : BotGameActivity() {
         statusView.setText(if (winner == 0) R.string.you_take else R.string.bot_take)
         armWatchdog()
         post(t.trickPause) {
-            sweepTrick(winner) {
+            sweepTrick(b.trickRow, if (winner == 0) b.youHandBox else b.botHandBox) {
                 showDraw {
                     hideDrawn = false
                     when {
@@ -469,37 +439,6 @@ class TresetteActivity : BotGameActivity() {
                     }
                 }
             }
-        }
-    }
-
-    private fun sweepTrick(winner: Int, onDone: () -> Unit) {
-        if (t.fast) { onDone(); return }
-        val temps = ArrayList<CardView>()
-        for (i in 0 until b.trickRow.childCount) {
-            val child = b.trickRow.getChildAt(i) as? CardView ?: continue
-            val (x, y) = topLeftInOverlay(child)
-            val tmp = CardView(this)
-            tmp.card = child.card; tmp.faceUp = true
-            b.overlay.addView(tmp, FrameLayout.LayoutParams(cardW, cardH))
-            tmp.x = x; tmp.y = y
-            child.visibility = View.INVISIBLE
-            temps.add(tmp)
-        }
-        if (temps.isEmpty()) { onDone(); return }
-
-        val dest = if (winner == 0) b.youHandBox else b.botHandBox
-        val (cx, cy) = centerInOverlay(dest)
-        var last = 0L
-        for ((i, tmp) in temps.withIndex()) {
-            val delay = i * t.sweepStep
-            tmp.animate().x(cx - cardW / 2f).y(cy - cardH / 2f)
-                .scaleX(0.5f).scaleY(0.5f).alpha(0f)
-                .setStartDelay(delay).setDuration(t.sweepDur).start()
-            last = maxOf(last, delay + t.sweepDur)
-        }
-        post(last + 40) {
-            for (tmp in temps) b.overlay.removeView(tmp)
-            onDone()
         }
     }
 

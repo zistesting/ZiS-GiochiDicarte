@@ -1,9 +1,13 @@
 package com.zis.scopa
 
 import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -309,6 +313,16 @@ abstract class BotGameActivity : AppCompatActivity() {
      */
     protected fun setupCommon(infoButton: View) {
         applySystemBars(rootView)
+        // L'overlay e' scenografia e nient'altro. Le copie di carte che ci volano dentro
+        // nascono da CardView, quindi con la loro contentDescription: TalkBack le annuncia
+        // mentre sono in volo, e lo fa sopra l'annuncio della carta vera, che e' quella
+        // rimasta nella mano o in tavola. Da qui in giu' non c'e' niente da leggere, perche'
+        // tutto quello che sta qui e' il duplicato momentaneo di qualcosa che sta sotto.
+        //
+        // Questa riga aspettava che l'impalcatura fosse in comune: prima andava scritta tre
+        // volte e le tre copie potevano divergere, che e' il difetto contro cui e' nata
+        // BotGameActivity.
+        overlay.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         infoButton.setOnClickListener { track(InfoDialog.show(this, R.string.info_title, rulesText)) }
         readSettings()
         CardView.setDeck(Prefs.deck(this))
@@ -625,6 +639,109 @@ abstract class BotGameActivity : AppCompatActivity() {
                     .setStartDelay(delay).setDuration(t.dealDur).start()
                 delay += t.dealStep
             }
+        }
+    }
+
+    // ------------------------------------------- il mazzetto col contatore
+
+    // Le tre viste del mazzetto coperto, create una volta sola alla prima chiamata di
+    // [renderDeckBox]. Le usano Briscola e Tresette; la Scopa NO, perche' li' il contatore
+    // e' disposto diversamente (nessun riquadro che li tenga insieme, caratteri e margini di
+    // un altro passo) e unificarlo cambierebbe l'aspetto di una schermata gia' collaudata per
+    // guadagnare un pixel di margine. Il suo renderDeck resta in GameActivity.
+    private var deckPile: FrameLayout? = null
+    private var deckBack: CardView? = null
+    private var deckCount: TextView? = null
+
+    /**
+     * Il mazzetto coperto col numero delle carte scritto sopra.
+     *
+     * Fra Briscola e Tresette questo codice era identico carattere per carattere, e quella
+     * ripetizione un difetto l'ha prodotto davvero: il numero della Briscola contava
+     * `deck.size - 1` e quello del Tresette `deck.size`, cosi' la Briscola diceva 1 quando le
+     * carte da pescare erano due. E' stato corretto in un posto solo e nell'altro no, che e'
+     * esattamente il modo in cui due copie si separano.
+     *
+     * [left] sono le carte che restano da pescare e [pileVisible] dice se il mazzetto coperto
+     * va mostrato: la condizione non e' la stessa nei due giochi, perche' nella Briscola sotto
+     * al mazzo c'e' anche la briscola coricata, e il chiamante la scrive dove il motivo si
+     * capisce.
+     */
+    protected fun renderDeckBox(box: FrameLayout, left: Int, pileVisible: Boolean) {
+        if (deckBack == null) {
+            val fl = FrameLayout(this)
+            val back = CardView(this).apply { faceUp = false }
+            fl.addView(back, FrameLayout.LayoutParams(cardW, cardH))
+            val tv = TextView(this)
+            tv.setTextColor(getColor(R.color.silver)); tv.textSize = 14f
+            tv.setTypeface(tv.typeface, Typeface.BOLD)
+            tv.setBackgroundColor(Color.argb(0xB0, 0, 0, 0))
+            tv.setPadding(dp(5), dp(1), dp(5), dp(1))
+            val tp = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT
+            )
+            // meta' mazzo e' fuori schermo: il contatore sta a destra, dove si vede
+            tp.gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            tp.marginEnd = dp(6)
+            fl.addView(tv, tp)
+            box.addView(fl)
+            deckPile = fl
+            deckBack = back
+            deckCount = tv
+        }
+        deckBack?.let {
+            val lp = it.layoutParams as FrameLayout.LayoutParams
+            if (lp.width != cardW || lp.height != cardH) {
+                lp.width = cardW; lp.height = cardH; it.layoutParams = lp
+            }
+        }
+        deckCount?.let {
+            it.text = left.toString()
+            // il numero da solo non dice niente a TalkBack
+            it.contentDescription =
+                if (left > 0) getString(R.string.cd_deck, left) else getString(R.string.cd_deck_empty)
+        }
+        deckPile?.visibility = if (pileVisible) View.VISIBLE else View.GONE
+    }
+
+    /**
+     * Le carte della presa scivolano verso chi l'ha vinta, rimpicciolendosi e sfumando:
+     * l'idea della carta che finisce nel mazzetto delle prese.
+     *
+     * Anche questo era identico fra Briscola e Tresette a meno di una cosa sola, la vista di
+     * destinazione, che nei due layout ha nomi e tipi diversi. Arriva percio' come parametro,
+     * e la mappa vinta -> destinazione resta nel gioco, dove sono i nomi delle sue viste.
+     *
+     * La Scopa non lo usa: li' le carte prese non scivolano via, si raccolgono sotto quella
+     * calata, che e' un'altra animazione ([gatherCaptured] in GameActivity).
+     */
+    protected fun sweepTrick(trickRow: ViewGroup, dest: View, onDone: () -> Unit) {
+        if (t.fast) { onDone(); return }
+        val temps = ArrayList<CardView>()
+        for (i in 0 until trickRow.childCount) {
+            val child = trickRow.getChildAt(i) as? CardView ?: continue
+            val (x, y) = topLeftInOverlay(child)
+            val tmp = CardView(this)
+            tmp.card = child.card; tmp.faceUp = true
+            overlay.addView(tmp, FrameLayout.LayoutParams(cardW, cardH))
+            tmp.x = x; tmp.y = y
+            child.visibility = View.INVISIBLE
+            temps.add(tmp)
+        }
+        if (temps.isEmpty()) { onDone(); return }
+
+        val (cx, cy) = centerInOverlay(dest)
+        var last = 0L
+        for ((i, tmp) in temps.withIndex()) {
+            val delay = i * t.sweepStep
+            tmp.animate().x(cx - cardW / 2f).y(cy - cardH / 2f)
+                .scaleX(0.5f).scaleY(0.5f).alpha(0f)
+                .setStartDelay(delay).setDuration(t.sweepDur).start()
+            last = maxOf(last, delay + t.sweepDur)
+        }
+        post(last + 40) {
+            for (tmp in temps) overlay.removeView(tmp)
+            onDone()
         }
     }
 
