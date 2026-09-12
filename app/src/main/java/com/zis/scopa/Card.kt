@@ -52,11 +52,22 @@ data class Card(val suit: Int, val value: Int) {
      * sue Resources. Il valore e il seme vengono dagli array, la congiunzione da
      * cd_card_name, che in inglese diventa "of": e' esattamente la cosa che concatenando
      * "$valore di $seme" non si poteva ottenere.
+     *
+     * LA SECONDA RETE, ed e' la stessa di [Decks.faceId]: **e' francese anche una carta con
+     * valore sopra il 10**, qualunque cosa dica il parametro. valori_italiani ha DIECI voci,
+     * quindi un Fante francese (valore 11) letto come italiano cadeva fuori dalla tabella e
+     * l'app si chiudeva con ArrayIndexOutOfBounds - non a disegnare la carta, ma a scriverne
+     * il nome per TalkBack, cioe' per un motivo che a schermo non si vede. Nessun nome di
+     * carta vale la chiusura dell'app: se l'indice non c'e' si scrive il numero e si tira
+     * avanti. Costa un confronto e due getOrNull.
      */
     fun nome(res: Resources, french: Boolean): String {
-        val semi = res.getStringArray(if (french) R.array.semi_francesi else R.array.semi_italiani)
-        val valori = res.getStringArray(if (french) R.array.valori_francesi else R.array.valori_italiani)
-        return res.getString(R.string.cd_card_name, valori[value - 1], semi[suit])
+        val fr = french || value > 10
+        val semi = res.getStringArray(if (fr) R.array.semi_francesi else R.array.semi_italiani)
+        val valori = res.getStringArray(if (fr) R.array.valori_francesi else R.array.valori_italiani)
+        val v = valori.getOrNull(value - 1) ?: value.toString()
+        val s = semi.getOrNull(suit) ?: ""
+        return res.getString(R.string.cd_card_name, v, s)
     }
 }
 

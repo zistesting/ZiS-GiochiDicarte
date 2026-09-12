@@ -388,9 +388,12 @@ class PokerActivity : AppCompatActivity() {
         val carte = game.mani[p]
         val scoperte = game.carteMostrate && game.inMano(p)
         while (riga.childCount > carte.size) riga.removeViewAt(riga.childCount - 1)
-        while (riga.childCount < carte.size) riga.addView(CardView(this), LinearLayout.LayoutParams(seatW, seatH))
+        while (riga.childCount < carte.size)
+            riga.addView(CardView(this).apply { french = true },
+                         LinearLayout.LayoutParams(seatW, seatH))
         for (i in carte.indices) {
             val cv = riga.getChildAt(i) as CardView
+            cv.french = true
             val lp = cv.layoutParams as LinearLayout.LayoutParams
             lp.width = seatW; lp.height = seatH
             // si accavallano: sono dorsi tutti uguali, non si perde niente
@@ -407,10 +410,13 @@ class PokerActivity : AppCompatActivity() {
         val carte = game.mani[0]
         val riga = b.youHand
         while (riga.childCount > carte.size) riga.removeViewAt(riga.childCount - 1)
-        while (riga.childCount < carte.size) riga.addView(CardView(this), LinearLayout.LayoutParams(cardW, cardH))
+        while (riga.childCount < carte.size)
+            riga.addView(CardView(this).apply { french = true },
+                         LinearLayout.LayoutParams(cardW, cardH))
         val scegliendo = game.fase == PokerGame.SCARTO && game.turno == 0 && !busy
         for (i in carte.indices) {
             val cv = riga.getChildAt(i) as CardView
+            cv.french = true
             val lp = cv.layoutParams as LinearLayout.LayoutParams
             lp.width = cardW; lp.height = cardH
             lp.marginStart = dp(3); lp.marginEnd = dp(3)
@@ -504,23 +510,43 @@ class PokerActivity : AppCompatActivity() {
     private fun saveState() {
         if (game.partitaFinita) return
         val w = SavedGame.Writer()
-        game.save(w)
+        // Il numero dei giocatori va PRIMA di tutto il resto, e non in fondo: e' il dato che
+        // decide la MISURA di tutte le sezioni che seguono - nove elenchi lunghi quanti sono
+        // i giocatori, piu' una mano per ciascuno - quindi va letto prima di leggere qualunque
+        // altra cosa. Scritto in fondo non si poteva leggere se non dopo aver gia' letto tutto
+        // il resto con la misura sbagliata, e leggere con la misura sbagliata non da' errore:
+        // consuma un numero diverso di sezioni e va avanti. Vedi [restoreState].
         w.ints(listOf(giocatori))
+        game.save(w)
         SavedGame.write(this, SavedGame.POKER, w)
     }
 
+    /**
+     * Riprende la partita salvata, se e' della misura giusta.
+     *
+     * CAMBIARE IL NUMERO DEI GIOCATORI dalle impostazioni vuol dire cominciare una partita
+     * nuova, ed e' giusto cosi': quello che si butta e' una mano, non un incontro. La cosa
+     * che NON deve capitare e' rileggere un salvataggio da quattro dentro un motore da due.
+     *
+     * Perche' era un difetto vero e non una precauzione. Con il numero dei giocatori scritto
+     * in fondo, la lettura di un salvataggio da quattro fatta con due consumava quattro
+     * sezioni in meno - due mani in meno - e arrivava in fondo sfalsata: il controllo finiva
+     * per confrontare il MAZZIERE con il numero dei giocatori, e se il mazziere salvato era
+     * 2 il controllo passava. Lo stato accettato era spazzatura, [turno] veniva da un codice
+     * di carta fra 0 e 51, e alla prima mossa `fuori[37]` chiudeva l'app.
+     *
+     * Adesso la prima sezione e' il numero dei giocatori e si legge per prima. Il controllo
+     * guarda anche la LUNGHEZZA, e non solo il valore: un salvataggio scritto con il formato
+     * vecchio ha in testa l'elenco delle fiches, cioe' due o quattro numeri invece di uno, e
+     * viene scartato con certezza invece che per fortuna.
+     */
     private fun restoreState(): Boolean {
         val r = SavedGame.read(this, SavedGame.POKER) ?: return false
         try {
-            // il numero dei giocatori sta in fondo, ma serve PRIMA per costruire il motore:
-            // si legge lo stato in un motore della misura giusta solo se la misura si sa.
-            // Percio' il motore si costruisce con quello delle impostazioni, e se il
-            // salvataggio non combacia si butta: cambiare il numero dei giocatori dalle
-            // impostazioni vuol dire cominciare una partita nuova, ed e' giusto cosi'.
+            val m = r.ints()
+            if (m.size != 1 || m[0] != giocatori) { SavedGame.clear(this, SavedGame.POKER); return false }
             val prova = PokerGame(giocatori)
             prova.load(r)
-            val m = r.ints()
-            if (m[0] != giocatori) { SavedGame.clear(this, SavedGame.POKER); return false }
             game = prova
         } catch (e: Exception) {
             SavedGame.clear(this, SavedGame.POKER)

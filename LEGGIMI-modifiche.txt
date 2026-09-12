@@ -1,0 +1,203 @@
+MODIFICHE DA CARICARE  -  poker che si chiudeva, logo e icona nuovi
+
+Dentro ci sono soltanto i file toccati, nelle cartelle dove devono stare: l'albero e' quello
+del repository, quindi si estrae e si trascina.
+
+NON caricare questo LEGGIMI: il workflow ignora i .txt, quindi non farebbe danno, ma non
+serve a niente sul repository.
+
+
+DODICI FILE, IN DUE GRUPPI
+================================================================================
+
+app/   NOVE file, questi entrano nell'APK
+
+  app/src/main/java/com/zis/scopa/PokerActivity.kt
+  app/src/main/java/com/zis/scopa/Card.kt
+  app/src/main/res/drawable-nodpi/app_logo.webp            500x500
+  app/src/main/res/drawable-nodpi/ic_launcher_fg.webp      500x500
+  app/src/main/res/mipmap-mdpi/ic_launcher.png              48x48
+  app/src/main/res/mipmap-hdpi/ic_launcher.png              72x72
+  app/src/main/res/mipmap-xhdpi/ic_launcher.png             96x96
+  app/src/main/res/mipmap-xxhdpi/ic_launcher.png           144x144
+  app/src/main/res/mipmap-xxxhdpi/ic_launcher.png          192x192
+
+art/   TRE file, stanno nel repository ma fuori dall'APK e fuori dalla compilazione
+
+  art/logo_app.png      il sorgente del logo quadrato, sostituisce quello che c'era
+  art/icona_app.png     il sorgente dell'icona tonda, NUOVO: prima non c'era
+  art/icona_app.py      il generatore, riscritto: due sorgenti e sette destinazioni
+
+Sul PC: app/ va nella cartella ZiS-GiochiDiCarte-app1, art/ nella cartella
+ZiS-GiochiDiCarte-app2. Sul repository stanno tutte due nella radice, una accanto all'altra.
+
+
+ORDINE DI CARICAMENTO  -  due gesti, e la build parte una volta sola
+================================================================================
+
+ 1. art/     Add file -> Upload files, e trascina la cartella art intera.
+             Niente [skip ci]: il workflow ha 'art/**' fra i paths-ignore, quindi un
+             caricamento di sole cose dentro art non fa partire niente comunque.
+
+ 2. app/     Add file -> Upload files, e trascina la cartella app intera.
+             SENZA [skip ci]: e' questo il caricamento che deve far partire la build.
+
+Le cartelle senza il punto davanti passano dal caricatore web e i percorsi dentro si
+conservano: non serve entrare in scopa, in drawable-nodpi e nelle cinque mipmap una per una.
+Controlla in fondo alla pagina, prima di confermare, che sia selezionato "Commit directly to
+the main branch".
+
+Se carichi soltanto app/ la build viene uguale: art/ e' il sorgente e lo strumento, non
+entra nell'APK. Ma allora i sorgenti sul repository restano indietro rispetto alle immagini,
+ed e' proprio la cosa che ha reso il generatore una trappola (vedi sotto).
+
+.github non c'entra con questa consegna: non e' cambiato niente li' dentro.
+
+VERSIONE: non l'ho toccata, resta 4.3 in app/build.gradle. Un'icona nuova si vede, quindi se
+vuoi distinguere questo APK da quello di prima e' quel file, una riga.
+
+
+COSA E' CAMBIATO
+================================================================================
+
+--- 1. il poker si chiudeva alla prima figura francese ---
+
+PokerActivity non impostava french = true sulle CardView, e nell'app lo fa soltanto il
+Klondike. Cosi' il nome della carta letto da TalkBack veniva cercato in valori_italiani, che
+ha DIECI voci: Fante, Donna e Re francesi (valori 11, 12, 13) cadevano fuori dalla tabella e
+l'app si chiudeva con ArrayIndexOutOfBounds. Non a disegnare la carta - a scriverne il nome,
+cioe' per un motivo che a schermo non si vede.
+
+Succedeva al primo render della mano: cinque carte su 52 non contengono nessuna figura solo
+nel 25,3% dei casi, quindi si chiudeva subito in tre mani su quattro, e nelle altre alla mano
+dopo o allo showdown, dove si scoprono le carte degli avversari e si passa per la stessa
+strada.
+
+  PokerActivity.kt   french = true alla creazione della vista e nel ciclo, in tutte due le
+                     funzioni di disegno (disegnaManoCoperta, disegnaManoTua).
+  Card.kt            la stessa rete che c'e' gia' in Decks.faceId: e' francese anche una
+                     carta con valore sopra il 10, qualunque cosa dica il parametro, piu'
+                     due getOrNull. Nessun nome di carta vale la chiusura dell'app.
+
+--- 2. il salvataggio del poker, letto con un numero di giocatori diverso ---
+
+Il numero dei giocatori si scriveva in FONDO al salvataggio, ma serve PRIMA: e' il dato che
+decide la misura di tutte le sezioni. Un salvataggio da quattro riletto con due consumava
+quattro sezioni in meno e arrivava in fondo sfalsato, e il controllo finiva per confrontare
+il MAZZIERE con il numero dei giocatori: se il mazziere salvato era 2, il controllo passava.
+Lo stato accettato era spazzatura, turno veniva da un codice di carta fra 0 e 51, e alla
+prima mossa fuori[37] chiudeva l'app.
+
+Adesso il numero dei giocatori e' la prima sezione e si legge per prima, e il controllo
+guarda anche la lunghezza: un salvataggio scritto col formato vecchio ha in testa l'elenco
+delle fiches, cioe' due o quattro numeri invece di uno, e viene scartato con certezza invece
+che per fortuna. SavedGame.VERSION non e' stata alzata, e non serve: cosi' i salvataggi in
+corso degli altri quattro giochi non si buttano.
+
+--- 3. logo e icona ---
+
+I due disegni nuovi sono lo stesso disegno che l'app aveva: il canale alfa e' identico bit
+per bit e sui pixel visibili la differenza media e' 0,85 su 255, concentrata sui contorni.
+Era il rumore del WebP a qualita' 92 con cui erano codificate le copie nell'app. Adesso i due
+.webp sono senza perdita, cioe' identici ai sorgenti.
+
+  ic_launcher_fg.webp   dall'icona tonda: il primo piano dell'icona adattiva, Android 8+
+  ic_launcher.png x5    dall'icona tonda: l'icona classica, per Android 7 e per i lanciatori
+                        che non gestiscono le adattive. minSdk e' 24, quindi servono ancora
+  app_logo.webp         dal logo quadrato: il marchio grande della schermata iniziale
+
+Non e' cambiato nient'altro, e i due numeri che lo permettono sono questi: l'anello chiaro
+del cerchio nuovo sta a 27 pixel su 250 di raggio, cioe' al 10,8%, che e' il margine per cui
+in ic_launcher.xml il rientro e' 18dp; e il blu del bordo e' (58,60,121) contro il (59,61,121)
+di navy_logo, che fa da fondo all'icona adattiva. Provata con tre maschere - tonda, squircle,
+quadrato stondato - l'anello non viene tagliato e negli angoli non compare nessuna cornice.
+
+zis_logo.webp e title_logo.webp non sono stati toccati: sono il marchio ZiS in fondo alla
+schermata iniziale e la scritta del titolo, cioe' altro.
+
+PESO: i sette file passano da 118,4 a 132,7 KB. L'icona ci guadagna anche in byte (20,5 KB
+contro 25,4, perche' e' fatta di campi di colore piatti), il logo con la cornice in sfumatura
+costa 38,2 contro 21,4. In tutto +14,2 KB su dieci megabyte di immagini, lo 0,14%.
+
+--- 4. il generatore era una trappola, e questa e' la ragione per cui art/ va caricata ---
+
+art/icona_app.py prendeva logo_app.png per tutte e sei le destinazioni, docstring compresa:
+rilanciandolo oggi avrebbe riportato le cinque icone classiche al QUADRATO, che e' il
+problema che il commento di ic_launcher.xml racconta di aver risolto - un quadrato dentro la
+maschera tonda del lanciatore. Il disegno tondo esisteva nell'app ma non passava piu' da li'.
+
+Riscritto: due sorgenti e sette destinazioni, e icona_app.png e' il sorgente tondo che prima
+non c'era. Rilanciato adesso rifa' esattamente i sette file di questa consegna.
+
+    python3 icona_app.py            dice cosa farebbe
+    python3 icona_app.py --scrivi   scrive i sette file
+
+
+COSA PROVARE DOPO IL CARICAMENTO
+================================================================================
+
+IL POKER, che e' la ragione di questa consegna:
+
+ 1. Entra nel poker e guarda la tua mano. Se contiene un Fante, una Donna o un Re, prima si
+    chiudeva li'. Fai due o tre mani: dopo tre mani la probabilita' di non aver ancora visto
+    una figura e' sotto il 2%.
+ 2. Una mano fino allo showdown, cioe' arrivando a vedere le carte dell'avversario. E'
+    l'altro punto dove si passava per la stessa strada.
+ 3. Con TalkBack acceso, tocca una figura della tua mano: deve leggere "Donna di picche", non
+    "12 di spade" e non chiudersi.
+ 4. Esci col tasto Home a meta' mano e rientra: la mano deve riprendere dov'era.
+ 5. Impostazioni -> Poker -> Giocatori: passa da 2 a 4 e viceversa, poi entra nel poker.
+    Deve cominciare una partita nuova della misura giusta, senza chiudersi.
+
+L'ICONA E IL LOGO:
+
+ 6. L'icona nel cassetto delle app e nella schermata del telefono. Con la maschera tonda
+    l'anello chiaro deve arrivare a filo del bordo senza essere tagliato; con la squircle o
+    il quadrato stondato, negli angoli non deve comparire nessuna cornice di colore diverso.
+ 7. L'icona nelle Impostazioni di Android, alla voce dell'app: la' molti telefoni mostrano
+    l'icona classica, cioe' i cinque PNG.
+ 8. Il logo grande in cima alla schermata iniziale dell'app, con la cornice lucida e l'ombra.
+ 9. Se l'icona vecchia resta in giro dopo l'aggiornamento e' il lanciatore che la tiene in
+    cache: si sblocca riavviando il telefono. Non e' un difetto dell'APK.
+
+Gli altri quattro giochi non sono stati toccati. Card.kt e' condiviso da tutti, quindi una
+mano di Scopa basta a vedere che i nomi delle carte italiane si leggono come prima: il
+comportamento per i valori da 1 a 10 non cambia di una virgola.
+
+
+LE PROVE CHE HO FATTO GIRARE QUI
+================================================================================
+
+  - controllo di tipo con kotlinc sui 23 file, contro gli stub del banco di prova: pulito.
+    (Gli stub R.kt e databinding.kt del banco erano precedenti al layout del poker e sono
+    stati rigenerati con gen_stubs.py; a quelli va aggiunto l'import di AppCompatButton e
+    SwitchCompat, come dice il LEGGIMI del banco.)
+  - Card.nome sulle 52 carte francesi con french = false: zero eccezioni, contro le 12 di
+    prima.
+  - salvataggio: 600 andate e ritorno in due e in quattro, tutte rientrate identiche campo
+    per campo; un salvataggio da quattro riletto con due adesso viene scartato, e col codice
+    di prima veniva accettato con turno=42 e dava ArrayIndexOutOfBoundsException.
+  - motore del poker: circa 96.000 mani complete in due, tre e quattro giocatori, con
+    gruzzoli da 1000 fino a 5 fiches per forzare gli all-in a ogni mano. Nessuna eccezione,
+    nessuna mossa illegale, nessuna fiche creata o perduta, nessun turno assegnato a chi non
+    ha mosse. (Una partita fra quattro Banchi identici dura in media 2245 mani e finisce
+    sempre: le prime volte l'avevo letta come uno stallo, ed era solo il mio contatore di
+    sicurezza.)
+  - controllo dei riferimenti alle risorse sui cinque pacchetti estratti nello stesso albero,
+    con queste modifiche dentro: 230 drawable citati, nessun riferimento che non si risolve,
+    nessuna risorsa dichiarata e mai usata, chiavi italiane e inglesi pari.
+
+Resta fuori quello che qui non si puo' provare: aapt2, R8 e il telefono. La build su GitHub
+e una mano giocata davvero restano le due prove che contano.
+
+
+DUE PICCOLEZZE NON INCLUSE, di proposito
+================================================================================
+
+Non le ho messe per non mescolarle a una correzione urgente. Sono queste, e sono tutte due
+da una riga:
+
+  - Prefs.clearStats non azzera le statistiche del poker: manca GAME_POKER nella lista dei
+    giochi. Il pulsante "Azzera statistiche" lascia indietro i contatori del poker.
+  - il commento in cima a Decks.kt dice ancora che il mazzo francese "serve solo al
+    Klondike". Da quando c'e' il poker non e' piu' vero.
