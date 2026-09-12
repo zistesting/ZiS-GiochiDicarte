@@ -472,6 +472,49 @@ del mazzo precedente.
 `risorsa + larghezza`, cosi' misure diverse convivono invece di buttarsi a vicenda.
 `ZisApp` la svuota quando il sistema segnala poca memoria.
 
+**L'impalcatura delle schermate contro il Banco.** `BotGameActivity` è una classe astratta
+che tiene, in un posto solo, tutto quello che Scopa, Briscola e Tresette facevano ognuna per
+conto suo: il ciclo di vita, il salvataggio della partita, il watchdog con `moveSeq`, la
+pausa responsabile, la fine mano con l'assegnazione dell'incontro e la sua registrazione
+nelle statistiche, la cornice del riepilogo, il volo delle carte in distribuzione e le
+coordinate dentro l'overlay. Le tre schermate la estendono al posto di `AppCompatActivity` e
+le forniscono quello che dipende dal gioco: le viste (`rootView`, `overlay`, `statusView`),
+le chiavi (`saveKey`, `statsKey`, `rulesText`), tre domande sullo stato del motore
+(`gameFinished`, `isBotTurn`, `youHandEmpty`) e i metodi che disegnano e giocano
+(`render`, `placeCards`, `playBot`, `autoPlayMove`, `beginMatch`, `startRound`, `awardHand`,
+`buildResultView`).
+
+Tre comportamenti hanno un predefinito che si può ridefinire: `clearAnimationState()`, che
+azzera lo stato lasciato a metà dalle animazioni (Briscola e Tresette spengono `hideDrawn`);
+`readSettings()`, che il Tresette allunga per il tempo di esposizione della carta pescata; e
+`matchOver()`, che nel predefinito non assegna l'incontro in parità sul traguardo — **la
+Briscola lo ridefinisce** senza quella condizione, perché lì si contano mani vinte e
+arrivare al bersaglio in parità non è un caso che possa darsi.
+
+Nella base stanno anche due pezzi di disegno che non sono ciclo di vita ma erano ripetuti:
+`renderDeckBox`, il mazzetto coperto col numero sopra, e `sweepTrick`, le carte della presa
+che scivolano verso chi l'ha vinta. Fra Briscola e Tresette erano identici carattere per
+carattere a meno di due cose: la soglia oltre la quale il mazzetto si vede (nella Briscola
+sotto c'è anche la briscola coricata) e la vista di destinazione della presa, che nei due
+layout ha nomi e tipi diversi. Entrambe arrivano come parametro, scritte dal chiamante dove
+il motivo si capisce. Quella ripetizione un difetto lo aveva prodotto davvero: il contatore
+della Briscola contava una carta in meno e quello del Tresette no. La Scopa non usa nessuno
+dei due — il suo contatore è disposto diversamente e le carte prese non scivolano via, si
+raccolgono sotto quella calata.
+
+I tre motori **non** entrano nella gerarchia e restano Kotlin puro che non sa niente di
+Android: la base non ne tiene un riferimento, e quello che le serve passa dai membri
+astratti. È per questo che non c'è un'interfaccia comune fra `ScopaGame`, `BriscolaGame` e
+`TresetteGame`, che del resto non potrebbero averla facilmente: `scoreFor` restituisce un
+`Int` in due e un oggetto con cinque campi nella Scopa.
+
+Il **Klondike non c'entra** e resta a sé: è un solitario, non ha turni né incontro, e la sua
+schermata non ha niente in comune con le altre tre.
+
+Un dettaglio di ordine che va saputo: `rootView` e `overlay` sono getter su `b`, il campo del
+View Binding, che è `lateinit`. Quindi `setupCommon()` si chiama in `onCreate` **dopo**
+`setContentView`, e il costruttore della base non tocca nessuna vista.
+
 **Riuso delle viste.** `render()` non ricostruisce piu' il tavolo da zero: aggiunge o toglie
 solo le `CardView` che servono e aggiorna quelle che restano. Prima ogni chiamata buttava e
 riallocava fino a venticinque viste (nel Tresette), piu' volte per ogni presa. L'unica
@@ -482,6 +525,14 @@ attenzione e' che le animazioni lasciano stato sulla vista, `visibility` a `INVI
 carta se e' scoperta, "Carta coperta" se non lo e', e nel Tresette l'aggiunta "non giocabile"
 sulle carte spente dall'obbligo di seme. Senza quest'ultima chi usa TalkBack non avrebbe modo
 di sapere che quella carta e' fuori gioco, perche' l'unico indizio era l'opacita' al 35%.
+
+Quelle `contentDescription` pero' viaggiano anche sulle **copie** che volano nell'overlay
+durante le animazioni, e TalkBack le annunciava mentre erano in volo, sopra l'annuncio della
+carta vera. L'overlay e' percio' marcato `importantForAccessibility = NO_HIDE_DESCENDANTS` in
+`setupCommon`: da li' in giu' non c'e' niente da leggere, perche' tutto quello che ci sta e'
+il duplicato momentaneo di qualcosa che sta sotto. Una riga in un posto solo, che vale per
+tutte tre le schermate contro il Banco - prima dell'impalcatura comune andava scritta tre
+volte, e per quello era rimasta da fare.
 
 **Riepiloghi uniformi.** I tre giochi dicono le stesse cose con le stesse parole. La
 terminologia e' una sola: una distribuzione e' una **mano**, la serie fino al bersaglio e' la
@@ -655,8 +706,11 @@ compresso quando la colonna si allunga. Un `LinearLayout` non sa fare niente di 
 La misura della carta e' il **minimo fra due vincoli**, come fa `CardSize` per gli altri tre
 giochi. In larghezza sette colonne devono stare affiancate, e su un telefono e' questo che
 comanda: viene 140 px per 196. In altezza devono starci la fila alta piu' una colonna di
-riferimento — sei coperte e sette scoperte, in tutto 4,76 altezze di carta, un numero che viene
-dagli sfalsamenti veri e non da una stima. Il secondo vincolo serve dove il primo da' un
+riferimento — sei coperte e sette scoperte, in tutto **4,88** altezze di carta, un numero che
+viene dagli sfalsamenti veri e non da una stima: `1 + 1 + 6 × 0,16 + 6 × 0,32`, cioe' la fila
+alta, la carta piena in fondo alla colonna, i sei sfalsamenti delle coperte e i sei delle
+scoperte. (Qui c'era scritto 4,76, che era il conto con uno sfalsamento vecchio: il numero
+vero e' quello di `ALTEZZE_UTILI` in `KlondikeActivity`, e ora sono d'accordo.) Il secondo vincolo serve dove il primo da' un
 risultato assurdo: in orizzontale su un dispositivo grande la larghezza disponibile e' quasi il
 doppio, e guardando solo quella le carte venivano tanto alte che alle colonne non restava
 spazio. Quando comanda l'altezza le sette colonne non riempiono piu' la larghezza e il blocco
@@ -943,6 +997,32 @@ e deve calarlo — lì il margine resta ampio, perché non è una regola «non u
 «non uscirne quando non frutta». Verso l'alto il limite è circa 2,8: oltre, il Banco terrebbe
 il 3 anche quando c'è un asso da catturare, che è il difetto opposto.
 
+Quel peso però non bastava, ed è stato visto giocando: il Banco si bruciava i 3 nelle prime
+prese e poi non aveva più con che catturare gli assi, che valgono un punto intero contro il
+terzo del 3. La ragione è che nel ramo dell'apertura una presa sicura vale `6,0` più i punti,
+cioè circa 7, mentre il valore di controllo di una carta imbattibile era 2,0 e con il peso
+arrivava a 2,6: uscire di 3 conveniva sempre, anche per incassare una scartina. La taratura di
+`KEEP_WEIGHT` aveva sistemato la scelta *fra due prese sicure*, che è un caso diverso.
+
+Da qui `ACE_KEEP`, **6,0**, che `keepValue` somma quando la carta batte tutto in quel seme e in
+quel seme gira ancora l'asso. Misurato facendo giocare le due versioni del Banco l'una contro
+l'altra su mani vere, 2.500 per riga e lati scambiati a metà: la versione con la riserva vince
+il **74%** delle mani, 51.500 terzi contro 36.000. La curva sale fino a 6 e poi si ferma — 6
+contro 9 dà 50,8%, 6 contro 15 dà 51,3%, e due versioni identiche danno 48,9% — perché sopra 6
+il termine domina comunque tutte le alternative. Sei è quindi il valore più basso che ottiene
+l'effetto intero. A 3 non basta: 3 contro 6 perde 63 a 37.
+
+Il difetto opposto non si presenta, e per costruzione: se l'avversario ha *calato* l'asso,
+quella carta sta nella presa in corso e `unseenBy` la conta fra le note, quindi la riserva non
+scatta e il Banco continua a prenderlo. C'è però un caso in cui la riserva va spenta a mano, ed
+è il terzo dei quattro tarati per `KEEP_WEIGHT`: se uscendo di 3 l'asso lo si incassa *adesso*,
+tenersi il 3 per dopo non ha senso. L'eccezione vale solo sulla **certezza** — l'asso visto in
+mano sua, e nessun'altra carta di quel seme che possa rispondere — e non sulla stima: nella
+prima versione bastava che l'asso fosse la carta più economica fra quelle plausibili, e in
+quella forma l'eccezione *peggiorava* il gioco (52,5% a favore della versione stretta). In
+aggregato l'eccezione stretta non si vede, perché il caso è raro: resta perché è il
+ragionamento giusto e perché quel caso era già stato misurato e scritto.
+
 In **Scopa**, a mazzo finito restano al massimo sei giocate e si cerca la migliore con un
 minimax e taglio alfa-beta (`solve` in `ScopaGame.kt`). Cosi' il Banco sa se sta regalando una
 scopa, sa che conviene fare l'ultima presa (chi la fa si porta via il tavolo) e chiude bene
@@ -951,6 +1031,18 @@ carta di un seme non concorre, e se non concorre nessuno dei due il punto non vi
 come in caso di parita'. L'alfa-beta non e' un lusso: senza, l'albero e' cento volte piu' grande.
 La ricerca costa 0,04 ms in media, quindi non si sente. C'e' comunque un tetto di 60.000 nodi
 che fa ricadere sull'euristica, ma su ventimila ricerche il massimo osservato e' stato 221.
+
+**Quando il Banco sembra rinunciare al settebello, non sta sbagliando.** E' la segnalazione
+piu' naturale da fare guardandolo giocare, e vale la pena averla scritta qui. Misurando su
+3.000 mani ogni posizione in cui il Banco poteva portarsi a casa il settebello — in mano o dal
+tavolo — e non l'ha fatto: 153 rinunce su 1.562 occasioni, e **tutte e 153 dentro la ricerca
+esatta del finale**, zero nell'euristica. `evalCapture` il settebello lo prende sempre, perche'
+i 20 punti che gli assegna bastano a passare davanti a tutto il resto. Quando il Banco lo
+rimanda sta usando l'unica parte del suo gioco che e' dimostrabilmente ottima: ha calcolato che
+prenderlo subito costerebbe l'ultima presa, e con lei le carte rimaste in tavola. Aggiungendo un
+bonus per il settebello preso dal tavolo e facendolo variare da 0 a 40 su 4.000 mani, la quota
+di mani in cui il Banco si porta via il settebello resta ferma al 50% per ogni valore: non c'e'
+niente da correggere.
 
 Le prese possibili per una carta (`capturesOn`) non si enumerano piu' provando tutte le `2^n`
 maschere di bit del tavolo: e' una ricorsione su somma che scarta le carte gia' piu' grandi del
@@ -1086,21 +1178,19 @@ era l'unico modo di ricominciare saltando l'attesa.
 
 - Nessun suono, nessuna modalità a 4 giocatori.
 
-- **L'impalcatura delle tre activity contro il Banco va messa in comune.** Fra
-  `BriscolaActivity` e `TresetteActivity` ci sono **424 righe di codice identiche su 576**, il
-  74%, e trentadue funzioni con lo stesso nome esistono in tutte e tre: `armWatchdog`,
-  `recover`, `post`, `track`, `closeDialog`, `saveState`, `restoreState`, `replayLastDeal`,
-  `undoMatchRecord`, `resetCard`, `topLeftInOverlay`, `centerInOverlay` e le altre.
+- **`android:accessibilityLiveRegion="polite"` su `txtStatus`**, che e' l'unico posto dove
+  passano "Gioca il Banco" e "Presa tua": senza, chi usa TalkBack non se ne accorge finche'
+  non va a cercare quella riga col dito. E' l'unico pezzo di accessibilita' rimasto, e sta
+  nei layout, quindi sono tre file XML - uno per gioco - e l'impalcatura comune non lo ha
+  reso piu' facile.
 
-  Non e' una questione di eleganza, e il motivo per cui sta scritto qui e' che il difetto si
-  e' gia' visto: la guardia del blocco differito di `maybeAutoPlay` chiama `recover()` in
-  Scopa e in Briscola e non lo chiama nel Tresette, dove quindi `busy` resterebbe acceso e
-  sarebbe il watchdog a sbloccare la partita quattro secondi dopo. Oggi quel ramo non e'
-  raggiungibile, ma e' la dimostrazione di come nasce il prossimo: una correzione applicata a
-  due file su tre. Lo stesso e' capitato ai margini di `placeCards`, sistemati in tre punti
-  quando ne erano stati segnalati due.
-
-  Da fare: una classe base astratta con il watchdog e `moveSeq`, il ciclo di vita, la busta
-  del salvataggio (bersaglio, punteggi, `recordedWin`, `prevMatchEnd`, `roundScored`), lo
-  scheletro di fine mano e gli aiuti per le coordinate. Circa 600 righe in meno, e una
-  correzione che vale per tre schermate invece che per due.
+  L'impalcatura, per il resto, e' chiusa: tutte tre le schermate contro il Banco estendono
+  `BotGameActivity`, ci sono dentro anche `renderDeckBox` e `sweepTrick` (la seconda
+  passata), e la riga sull'overlay e' scritta una volta sola. Misurato sulle righe di CODICE,
+  togliendo vuote e commenti: Briscola 579 -> 278, Tresette 649 -> 345, Scopa 624 -> 380, e
+  la base ne costa 379 una volta per tutte tre. Da 1852 a 1382, **470 righe in meno**; le
+  righe totali da 2646 a 2303. Il guadagno vero pero' non e' il conto: e' che una correzione
+  vale per tre schermate invece che per una, e che le disuguaglianze fra i tre giochi vengono
+  a galla mettendo i file a confronto riga per riga. Tre ne sono uscite: la guardia di
+  `maybeAutoPlay`, che chiamava `recover()` in due schermate su tre e controllava `ending` in
+  una sola, e il contatore del mazzo, che nella Briscola contava una carta in meno.

@@ -24,7 +24,9 @@ import com.zis.scopa.databinding.DialogScoreBinding
  *  - la stessa carta puo' prendere in piu' modi, quindi c'e' un dialogo per scegliere la
  *    presa, e mentre e' aperto la mano puo' essere ricostruita sotto (vedi [doPlayerPlay]);
  *  - le carte prese si raccolgono infilandosi sotto quella calata, con un'animazione che
- *    negli altri due non c'e';
+ *    negli altri due non c'e': loro usano [sweepTrick] della base, che le fa scivolare via;
+ *  - anche il mazzo e' disposto diversamente, percio' questo e' l'unico dei tre con un
+ *    renderDeck suo e non quello della base;
  *  - i cartelli SCOPA e SETTEBELLO, che sono l'unico posto dove il gioco si ferma per far
  *    leggere qualcosa;
  *  - il riepilogo ha sette righe invece di due, quindi usa `DialogScoreBinding` e non

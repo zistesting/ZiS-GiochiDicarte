@@ -13,8 +13,10 @@ import com.zis.scopa.databinding.DialogResultBinding
  * Tresette in due con il tallone.
  *
  * Il ciclo di vita, il salvataggio, il watchdog, la fine mano e la cornice del riepilogo
- * stanno in [BotGameActivity], insieme a Scopa e Briscola. Qui resta quello che e' di questo
- * gioco, che sono le tre differenze che si vedono a schermo:
+ * stanno in [BotGameActivity], insieme a Scopa e Briscola, e con loro il mazzetto col
+ * contatore ([renderDeckBox]) e il volo delle carte della presa ([sweepTrick]), che erano
+ * identici a quelli della Briscola. Qui resta quello che e' di questo gioco, che sono le tre
+ * differenze che si vedono a schermo:
  *
  *  - la mano e' di dieci carte invece che di tre, quindi le carte sono piu' piccole, su due
  *    file per il giocatore e a ventaglio per il Banco, e ordinate per seme;

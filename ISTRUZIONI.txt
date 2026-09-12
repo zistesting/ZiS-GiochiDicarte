@@ -1,48 +1,434 @@
-ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (27 file)  -  versione 4.2
+ZiS-GiochiDiCarte-app1  -  il programma  (73 file)  -  VERSIONE 4.3
+                                                       consolidata e ricontrollata
 
-PACCHETTO NUOVO. Prima questi file stavano dentro app1, che era arrivato a 98 su 100:
-uscendo da li' il programma scende a 71 file e ha di nuovo margine.
+I cinque pacchetti di questa consegna:
 
-  art/         23 file   gli script che producono carte, dorsi, figure, assi e icone,
-                         piu' le immagini sorgente (art/assi/, art/figure/, logo_app.png)
-  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
-                         per misurare le euristiche fuori dal telefono
+    ZiS-GiochiDiCarte-app1                     73 file   il programma (questo)
+    ZiS-GiochiDiCarte-app2                     27 file   art/ e verifica/, invariati
+    ZiS-GiochiDiCarte-piacentine-zis           82 file   invariato dalla 3.9
+    ZiS-GiochiDiCarte-bergamasche-napoletane   82 file   invariato dalla 3.9
+    ZiS-GiochiDiCarte-francesi                 53 file   invariato dalla 3.9
 
-NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
-nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
-del gioco automatico sono state misurate. Servono il giorno che vuoi rigenerare un mazzo o
-rimisurare qualcosa.
+app1 resta di 73 file: BotGameActivity.kt era stato aggiunto col passo 1 e di nuovo non
+se ne aggiungono.
 
---- caricamento ---
+DA CARICARE: sette file in tre cartelle, ed e' la somma di tutto quello che e' cambiato
+dall'ultimo APK che hai provato per intero. L'elenco esatto, con l'ordine, e' nella sezione
+"COSA CARICARE" qui sotto. Negli altri quattro pacchetti non c'e' niente da caricare.
 
-Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
-Commit changes.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO. Sostituisce integralmente quella che avevi sul
+computer: contiene tutte le correzioni applicate al repository, comprese quelle caricate un
+file per volta. Se ricaricassi la copia vecchia, le tornerebbe indietro tutte senza un
+avviso. Butta la vecchia.
+
+================================================================================
+CARICAMENTO  -  due gesti, non uno
+================================================================================
+
+Il caricatore web di GitHub SCARTA ogni cartella il cui nome comincia con un punto, e non
+lo dice: trascinando tutto insieme, .github non arriva e il commit riesce comunque. Per
+questo il caricamento e' in due passi.
+
+PASSO 1 - tutto tranne .github
+
+  Pagina principale del repository -> Add file -> Upload files -> apri la cartella
+  ZiS-GiochiDiCarte-app1 e trascina quello che c'e' dentro TRANNE la cartella .github
+  -> Commit changes.
+
+  In fondo alla pagina, prima di confermare, controlla che sia selezionato "Commit directly
+  to the main branch".
+
+  Se fai piu' di un caricamento di fila (per esempio app1 e poi app2), scrivi [skip ci] nel
+  messaggio di commit di tutti tranne l'ultimo: la build parte una volta sola, a
+  repository completo. Senza, la prima viene annullata dalla seconda (concurrency) o
+  fallisce perche' il repository e' a meta'.
+
+PASSO 2 - il contenuto di .github
+
+  Su GitHub clicca la cartella .github -> Add file -> Upload files -> dal PC apri la tua
+  cartella .github e trascina i DUE elementi che ci sono dentro:
+
+      dependabot.yml      (il nome non comincia con un punto: passa)
+      workflows           (cartella, di punti non ne ha: passa)
+
+  -> Commit changes.
+
+  Su Windows la cartella .github si vede normalmente in Esplora file. Se un giorno non la
+  vedessi: Visualizza -> Mostra -> Elementi nascosti.
+
+NON caricare questo ISTRUZIONI.txt. Attenzione anche a .gitignore, che comincia con un
+punto: trascinato da solo come FILE passa, dentro una cartella no.
+
+VERIFICA, una volta sola: apri .github/workflows/build-apk.yml sul repository e cerca la
+riga "verifica/**". Se c'e', il passo 2 e' andato a buon fine.
+
+================================================================================
+COSA CARICARE  -  l'elenco completo, cumulativo
+================================================================================
+
+Questa e' la somma di tutto quello che e' cambiato dall'ultimo APK che hai installato e
+provato per intero, cioe' la Scopa. Se qualcuno di questi file l'hai gia' caricato, non fa
+danno ricaricarlo: il caricatore sovrascrive.
+
+  cartella app/src/main/java/com/zis/scopa/          -> 5 file
+    BotGameActivity.kt     la riga sull'accessibilita' dell'overlay, piu' renderDeckBox e
+                           sweepTrick arrivati qui da Briscola e Tresette
+    BriscolaActivity.kt    perde renderDeck e sweepTrick, che ora sono nella base
+    TresetteActivity.kt    idem
+    GameActivity.kt        solo commenti (dice che il suo mazzo e la sua raccolta delle
+                           carte sono gli unici a non usare i blocchi comuni)
+    TresetteGame.kt        il Banco tiene i 3 per catturare gli assi
+
+  cartella app/                                      -> 1 file
+    build.gradle           versionName: 4.2 -> 4.3
+
+  radice del repository                              -> 1 file
+    README.md              il 4,88 del Klondike, e la documentazione dei blocchi comuni
+
+ORDINE, perche' sono tre cartelle e quindi tre caricamenti:
+
+  1. README.md nella radice              -> [skip ci] inutile, vedi sotto
+  2. i 5 file della cartella scopa       -> messaggio di commit con [skip ci]
+  3. build.gradle nella cartella app/    -> SENZA [skip ci]
+
+Cosi' la build parte una volta sola, alla fine, sull'insieme completo.
+
+ATTENZIONE, ED E' UN TRANELLO VERO: il README non puo' stare per ultimo. Il workflow ha
+paths-ignore con '**.md' e '**.txt', quindi un caricamento che contiene SOLO file .md non fa
+partire niente - e uno che contiene solo il README nemmeno, con o senza [skip ci]. Se lo
+mettessi per ultimo aspetteresti una build che non arriva mai. L'ultimo caricamento deve
+contenere qualcosa che il workflow guarda: il codice o build.gradle.
+
+Se inverti l'ordine fra il 2 e il 3 non succede niente di grave: parte una build in mezzo,
+che riesce comunque, e poi ne parte un'altra. Si spreca qualche minuto, non altro.
 
 NON caricare questo ISTRUZIONI.txt.
 
-Nota: questo commit NON fara' partire la build, ed e' voluto - il workflow ignora art/**.
-Se non parte niente, non e' un guasto.
+METTI DA PARTE LE COPIE VECCHIE dei file prima di sostituirli nella cartella sul PC.
 
---- cosa e' cambiato rispetto alla 4.1 ---
+Se il Banco del Tresette risultasse semplicemente TROPPO FORTE - che e' un giudizio tuo, non
+un difetto - il numero da abbassare e' uno solo: ACE_KEEP in TresetteGame.kt, in fondo al
+commento che lo spiega. A 6 il Banco nuovo vince il 74% delle mani contro quello vecchio; a
+3 scende al 63%, a 0 si torna a prima.
 
-NIENTE. Questi 27 file sono identici a quelli che hai gia' nel repository: uscivano da
-app1, non sono stati modificati. Caricarli non fa danni e serve solo a tenere allineate le
-due cose; se preferisci puoi anche saltarlo, il repository e' gia' a posto per questa
-parte.
+GLI ALTRI QUATTRO PACCHETTI: dentro non e' cambiato NIENTE che vada nel repository. L'unico
+file diverso e' il loro ISTRUZIONI.txt, che non si carica mai. Quindi per app2 e per i tre
+mazzi non c'e' niente da fare: basta sostituire la cartella sul PC, perche' la copia locale
+resti quella giusta.
 
-Da qui in avanti app2 cambiera' raramente: solo quando si tocca uno script di art/ o una
-prova in verifica/.
+================================================================================
+IL CONSOLIDAMENTO  -  cosa e' stato ricontrollato, e cosa e' venuto fuori
+================================================================================
 
---- cosa c'e' dentro art/ ---
+A impalcatura chiusa e numero di versione cambiato, tutto il programma e' stato ripassato
+con i controlli automatici. NESSUN DIFETTO DI CODICE: i 23 file compilano puliti con
+kotlinc 2.2.21, non c'e' un membro private dichiarato e mai usato, non c'e' un membro
+protected della base che nessuno chiama, i 21 membri astratti sono implementati da tutte
+tre le sottoclassi, e nessuno dei vecchi nomi (roundEnding, botTurn, startHand, endGame...)
+e' rimasto citato da nessuna parte, nemmeno in un commento.
 
-  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
-  card_back.py + i .svg        i dorsi dei cinque mazzi
-  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
-  estrai_carta_singola.py      una carta per volta, per i ritocchi
-  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
-  figure/                      le tre immagini da cui vengono J, Q e K francesi
-  icona_app.py + logo_app.png  il logo dell'app e le cinque icone del lanciatore
-  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
-  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
-  README.md                    come si usano
+RIFERIMENTI ALLE RISORSE, il controllo che finora si poteva fare solo a meta'. Le 225 carte
+stanno nei tre pacchetti dei mazzi, non in app1: controllando app1 da solo vengono
+segnalate tutte come mancanti, e quel falso allarme andava ignorato a mano. Estraendo tutti
+e cinque i pacchetti nello stesso albero il controllo diventa vero, ed e' stato fatto: 229
+drawable, 115 string, 11 color, 6 style, 5 dimen, 4 array, 1 plurals, 96 id di layout -
+tutti citati si risolvono, nessuna risorsa dichiarata e mai usata, nessun XML malformato.
+
+ITALIANO E INGLESE sono pari: 114 stringhe piu' un plurale per parte, e le chiavi
+corrispondono una a una. L'unica stringa che sta solo in italiano e' version_fmt, che e'
+"v.%1$s" ed e' marcata translatable="false" di proposito. Il commento in strings.xml che lo
+spiega, e che dice appunto "le due lingue restano a 114 stringhe pari", e' esatto.
+
+LE IMMAGINI, ricontate: 225 .webp per 9,91 MB esatti, di cui 217 sono carte - 164 a 448x819
+(i quattro mazzi italiani, 40 carte piu' il dorso) e 53 a 600x840 (il francese, 52 piu' il
+dorso). Gli altri 8 sono loghi e icone.
+
+DUE INESATTEZZE TROVATE E CORRETTE, entrambe nella documentazione:
+
+ 1. Il README diceva che l'altezza utile del Klondike e' 4,76 altezze di carta. Il codice
+    dice 4,88, e ha ragione il codice: ALTEZZE_UTILI e' 1 + 1 + 6 x 0,16 + 6 x 0,32. Ora il
+    README scrive il conto e non solo il risultato, cosi' non torna a divergere.
+ 2. "Le immagini sono l'82% del pacchetto" era un numero senza il suo denominatore. Sono il
+    70% dei sorgenti non compressi, il 79% dei cinque zip, circa l'85% dell'APK.
+
+E LE ISTRUZIONI DEGLI ALTRI QUATTRO PACCHETTI erano rimaste indietro: i tre dei mazzi
+dicevano ancora "questi QUATTRO zip sono il progetto completo, versione 3.9", "app1 sta in
+93 file", "non c'e' nessun app2", e mandavano a cercare art/ dentro app1 quando art/ e' in
+app2 dalla 4.1. Sono state riscritte. Le carte non sono state toccate: sono le stesse dalla
+3.9, e va bene cosi'.
+
+================================================================================
+COSA E' CAMBIATO RISPETTO ALLA 4.2 PUBBLICATA
+================================================================================
+
+--- il numero sopra il mazzo, in Briscola ---
+
+ 0. renderDeck di BriscolaActivity: il numero conta le carte che restano da pescare,
+    BRISCOLA COMPRESA. Prima c'era un "- 1" e contava le sole coperte impilate sopra la
+    briscola, che non era nel conto perche' si vede da se', coricata di fianco: con due
+    carte in tutto il numero diceva 1. Sopra un mazzo un numero vuol dire quante carte
+    restano, e ne restavano due - la presa dopo ne fa pescare una a testa, la coperta a chi
+    vince la presa e la briscola a chi la perde.
+
+    Cosi' e' anche lo stesso conto degli altri due giochi (Scopa: deck.size; Tresette:
+    deck.size + pending), e soprattutto e' l'unico che rende vera la descrizione letta da
+    TalkBack: cd_deck e' una stringa sola per tutti tre e dice "Mazzo, %d carte", quindi in
+    Briscola annunciava un numero falso a chi non puo' vedere la briscola sporgere.
+
+    A schermo non cambia NIENT'ALTRO: il mazzetto coperto compare e sparisce negli stessi
+    momenti di prima. Verificato facendo girare il motore vero sulla JVM per 2000 mani
+    complete, controllando presa per presa, sia durante l'animazione sia a riposo, che il
+    numero mostrato sia sempre quello delle carte da pescare. Nessuna violazione. La prova
+    ha anche mostrato che lo stato "resta solo la briscola" non si da': il mazzo si svuota
+    due carte per volta, quindi quelle che restano sono sempre in numero pari.
+
+--- correzioni (consegna precedente) ---
+
+ 1. pause_message (values e values-en): i quattro a capo scritti a mano sono diventati \n\n.
+    Erano a capo veri dentro l'XML, e aapt2 riduce ogni sequenza di spazi e a capo a UN
+    SOLO SPAZIO: i tre paragrafi dell'avviso sul gioco responsabile si fondevano e il
+    numero verde finiva in mezzo al testo.
+
+ 2. values-en/plurals.xml, NUOVO: "%d sweep" / "%d sweeps". Senza, la quantita' ricadeva
+    sull'italiano e l'app in inglese scriveva "You: 2 scope". La SCOPA come MOSSA in
+    inglese e' SWEEP (anche banner_scopa e la riga delle regole); il nome del GIOCO resta
+    Scopa, perche' quello e' un nome proprio.
+
+ 3. KlondikeActivity, aggiornaBarra: il messaggio "gioco automatico fermo" ora chiede anche
+    autoPlay. autoFermo ha due usi - lo accende chi non trova piu' mosse utili, ma lo
+    accende anche completaDaSolo per non sovrapporre due catene - quindi per tutti i dieci
+    secondi del completamento la riga diceva che il gioco automatico era fermo mentre le
+    carte salivano da sole, e lo diceva anche a gioco automatico spento.
+
+ 4. activity_main.xml: la schermata iniziale sta in uno ScrollView. Il contenuto chiede
+    circa 480dp; in multi-finestra screenOrientation="portrait" non vale e la finestra puo'
+    essere alta 300dp, e un ConstraintLayout non stringe un figlio wrap_content: i pulsanti
+    finivano sopra la versione e sotto la barra. fillViewport="true" piu' due Space con
+    peso 0,46 e 0,54 riproducono esattamente il vertical_bias di prima, quindi a schermo
+    intero non cambia niente a vedersi. La riga dei cinque pulsanti resta fuori dallo
+    ScrollView, ancorata al fondo.
+
+ 5. placeCards di Scopa, Briscola e Tresette: i margini si RIASSEGNANO
+    (view.layoutParams = lp) invece di essere modificati dentro l'oggetto che la vista sta
+    gia' usando. setLayoutParams chiama requestLayout() da sola, mutare i campi no:
+    funzionava solo perche' il render() che segue cambia comunque qualche misura. Erano tre
+    punti, non due.
+
+ 6. CardView.onDraw non costruisce piu' due RectF per disegno: sono due campi (bordo,
+    pieno) con set(). onDraw gira per ogni carta a ogni fotogramma e nel Klondike le carte
+    sono cinquantadue.
+
+ 7. MainActivity + activity_main.xml + strings.xml: il numero di versione stava in due
+    posti ("v." concatenato nel codice piu' android:text="v.4.2" nel layout). Ora la forma
+    e' una stringa (version_fmt, translatable="false") e il numero viene solo da
+    versionName in build.gradle. Nel layout c'e' tools:text, che non finisce nell'APK.
+
+ 8. build-apk.yml, paths-ignore: aggiunti 'verifica/**' e '**.txt' alle due liste. C'era
+    solo art/**, quindi un push che toccava soltanto il porting Python delle regole faceva
+    partire una build intera di release per poi buttarla via.
+
+--- workflow: APK e AAB non si scaricano piu' zippati ---
+
+    actions/checkout           v5 -> v7
+    actions/upload-artifact    v6 -> v7   (tre passi)
+
+APK e AAB usano archive: false, novita' della v7 per gli artefatti composti da un file
+solo: si scarica ZiS-GiochiDiCarte.apk e si installa, senza scompattare niente. Con quel
+parametro il nome dell'artefatto lo decide il FILE, non il campo name: per questo il
+workflow adesso rinomina anche il bundle in ZiS-GiochiDiCarte.aab.
+
+I referti di R8 restano zippati, e devono: quel passo prende piu' file con un jolly e il
+caricamento diretto ne gestisce uno solo.
+
+--- librerie ---
+
+    Kotlin            2.2.20 -> 2.2.21   (in build.gradle, nella radice)
+    appcompat          1.7.1 -> 1.8.0
+    constraintlayout   2.2.1 -> 2.2.2
+    Gradle              8.13 -> 8.14.5   (gradle/wrapper/gradle-wrapper.properties)
+
+    material RESTA alla 1.12.0. Non e' il compilatore: i suoi rilasci rimescolano gli stili
+    dei dialoghi, e quest'app e' fatta di dialoghi. Una build verde non dice niente su come
+    si VEDE una finestra.
+
+--- dependabot.yml: da due tetti a sei ---
+
+    androidx.core:core-ktx          >= 1.18.0
+    androidx.core:core              >= 1.18.0
+    com.android.application         >= 9.0.0     AGP 9 vuole Gradle 9 e l'SDK di Android 17
+    org.jetbrains.kotlin.android    >= 2.3.0     R8 8.13.19 supporta Kotlin fino alla 2.3
+    com.google.android.material     >= 1.13.0    scelta, non vincolo tecnico
+    gradle-wrapper                  >= 9.0.0     provato: con Gradle 9.7.1 la build fallisce
+
+I primi quattro e il sesto sono lo stesso muro visto da cinque parti - AGP, Gradle, Kotlin
+e l'SDK si muovono INSIEME - e si togliono tutti in un colpo il giorno della migrazione.
+
+================================================================================
+LA REGOLA DA NON DIMENTICARE
+================================================================================
+
+LE PULL REQUEST DI DEPENDABOT NON SI UNISCONO MAI.
+
+Questo progetto si aggiorna caricando file dal PC, cioe' SOVRASCRIVENDO: il pacchetto
+locale e' la verita', il repository e' una macchina che compila. Unire una pull request
+scrive nel repository e rompe l'invariante - il numero tornerebbe indietro al primo
+caricamento successivo, senza un avviso.
+
+Le pull request si LEGGONO. Se l'aggiornamento si vuole, il numero si cambia nel file
+locale e si carica come sempre; al controllo dopo Dependabot vede che la versione c'e' gia'
+e chiude la sua proposta da se'. Se non si vuole, si chiude la proposta e si mette un tetto
+in dependabot.yml (oppure si scrive @dependabot ignore this major version come commento
+nella pull request, che e' piu' rapido ma resta scritto solo nella memoria di Dependabot).
+
+================================================================================
+COSA PROVARE DOPO IL CARICAMENTO
+================================================================================
+
+DUE COSE DA GUARDARE IN BRISCOLA E IN TRESETTE, che sono le schermate da cui sono stati
+portati via i due blocchi. La Scopa non e' stata toccata (usa altre animazioni) e il
+Klondike non c'entra.
+
+  1. IL MAZZETTO E IL SUO NUMERO, in tutte due. Il numero deve calare giusto, il mazzetto
+     deve comparire e sparire quando spariva prima. In Briscola: a fine tallone deve dire 2
+     e poi il mazzetto scompare. Nel Tresette scompare quando il tallone e' vuoto.
+  2. LE CARTE DELLA PRESA CHE VOLANO VIA, in tutte due: a fine presa devono scivolare verso
+     chi ha vinto - in alto se ha preso il Banco, in basso se hai preso tu - rimpicciolendo
+     e sfumando. Se volassero nel posto sbagliato, il parametro della destinazione e'
+     scambiato ed e' una riga sola da correggere.
+
+CON TALKBACK ACCESO, una mano in una qualsiasi delle tre: mentre una carta vola non devi
+sentire annunciare la carta due volte. E' la prova della riga sull'accessibilita'.
+
+SE NON HAI ANCORA PROVATO IL BANCO DEL TRESETTE della consegna precedente, sono queste:
+
+  3. Una mano guardando i 3 del Banco: non deve piu' calarli nelle prime prese per incassare
+     una scartina. Accendi "Mostra carte del Banco" e si vede subito.
+  4. Cala un asso tuo quando il Banco ha il 3 di quel seme: lo deve PRENDERE. E' il difetto
+     opposto, ed e' quello da sorvegliare.
+  5. Il gioco automatico per un incontro: il modo piu' rapido di fargli macinare molte mani
+     e vedere se si pianta.
+
+Il Banco del Tresette adesso e' PIU' FORTE, non solo diverso: contro se stesso vecchio vince
+tre mani su quattro. Se giocandoci ti sembra troppo forte, e' un giudizio legittimo e il
+numero da abbassare e' ACE_KEEP: vedi la sezione sul Banco del Tresette.
+
+E CONTROLLA IL NUMERO DI VERSIONE nella schermata iniziale: deve dire 4.3.
+
+Le prove delle schermate qui sotto sono passate tutte su tutte tre e NON vanno rifatte:
+restano scritte per il giorno in cui si tocchera' di nuovo una di quelle activity. Erano
+nate per la Briscola e sono state rifatte identiche su Tresette e Scopa.
+
+ A. Una partita intera fino alla fine dell'incontro: presa, pescata, briscola che si vede
+    finche' il tallone non e' vuoto, contatore del mazzo che non cala in anticipo, e il
+    riepilogo di fine mano con le due righe colorate.
+ B. Il pulsante "Rigioca l'ultima mano" nel riepilogo: le carte del Banco devono essere
+    le stesse, e il punteggio dell'incontro deve tornare indietro. Segnati i numeri delle
+    statistiche PRIMA, e guardali dopo che l'incontro e' finito per la seconda volta:
+    devono essere saliti di uno esatto, non di due. E' il conto che smaschera il difetto
+    peggiore possibile qui, cioe' un incontro registrato due volte.
+ C. Uscire dall'app a meta' mano col tasto Home, aspettare qualche secondo e rientrare:
+    la mano riprende dov'era, con le carte pescate al loro posto e il turno giusto.
+    Uscire invece col tasto indietro o dal riepilogo butta la partita, ed e' voluto.
+ D. Schermo diviso mentre la partita e' in corso: le carte si ridisegnano piu' piccole e
+    la briscola resta coricata sotto il mazzo, non appare storta o tagliata.
+ E. Pausa responsabile: finisci un incontro e prova a cominciarne subito un altro.
+    L'avviso deve comparire, il tavolo dietro deve restare fermo, e dopo quattro secondi
+    non deve muoversi niente da solo. Va fatta DI CORSA: il minuto si conta dalla fine
+    dell'incontro, non da quando premi, quindi se ti fermi a leggere il riepilogo la
+    pausa e' gia' passata e l'avviso non compare - e non e' un difetto.
+ F. Gioco automatico (Impostazioni): un incontro intero da solo, senza che si pianti.
+    Questa e' la prova della guardia di maybeAutoPlay. Conviene farla per prima: con le
+    attese a zero un incontro dura pochi secondi.
+ G. Il pulsante info in alto a sinistra: deve aprire le regole del gioco in cui sei, non
+    quelle di un altro.
+
+    Per A, B e D conviene accendere "Mostra carte del Banco": senza, nella B non si vede
+    se dopo il "Rigioca" le carte del Banco sono davvero le stesse, che e' l'unica cosa
+    che quella prova verifica.
+
+QUATTRO PROVE IN PIU', che sono le cose che la Scopa ha e gli altri due no:
+
+ M. SCEGLIERE LA PRESA. Serve una situazione in cui la carta che cali puo' prendere in piu'
+    modi (per esempio hai un 7 e in tavola ci sono un 7 e anche 3 + 4): deve aprirsi
+    l'elenco "Scegli la presa" con le combinazioni scritte per nome. Scegline una e
+    controlla che prenda proprio quelle carte. Poi rifallo e annulla toccando fuori: la
+    carta deve restare in mano e il turno deve restare tuo.
+ N. LA PROVA PIU' IMPORTANTE DI QUESTA CONSEGNA, ed e' scomoda ma va fatta. Con l'elenco
+    "Scegli la presa" APERTO, esci dall'app col tasto Home, aspetta qualche secondo e
+    rientra. Poi scegli una presa. La carta deve partire dalla tua mano e finire in tavola
+    normalmente. Se invece partisse da un punto a caso dello schermo, o non partisse, il
+    difetto e' in doPlayerPlay: quella funzione rilegge la vista della carta al momento di
+    giocarla, proprio perche' nel frattempo la mano puo' essere stata ricostruita.
+ O. I CARTELLI. Fai una scopa: deve comparire la scritta SCOPA grande al centro, in oro se
+    l'hai fatta tu e in argento se l'ha fatta il Banco, e il gioco deve aspettare che
+    finisca prima di proseguire. Stessa cosa prendendo il settebello. Se la scopa e' anche
+    l'ultima carta della mano, il cartello deve finire PRIMA che si apra il riepilogo.
+ P. IL RIEPILOGO A SETTE RIGHE. Carte, denari, settebello, primiera, scope, totale,
+    incontro: le colonne devono essere incolonnate e le righe Totale e Incontro colorate
+    (possono essere di colori opposti, ed e' giusto).
+
+Le tre prove del Tresette (H, I, L) non c'entrano con la Scopa e non vanno rifatte; sono
+qui sotto per memoria, e sono passate tutte:
+
+ H. OBBLIGO DI RISPONDERE AL SEME. Quando il Banco apre la presa, nella tua mano devono
+    spegnersi (restare pallide) tutte le carte che non sono del seme giocato, SE hai
+    almeno una carta di quel seme; e quelle spente non devono rispondere al tocco. Se di
+    quel seme non ne hai nessuna, la mano resta tutta accesa. Attenzione al momento: le
+    carte si spengono solo quando tocca davvero a te, non mentre il Banco sta giocando.
+ I. LA CARTA PESCATA SI MOSTRA. A fine presa le due carte pescate devono salire scoperte
+    in mezzo al tavolo, restare ferme il tempo impostato e poi entrare nelle mani. Prova
+    anche a cambiare quel tempo in Impostazioni e a verificare che lo rispetti: e'
+    l'unica impostazione che vale solo per questo gioco, e passa da readSettings().
+ L. LA MANO SU DUE FILE. Con dieci carte la mano sta su due file da cinque; scendendo
+    sotto le sei carte deve passare a una fila sola, senza lasciare una riga vuota. Il
+    ventaglio del Banco in alto deve restare una fila sola di dorsi sovrapposti.
+
+Se in gioco automatico (prova F) la Scopa si piantasse e si sbloccasse da sola dopo
+quattro secondi, quello e' il difetto che tutta questa riscrittura serviva a togliere: in
+quel caso segnalalo, perche' vorrebbe dire che la guardia non e' giusta.
+
+BRISCOLA E TRESETTE non serve rifarle: di loro non e' cambiato un carattere, e nemmeno
+BotGameActivity.kt e' stato toccato in questo passo.
+
+Le sette prove restano scritte perche' se un giorno si tocca ancora una di queste
+schermate sono quelle da rifare, e perche' valgono identiche per la Scopa quando
+toccherà a lei.
+
+Se qualcosa non torna nella Scopa, il colpevole e' quasi certamente uno solo: rimetti il
+GameActivity.kt vecchio, e si torna a prima.
+
+Tutto quello che segue e' gia' stato provato su telefono una volta e funzionava: serve a
+riconoscere una regressione, non a scoprire il nuovo.
+
+ 1. Impostazioni -> Gioco responsabile: spegni la pausa, finisci un incontro, riaccendila.
+    L'avviso deve comparire su TRE paragrafi, col numero verde sulla sua riga.
+ 2. App in inglese, una partita a Scopa: il cartello al centro dice SWEEP!, e la riga del
+    punteggio "You: 1 sweep" / "You: 2 sweeps".
+ 3. Klondike fino alla comparsa di Completa: premilo e guarda la riga in alto. Deve contare
+    le mosse, non dire che il gioco automatico e' fermo.
+ 4. Schermo diviso (tieni premuta l'icona dell'app nelle recenti): la schermata iniziale
+    deve SCORRERE senza sovrapporsi, e il tavolo del Klondike si ridisegna piu' piccolo.
+    Sul telefono la ROTAZIONE non deve fare niente: tutte le schermate sono
+    screenOrientation="portrait", e in multi-finestra e' il sistema a ignorarlo.
+ 5. Il numero di versione sotto al titolo: v.4.2.
+ 6. Entra e esci dalle impostazioni cambiando solo "mostra carte del Banco": tornando al
+    gioco la mano del Banco deve stare al posto giusto.
+ 7. Una partita intera a qualunque gioco, che e' la prova che vale di piu': verifica il
+    release offuscato da R8.
+ 8. Dopo il primo push: Actions -> ultimo run -> Artifacts. Tre voci, e le prime due si
+    scaricano come .apk e .aab, non come .zip.
+
+================================================================================
+VERSIONE
+================================================================================
+
+versionName e' ancora "4.2" in app/build.gradle, e l'APK di questa consegna quindi si
+chiama 4.2 pur essendo diverso dalla 4.2 di prima. Va bene finche' si prova (repository
+zistesting); prima di pubblicare va deciso un numero.
+
+FATTO: versionName e' 4.3. La condizione era "quando l'impalcatura e' dentro tutte tre le
+schermate e provata", e ci siamo: le prove sono passate su Briscola, Tresette e Scopa.
+
+Il numero sta in un posto solo, app/build.gradle, e la schermata iniziale lo legge dal
+PackageManager, cioe' da li': non c'e' nessun altro file da allineare. Il versionCode invece
+non si tocca, lo mette la build dal numero della run di GitHub Actions.

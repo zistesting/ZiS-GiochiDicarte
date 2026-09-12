@@ -31,9 +31,13 @@ import androidx.core.view.doOnLayout
  * COSA STA QUI E COSA NO. Qui sta tutto quello che non dipende dalle regole del gioco: il
  * ciclo di vita, il salvataggio della partita, il watchdog, la fine mano con l'assegnazione
  * dell'incontro e la sua registrazione nelle statistiche, la pausa responsabile, la cornice
- * del riepilogo, il volo delle carte in distribuzione, le coordinate dentro l'overlay. Le
- * regole, il disegno del tavolo e le animazioni proprie di ogni gioco restano nelle tre
- * sottoclassi, che le forniscono attraverso i membri astratti qui sotto.
+ * del riepilogo, il volo delle carte in distribuzione, le coordinate dentro l'overlay, e la
+ * riga che tiene l'overlay fuori dalla lettura di TalkBack. In un secondo giro sono entrati
+ * anche due pezzi di disegno che erano ripetuti: [renderDeckBox], il mazzetto coperto col
+ * numero sopra, e [sweepTrick], le carte della presa che scivolano verso chi l'ha vinta -
+ * quei due li usano Briscola e Tresette, la Scopa no. Le regole, il disegno del tavolo e le
+ * animazioni proprie di ogni gioco restano nelle tre sottoclassi, che le forniscono
+ * attraverso i membri astratti qui sotto.
  *
  * Il **Klondike non c'entra** e resta com'e': e' un solitario, non ha un avversario, non ha
  * ne' turni ne' incontro, e la sua schermata non ha niente in comune con queste tre.
