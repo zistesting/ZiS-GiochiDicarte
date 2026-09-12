@@ -41,6 +41,13 @@ object Prefs {
     const val GAME_KLONDIKE = "klondike"
 
     /**
+     * Il poker nelle statistiche conta le PARTITE, che qui vogliono dire una serie di mani
+     * fino a quando resta un solo giocatore con le fiches. Le mani singole non si contano:
+     * sarebbero migliaia e non direbbero niente, come non si contano le prese a Briscola.
+     */
+    const val GAME_POKER = "poker"
+
+    /**
      * Registra una partita conclusa. Si contano solo le vittorie, da una parte o dall'altra:
      * le partite giocate sono la loro somma. Tenere un terzo contatore separato vorrebbe dire
      * poterlo veder divergere dagli altri due, e non ci sarebbe modo di sapere quale dei tre
@@ -224,5 +231,47 @@ object Prefs {
 
     fun setKlondikeDraw(ctx: Context, n: Int) {
         p(ctx).edit().putInt("klondike_draw", n).apply()
+    }
+
+    // ------------------------------------------------------------------ poker
+
+    const val POKER_DRAW = "draw"
+    const val POKER_HOLDEM = "holdem"
+
+    /**
+     * La variante: 5-Card Draw oppure Texas Hold'em. Predefinita la prima, che e' la piu'
+     * semplice da imparare - due soli giri di puntate e nessuna carta comune.
+     */
+    fun pokerVariante(ctx: Context): String =
+        p(ctx).getString("poker_variante", POKER_DRAW) ?: POKER_DRAW
+
+    fun setPokerVariante(ctx: Context, v: String) {
+        p(ctx).edit().putString("poker_variante", v).apply()
+    }
+
+    /**
+     * Quanti giocano: due, cioe' tu contro il Banco, oppure quattro, cioe' tu contro tre
+     * avversari programmati. Non e' solo una questione di quanta gente c'e' al tavolo: in
+     * quattro il gioco e' molto piu' stretto, perche' una mano che batte un avversario su
+     * due ne batte tutti e tre una volta su otto.
+     */
+    fun pokerGiocatori(ctx: Context): Int = p(ctx).getInt("poker_giocatori", 2)
+
+    fun setPokerGiocatori(ctx: Context, n: Int) {
+        p(ctx).edit().putInt("poker_giocatori", n).apply()
+    }
+
+    /**
+     * Le probabilita' a schermo: gli aiuti didattici dentro la partita.
+     *
+     * Non vanno confuse con le STATISTICHE, che sono un'altra cosa e stanno altrove: quelle
+     * contano le partite vinte, queste mostrano quanto vale la tua mano e quanto conviene
+     * chiamare. Spente per scelta predefinita, perche' chi sa giocare non le vuole e chi non
+     * sa giocare deve poter scoprire che esistono, non trovarsele addosso.
+     */
+    fun pokerOdds(ctx: Context): Boolean = p(ctx).getBoolean("poker_odds", false)
+
+    fun setPokerOdds(ctx: Context, v: Boolean) {
+        p(ctx).edit().putBoolean("poker_odds", v).apply()
     }
 }

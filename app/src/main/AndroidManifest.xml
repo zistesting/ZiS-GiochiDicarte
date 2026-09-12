@@ -53,6 +53,12 @@
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|fontScale|uiMode" />
 
+        <activity
+            android:name=".PokerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density|fontScale|uiMode" />
+
         <!--
           Il solitario dichiara gli stessi configChanges degli altri tre, ma qui contano di
           piu': il tavolo si ridisegna a partire dalla larghezza del contenitore, e lasciare

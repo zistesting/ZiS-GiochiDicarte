@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         b.btnBriscola.setOnClickListener { startActivity(Intent(this, BriscolaActivity::class.java)) }
         b.btnTresette.setOnClickListener { startActivity(Intent(this, TresetteActivity::class.java)) }
         b.btnKlondike.setOnClickListener { startActivity(Intent(this, KlondikeActivity::class.java)) }
+        b.btnPoker.setOnClickListener { startActivity(Intent(this, PokerActivity::class.java)) }
         b.btnQuit.setOnClickListener { quitApp() }
         b.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
         b.btnStats.setOnClickListener { showStats() }

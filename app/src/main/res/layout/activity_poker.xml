@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il tavolo da poker, in due o in quattro.
+
+  IL PROBLEMA DI QUESTA SCHERMATA, che le altre quattro non hanno: il numero dei giocatori
+  cambia. In due c'e' un avversario, in quattro ce ne sono tre, e la stessa schermata deve
+  servire a tutti due i casi senza avere due layout da tenere allineati. La soluzione e' una
+  fila di TRE POSTI sempre presenti, di cui il codice nasconde quelli che non servono: un
+  posto nascosto con visibility GONE non occupa spazio, quindi in due l'unico avversario si
+  prende tutta la larghezza e sta al centro.
+
+  LE CARTE DEGLI AVVERSARI sono coperte e tutte uguali, quindi possono sovrapporsi quanto
+  serve senza perdere niente: i margini negativi che le accavallano li mette il codice,
+  perche' dipendono dalla larghezza dello schermo e da quanti posti sono in vista. Lo stesso
+  meccanismo del ventaglio del Tresette.
+
+  IL RIQUADRO DELLE CARTE COMUNI sta in mezzo e nel 5-Card Draw resta vuoto e nascosto:
+  serve al Texas Hold'em, che arrivera' dopo. Averlo gia' qui costa una decina di righe e
+  toglie la tentazione di fare un secondo layout per la seconda variante.
+
+  IL PANNELLO DELLE PROBABILITA' e' nascosto per scelta predefinita e sta SOPRA i pulsanti,
+  non in cima: quei numeri servono nel momento in cui si decide, e devono stare dove guarda
+  l'occhio quando la mano va giocata.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_velvet">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
+
+        <!-- ============================= gli avversari ============================= -->
+        <LinearLayout
+            android:id="@+id/seatsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:orientation="horizontal">
+
+            <!-- posto 1 -->
+            <LinearLayout
+                android:id="@+id/seat1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/seatName1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                    android:textColor="@color/silver"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:id="@+id/seatHandBox1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/seatHand1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/seatInfo1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:lines="1"
+                    android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                    android:textColor="@color/gold"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- posto 2 -->
+            <LinearLayout
+                android:id="@+id/seat2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/seatName2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                    android:textColor="@color/silver"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:id="@+id/seatHandBox2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/seatHand2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/seatInfo2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:lines="1"
+                    android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                    android:textColor="@color/gold"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- posto 3 -->
+            <LinearLayout
+                android:id="@+id/seat3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/seatName3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                    android:textColor="@color/silver"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:id="@+id/seatHandBox3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/seatHand3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/seatInfo3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:lines="1"
+                    android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                    android:textColor="@color/gold"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- =========================== il centro del tavolo =========================== -->
+        <LinearLayout
+            android:id="@+id/centerArea"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <!-- Le carte comuni: vuoto e nascosto nel 5-Card Draw, serve al Texas -->
+            <FrameLayout
+                android:id="@+id/communityBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/community"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="horizontal" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/txtPot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:maxLines="1"
+                android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                android:textColor="@color/gold"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtSidePots"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+                android:textColor="@color/silver"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- ========================= le probabilita' a schermo ========================= -->
+        <!-- Nascosto se il selettore e' spento. Sta qui, subito sopra la mano e i pulsanti,
+             perche' quei numeri servono nell'istante in cui si decide. -->
+        <LinearLayout
+            android:id="@+id/oddsBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:background="#80000000"
+            android:orientation="vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/txtOddsHand"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gold"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtOddsEquity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/silver"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txtOddsCall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/silver"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txtOddsRead"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/silver"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- ============================== la tua mano ============================== -->
+        <TextView
+            android:id="@+id/txtYou"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxLines="1"
+            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+            android:textColor="@color/silver"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <FrameLayout
+            android:id="@+id/youHandBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/youHand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal" />
+        </FrameLayout>
+
+        <!-- La riga di stato: alta una riga anche da vuota, come negli altri tre giochi,
+             cosi' il tavolo non salta su e giu' a ogni cambio di turno -->
+        <TextView
+            android:id="@+id/txtStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:lines="1"
+            android:shadowColor="#000000" android:shadowDy="2" android:shadowRadius="4"
+            android:textColor="@color/silver"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <!-- ============================== i pulsanti ============================== -->
+        <!-- Tre pulsanti per le puntate, piu' uno per lo scarto e uno per andare avanti.
+             Il codice ne mostra solo quelli che in quel momento sono mosse ammesse: e'
+             PokerGame.azioniLegali a dirlo, cosi' non c'e' una seconda copia delle regole
+             qui dentro che possa divergere da quella del motore. -->
+        <LinearLayout
+            android:id="@+id/buttonsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnFold"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cartiglio"
+                android:maxLines="1"
+                android:text="@string/poker_fold"
+                android:textAllCaps="false"
+                android:textColor="@color/silver"
+                android:textStyle="bold"
+                app:autoSizeTextType="uniform" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnCheck"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cartiglio"
+                android:maxLines="1"
+                android:text="@string/poker_check"
+                android:textAllCaps="false"
+                android:textColor="@color/silver"
+                android:textStyle="bold"
+                app:autoSizeTextType="uniform" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRaise"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_cartiglio"
+                android:maxLines="1"
+                android:text="@string/poker_raise"
+                android:textAllCaps="false"
+                android:textColor="@color/silver"
+                android:textStyle="bold"
+                app:autoSizeTextType="uniform" />
+        </LinearLayout>
+
+        <!-- Lo scarto e il passo avanti stanno da soli e a tutta larghezza: sono mosse di
+             un'altra natura, e un pulsante largo si tocca senza sbagliare -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnDraw"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/btn_cartiglio"
+            android:maxLines="1"
+            android:text="@string/poker_change"
+            android:textAllCaps="false"
+            android:textColor="@color/gold"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:autoSizeTextType="uniform" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnNext"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/btn_cartiglio"
+            android:maxLines="1"
+            android:text="@string/poker_next_hand"
+            android:textAllCaps="false"
+            android:textColor="@color/gold"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:autoSizeTextType="uniform" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Pulsante info: sta in un angolo sopra tutto, cosi' non sposta il tavolo -->
+    <ImageButton
+        android:id="@+id/btnInfo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="6dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/cd_info"
+        android:scaleType="fitCenter"
+        android:src="@drawable/btn_info"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

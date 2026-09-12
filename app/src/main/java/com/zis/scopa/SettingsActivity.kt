@@ -50,6 +50,25 @@ class SettingsActivity : AppCompatActivity() {
             Prefs.setTresetteTarget(this, if (checkedId == R.id.radioT31) 31 else 21)
         }
 
+        // ---- poker ----
+        // La variante Texas e' spenta nel layout finche' il motore non sa giocarla: il
+        // gruppo si imposta comunque, cosi' il giorno che si accende non c'e' niente da
+        // ricordarsi di collegare qui.
+        b.groupVariante.check(
+            if (Prefs.pokerVariante(this) == Prefs.POKER_HOLDEM) R.id.radioHoldem else R.id.radioDraw)
+        b.groupVariante.setOnCheckedChangeListener { _, checkedId ->
+            Prefs.setPokerVariante(this,
+                if (checkedId == R.id.radioHoldem) Prefs.POKER_HOLDEM else Prefs.POKER_DRAW)
+        }
+
+        b.groupGiocatori.check(if (Prefs.pokerGiocatori(this) == 4) R.id.radioG4 else R.id.radioG2)
+        b.groupGiocatori.setOnCheckedChangeListener { _, checkedId ->
+            Prefs.setPokerGiocatori(this, if (checkedId == R.id.radioG4) 4 else 2)
+        }
+
+        b.switchOdds.isChecked = Prefs.pokerOdds(this)
+        b.switchOdds.setOnCheckedChangeListener { _, checked -> Prefs.setPokerOdds(this, checked) }
+
         setupPauseSwitch()
 
         b.switchAuto.isChecked = Prefs.autoPlay(this)
