@@ -1,12 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Icona adattiva (Android 8+). Il foreground e' rientrato di 18dp sui 108dp
-     totali, cosi' il logo resta dentro la "safe zone" di 72dp e non viene
-     tagliato dalle maschere circolari / squircle dei vari launcher. -->
+<!--
+  Icona adattiva (Android 8+).
+
+  IL PRIMO PIANO E' UN DISEGNO SUO, ic_launcher_fg, e non piu' app_logo. Prima erano la
+  stessa immagine, e quello era il difetto: app_logo e' il marchio quadrato stondato con la
+  cornice lucida e l'ombra, e dentro la maschera tonda del launcher si vedeva un quadrato
+  dentro un cerchio. Il disegno tondo non ha quel problema, e app_logo resta quello che
+  deve essere: il marchio grande della schermata iniziale, dove la cornice ci sta bene.
+
+  IL RIENTRO E' 18dp, E IL NUMERO E' ANDATO AVANTI E INDIETRO. Sui 108dp della tela la
+  maschera occupa i 72dp centrali, quindi 18dp mettono il disegno esattamente a filo di
+  maschera. Con la prima versione del cerchio non bastava: l'anello chiaro stava a 15 pixel
+  su 250 di raggio dal bordo, cioe' al 6%, e finiva rosicchiato dall'antialiasing della
+  maschera; era servito passare a 20dp per tenerlo dentro. La versione definitiva del
+  disegno ha l'anello a 27 pixel, cioe' al 10,8% del raggio: il margine ce l'ha il disegno,
+  e 18dp tornano quelli giusti - il cerchio riempie la maschera per quanto puo', che per
+  un'icona e' quello che si vuole.
+
+  IL FONDO E' IL BLU DEL MARCHIO. Il fondo si vede solo negli angoli che la maschera lascia,
+  e col navy scuro del tema quegli angoli disegnavano una cornice attorno al cerchio: un'altra
+  forma dentro un'altra forma, e con la maschera squircle si vedeva benissimo. Dello stesso
+  blu del cerchio non si vede nessuna giuntura, con qualunque maschera - e quale maschera usi
+  il launcher non lo decidiamo noi.
+-->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/navy_deep" />
+    <background android:drawable="@color/navy_logo" />
     <foreground>
         <inset
-            android:drawable="@drawable/app_logo"
+            android:drawable="@drawable/ic_launcher_fg"
             android:inset="18dp" />
     </foreground>
 </adaptive-icon>

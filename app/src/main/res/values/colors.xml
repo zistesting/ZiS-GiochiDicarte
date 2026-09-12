@@ -12,4 +12,10 @@
     <color name="gold">#E9C24C</color>
     <!-- sfondo dei riquadri nelle impostazioni (vedi drawable/panel_bg.xml) -->
     <color name="panel">#D40A1220</color>
+
+    <!-- Il blu del marchio, quello del cerchio dell'icona. Fa da fondo all'icona adattiva:
+         cosi' qualunque maschera usi il launcher - tonda, squircle, quadrata stondata - il
+         fondo si fonde col cerchio e non si vede nessuna forma dentro un'altra. Col navy
+         scuro del tema si vedrebbe un quadrato stondato scuro attorno a un cerchio. -->
+    <color name="navy_logo">#3B3D79</color>
 </resources>
