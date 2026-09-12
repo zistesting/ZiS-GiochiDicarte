@@ -1,49 +1,65 @@
-ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (27 file)  -  versione 4.3
+ZiS-GiochiDiCarte-bergamasche-napoletane  -  mazzi bergamasche e napoletane  (82 file)  -  carte invariate dalla 3.9
 
-PERCHE' ESISTE. Prima questi file stavano dentro app1, che era arrivato a 98 file su 100:
-uscendo da li' il programma e' scesa a 71 file e ha ripreso margine. Oggi app1 e' a 73, e
-il progetto completo e' fatto di cinque pacchetti per 317 file in tutto.
+>>> QUESTO PACCHETTO NON E' CAMBIATO DALLA 3.9, ed e' giusto cosi': sono carte, e le
+    carte non si toccano. Cambia solo questo foglio di istruzioni, che era rimasto a
+    descrivere il progetto com'era allora. <<<
 
-  art/         23 file   gli script che producono carte, dorsi, figure, assi e icone,
-                         piu' le immagini sorgente (art/assi/, art/figure/, logo_app.png)
-  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
-                         per misurare le euristiche fuori dal telefono
+Il progetto completo, alla versione 4.3, e' fatto di CINQUE pacchetti:
 
-NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
-nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
-del gioco automatico sono state misurate. Servono il giorno che vuoi rigenerare un mazzo o
-rimisurare qualcosa.
+    ZiS-GiochiDiCarte-app1                     73 file   il programma
+    ZiS-GiochiDiCarte-app2                     27 file   art/ e verifica/, fuori dalla build
+    ZiS-GiochiDiCarte-piacentine-zis           82 file   mazzi piacentine e ZiS
+    ZiS-GiochiDiCarte-bergamasche-napoletane   82 file   mazzi bergamasche e napoletane
+    ZiS-GiochiDiCarte-francesi                 53 file   mazzo francese
+
+Sono 317 file in cinque commit, e sostituiscono TUTTI gli zip precedenti: le cinque
+"part", i pacchetti di correzione, i parziali. Quelli si possono buttare.
+
+Alla 3.9 i pacchetti erano quattro e app1 ne conteneva 93, perche' dentro c'erano anche
+art/ e verifica/: da allora quei file sono usciti in un pacchetto per conto loro, app2, e
+app1 e' scesa prima a 71 e poi a 73 file. Il limite del caricatore web di GitHub resta 100
+file per volta, ed e' la ragione per cui i pacchetti sono divisi cosi'.
+
+--- cosa c'e' dentro ---
+
+  41  mazzo bergamasco   berg_0_1 ... berg_3_10 + berg_back
+  41  mazzo napoletano   nap_0_1 ... nap_3_10 + nap_back
+
+Vanno tutti in app/src/main/res/drawable-nodpi/ , e il percorso e' gia' nello zip.
+
+Gli script che producono queste carte stanno in art/, che dalla 4.1 non e' piu' dentro
+app1 ma nel pacchetto ZiS-GiochiDiCarte-app2.
+
+--- cosa e' cambiato rispetto agli zip precedenti ---
+
+DUE carte su ottantadue: gli assi di denari, berg_0_1.webp e nap_0_1.webp, che ora hanno
+il marchio e la scritta ZiS. Le altre ottanta sono quelle di sempre.
+
+Nel mazzo bergamasco l'asso di denari e' la carta su cui i fabbricanti mettono il proprio
+marchio, e nella copia usata il marchio era stato tolto: restava l'anello concentrico
+senza niente al centro, l'unica carta del mazzo che non diceva nulla.
 
 --- caricamento ---
 
-Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
-Commit changes.
+Uguale per tutti e tre gli zip dei mazzi, e si fa sempre dalla pagina principale del
+repository, senza aprire cartelle:
+
+    Add file -> Upload files -> trascina il CONTENUTO di questa cartella
+    (non la cartella) -> Commit changes.
+
+Dentro lo zip i file sono nella stessa struttura del repository, e GitHub trascinando le
+cartelle mantiene i percorsi: quindi non c'e' da navigare fino a drawable-nodpi come nelle
+versioni precedenti. Un trascinamento, un commit.
 
 NON caricare questo ISTRUZIONI.txt.
 
-Nota: questo commit NON fara' partire la build, ed e' voluto - il workflow ignora art/**.
-Se non parte niente, non e' un guasto.
+--- una nota ---
 
---- cosa e' cambiato dalla 4.1, quando questo pacchetto e' nato ---
+Nella 3.7 il marchio dell'asso bergamasco lo metteva uno script, art/marchio_asso_berg.py.
+Adesso l'asso arriva gia' fatto e quello script e' da cancellare dal repository: le
+istruzioni di ZiS-GiochiDiCarte-app1 spiegano come.
 
-NIENTE, e vale ancora alla 4.3. Questi 27 file sono identici a quelli che hai gia' nel
-repository: uscivano da app1 e da allora non sono stati modificati. Caricarli non fa danni e serve solo a tenere allineate le
-due cose; se preferisci puoi anche saltarlo, il repository e' gia' a posto per questa
-parte.
+--- avvertenza di sempre ---
 
-Da qui in avanti app2 cambiera' raramente: solo quando si tocca uno script di art/ o una
-prova in verifica/.
-
---- cosa c'e' dentro art/ ---
-
-  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
-  card_back.py + i .svg        i dorsi dei cinque mazzi
-  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
-  estrai_carta_singola.py      una carta per volta, per i ritocchi
-  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
-  figure/                      le tre immagini da cui vengono J, Q e K francesi
-  icona_app.py + logo_app.png  il logo dell'app e le cinque icone del lanciatore
-  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
-  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
-  README.md                    come si usano
+Le immagini NON vanno spostate in drawable/: devono restare in drawable-nodpi, altrimenti
+Android le ingrandisce alla densita' dello schermo e l'app spreca memoria.
