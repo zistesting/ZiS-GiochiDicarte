@@ -278,6 +278,25 @@ scritti in italiano dentro il Kotlin, ed era l'unica parte dell'app che non si p
 congiunzione da `cd_card_name` — che in inglese diventa «of», cioè esattamente la cosa che
 concatenando `"$valore di $seme"` non si poteva ottenere.
 
+**E da lì è arrivato il difetto che chiudeva il poker**, alla 4.3. `valori_italiani` ha dieci
+voci e `valori_francesi` tredici, quindi quale dei due array si legge non è un dettaglio di
+traduzione: è la differenza fra un indice valido e uno fuori tabella. A deciderlo è
+`CardView.french`, che vale `false` di serie, e lo impostava soltanto il Klondike.
+`PokerActivity` no — e il poker gioca col mazzo da 52. Al primo `render()` della mano, il
+setter di `CardView.card` chiamava `describe()`, che chiamava `Card.nome` con `french = false`,
+e un Fante francese (valore 11) cadeva su `valori_italiani[10]`: `ArrayIndexOutOfBounds`, con
+l'app che si chiudeva **non** disegnando la carta, ma scrivendone il nome per TalkBack. Cinque
+carte su 52 non contengono nessuna figura solo nel 25,3% dei casi, quindi si chiudeva subito in
+tre mani su quattro.
+
+Le reti sono due, e sono a due altezze diverse di proposito. In `PokerActivity` le `CardView`
+adesso nascono con `french = true`, che è la correzione giusta: è quella che fa leggere «Donna
+di picche» invece di «12 di spade». In `Card.nome` c'è la stessa protezione che `Decks.faceId`
+ha da sempre — **è francese anche una carta con valore sopra il 10, qualunque cosa dica il
+parametro** — più due `getOrNull`: nessun nome di carta vale la chiusura dell'app, e se
+l'indice non c'è si scrive il numero e si tira avanti. Costa un confronto, e copre il prossimo
+che si dimenticherà quel flag.
+
 Sulle scelte di traduzione, due meritano una riga. «Banco» diventa **Bot** e non *House* o
 *Dealer*: questa app dice esplicitamente che qui non si scommette, quindi una parola presa dal
 gioco d'azzardo sarebbe il sapore sbagliato, e *Dealer* sarebbe anche inesatto perché nella
@@ -589,12 +608,81 @@ e nel layout ha `android:lines="1"`, cioè resta alta una riga anche da vuota. S
 il tavolo salterebbe su e giù di venti punti a ogni cambio di turno, che è peggio del testo
 che si è tolto.
 
-**Il logo e le icone del lanciatore** escono da `art/logo_app.png` con `art/icona_app.py`: un
-file sorgente e sei destinazioni — `app_logo.webp` a 500x500, che serve sia al logo della
-schermata iniziale sia al *foreground* dell'icona adattiva, più i cinque `ic_launcher.png`
-delle densità da mdpi a xxxhdpi. Le icone classiche servono ancora, perché `minSdk` è 24 e
-Android 7 non conosce le icone adattive. L'alfa si conserva: il logo è un quadrato con gli
-angoli arrotondati e trasparenti, appiattirlo su un fondo farebbe comparire quattro spicchi.
+**Il tavolo da poker sta attorno al tavolo.** I tre avversari erano una fila di tre posti in
+cima allo schermo, con le carte al 52% della misura delle tue: tre mazzetti piccoli e lontani,
+che non somigliavano a un tavolo. Adesso uno sta in alto, uno a sinistra e uno a destra, e
+l'ordine dei posti è l'ordine dei turni — tu in basso, poi sinistra, poi alto, poi destra —
+così la mano si vede girare in tondo invece di saltare da un posto all'altro.
+
+Le carte sono **tutte della stessa misura**, e cinque carte piene di fianco non ci stanno: le
+due file laterali si accavallano di mezza carta e scivolano fuori dallo schermo fino a un
+terzo della loro larghezza. Quanto scivolano lo decide un conto, non un numero scritto a mano:
+due file, il mazzo in mezzo e 16dp di respiro per lato. Su un telefono da 360dp viene 40dp, su
+uno da 320dp ne viene 32, su un tablet zero e le file restano tutte dentro. Di un dorso si
+perde solo dorso — sono tutti uguali e non c'è niente da leggere. In cambio, il layout ha
+bisogno di `clipChildren="false"`, altrimenti la parte di fila che esce dal riquadro del posto
+verrebbe tagliata invece di uscire dallo schermo.
+
+**Un carattere e un colore.** Le info del tavolo avevano quattro corpi diversi (12, 13, 15,
+26sp) e due colori distribuiti per posizione, non per significato: i nomi in argento, gli
+stati in oro, il piatto in oro, due pulsanti su cinque in oro. Ora passano tutte da un solo
+stile, `PokerInfo`, e i cinque pulsanti da `PokerButton`. L'oro è rimasto per **una cosa
+sola**, la vincita, che a mano finita prende il posto della riga del piatto: è la stessa riga
+perché dice la stessa cosa in due momenti — quanto c'è in mezzo, e dove è andato. Un colore
+che significa qualcosa deve comparire quando quella cosa succede, e solo allora.
+
+Sui pulsanti è sparito `autoSizeTextType="uniform"`, che sembra la scelta giusta e non lo è: il
+corpo lo decide la lunghezza del testo del singolo pulsante, quindi «Passo» veniva grande e
+«Rilancio 40$» piccolo, e tre pulsanti affiancati finivano con tre corpi diversi. La misura
+fissa a 14sp è l'unica che li rende davvero uguali.
+
+**Il mazzo al centro, e le carte che partono da lì.** Prima non c'era: le carte comparivano
+già in mano. Adesso il mazzo sta sotto la riga degli avvisi e la distribuzione vola, una carta
+a testa per giro come a un tavolo vero. Si spostano **le viste vere** con `translation`, senza
+copie in un overlay — la scelta di `dealFrom` negli altri tre giochi — e mentre volano `busy`
+resta vero, così nessuno tocca niente e nessun `render()` le rimette al loro posto di scatto.
+Il passo si dimezza in quattro giocatori: venti carte al passo di due sarebbero un secondo di
+attesa a ogni mano.
+
+**Il dorso francese è rosso chiaro.** Era un bordeaux con l'ornato d'oro, bello da vicino e
+invisibile sul velluto — e nel poker i dorsi sono la maggior parte di quello che si vede,
+cinque per avversario più il mazzo. Il disegno è lo stesso di sempre (`art/card_back.py`, una
+tavolozza in più), con il campo rosso acceso e l'ornato bianco, e la cornice esterna più cupa
+del campo di proposito: dà alla carta un bordo suo, e cinque carte accavallate restano cinque
+carte anche da piccole. Il mazzo francese lo usa anche il Klondike, quindi il dorso nuovo si
+vede anche là.
+
+**Il logo e le icone del lanciatore** escono da `art/icona_app.py`: due sorgenti e sette
+destinazioni. `art/logo_app.png` è il marchio quadrato stondato, con la cornice lucida e
+l'ombra, e diventa `app_logo.webp` a 500x500, il logo grande della schermata iniziale.
+`art/icona_app.png` è lo stesso stemma dentro un cerchio, senza cornice, e diventa
+`ic_launcher_fg.webp` — il *foreground* dell'icona adattiva, rientrato di 18dp su 108 in
+`mipmap-anydpi-v26/ic_launcher.xml` — più i cinque `ic_launcher.png` delle densità da mdpi a
+xxxhdpi. Le icone classiche servono ancora, perché `minSdk` è 24 e Android 7 non conosce le
+icone adattive.
+
+**Perché il lanciatore prende il cerchio e non il quadrato.** La maschera — tonda, squircle,
+quadrata stondata — la decide il telefono. Il marchio quadrato dentro una maschera tonda si
+vede come un quadrato dentro un cerchio, con gli spicchi tagliati e la cornice lucida
+rosicchiata; il cerchio riempie qualunque maschera senza giunture. È la stessa ragione per
+cui il fondo dell'icona adattiva è `navy_logo`, cioè il blu del cerchio, e non il navy scuro
+del tema: con quello, negli angoli che la maschera lascia comparirebbe una cornice attorno al
+cerchio. Il numero da non perdere di vista se il disegno tondo si ridisegna è il margine
+dell'anello chiaro: sta a 27 pixel su 250 di raggio, cioè al 10,8%, ed è quello che permette
+i 18dp di rientro senza che l'antialiasing della maschera se lo mangi.
+
+Fino alla 4.3 lo script prendeva `logo_app.png` per tutte e sei le destinazioni che
+conosceva: il disegno tondo esisteva nell'app ma non passava più da lì, e rilanciare lo
+script avrebbe riportato le cinque icone classiche al quadrato. Uno strumento che, rilanciato,
+disfa il lavoro è peggio di nessuno strumento.
+
+L'alfa si conserva: tutti due i disegni hanno il fuori trasparente, e appiattirli su un fondo
+farebbe comparire quattro spicchi negli angoli del logo e un quadrato attorno al cerchio. I
+due `.webp` sono codificati **senza perdita**, quindi identici bit per bit ai sorgenti: per
+l'icona si risparmia anche — 20,5 KB contro i 25,4 del q92, perché il disegno è fatto di campi
+di colore piatti — mentre il logo, che ha la cornice in sfumatura, costa 38,2 KB contro 21,4.
+In tutto i sette file pesano 132,7 KB invece di 118,4: +14,2 KB su dieci megabyte di immagini,
+lo 0,14%, e in cambio il file nell'app e il file sorgente sono la stessa cosa.
 
 I quattro pulsanti in fondo alla schermata iniziale sono scesi da 60 a 52dp con margini piu'
 stretti: a 60dp quattro pulsanti facevano 384dp e su un telefono da 360dp non ci stavano.
@@ -1137,9 +1225,25 @@ aspetta di ritrovarsi la stessa mano. Chiudere l'app non passa da `onDestroy`, e
 resta.
 
 Il formato (`SavedGame.kt`) è volutamente elementare: sezioni separate da `|`, numeri separati
-da `,`, ogni carta è un numero da 0 a 39. Niente JSON e niente serializzazione automatica, così
+da `,`, ogni carta è un numero da 0 a 51 — `seme * 13 + valore - 1`, base 13 e non 10 perché
+deve bastare anche al mazzo francese. Niente JSON e niente serializzazione automatica, così
 non servono plugin né dipendenze in più. Un numero di versione in testa fa buttare i
 salvataggi vecchi dopo un aggiornamento che cambi i campi, invece di leggerli storti.
+
+**Un dato va scritto prima di tutti gli altri, e il poker lo scriveva per ultimo.** Le sezioni
+si rileggono nell'ordine in cui sono state scritte, quindi un dato che decide *quante* sezioni
+seguono — nel poker il numero dei giocatori, da cui dipendono nove elenchi e una mano per
+ciascuno — non si può leggere in fondo: per arrivarci si è già letto tutto il resto con la
+misura sbagliata. E leggere con la misura sbagliata non dà errore, consuma un numero diverso di
+sezioni e va avanti. Fino alla 4.3 un salvataggio da quattro giocatori riletto con due
+arrivava in fondo sfalsato di quattro sezioni, e il controllo finiva per confrontare il
+*mazziere* con il numero dei giocatori: se il mazziere salvato era 2 il controllo passava, lo
+stato accettato era spazzatura, `turno` veniva da un codice di carta fra 0 e 51 e alla prima
+mossa `fuori[37]` chiudeva l'app. Adesso il numero dei giocatori è la prima sezione e si legge
+per prima, e il controllo guarda anche la lunghezza: un salvataggio scritto col formato vecchio
+ha in testa l'elenco delle fiches, cioè due o quattro numeri invece di uno, e viene scartato
+con certezza invece che per fortuna. `SavedGame.VERSION` non è stata alzata, e non serve
+alzarla: così i salvataggi in corso degli altri quattro giochi non si buttano.
 
 Il ripristino riusa `recover()`, che già guardava lo stato reale della partita per ripartire
 dopo un `onStop`: una mossa interrotta a metà si perde e si rifà, esattamente come già

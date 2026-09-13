@@ -275,7 +275,9 @@
     <string name="poker_changed">%1$s cambia %2$d</string>
     <string name="poker_changed_none">%1$s si serve</string>
     <string name="poker_wins">%1$s vince %2$d$</string>
-    <string name="poker_side_pot">Piatto laterale: %1$d$</string>
+    <!-- La vincita tua: prende il posto del piatto a mano finita. Serve una riga
+         a parte perche' "Tu vince" non e' italiano. -->
+    <string name="poker_you_win">Vinci %1$d$</string>
     <string name="poker_out">%1$s \u00e8 fuori</string>
     <string name="poker_game_over">%1$s vince la partita</string>
     <string name="poker_next_hand">Mano successiva</string>

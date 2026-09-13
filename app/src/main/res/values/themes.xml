@@ -17,6 +17,76 @@
         <item name="android:textColorSecondary">@color/silver</item>
         <item name="colorPrimary">@color/silver</item>
     </style>
+    <!--
+      IL POKER: UN CARATTERE SOLO E UN COLORE SOLO.
+
+      Tutte le info e tutti gli avvisi del tavolo - i nomi dei tre posti, le loro righe di
+      stato, la riga che dice cosa sta facendo il Banco, le tue fiches, i quattro numeri
+      delle probabilita' - passano da qui. Prima ognuno aveva la sua misura scritta nel
+      layout (12, 13, 15, 26sp) e il suo colore (argento o oro secondo il posto), e il
+      risultato era un tavolo con sei caratteri diversi in cui l'oro non voleva dire niente
+      perche' era su tutto.
+
+      L'ORO NON STA QUI DENTRO di proposito: e' riservato all'avviso di vincita, e ce lo
+      mette il codice a mano finita cambiando testo e colore insieme (PokerActivity.render).
+      Un colore che significa qualcosa deve comparire quando quella cosa succede, e solo
+      allora.
+
+      L'ombra nera sotto le lettere serve sul velluto: senza, l'argento su un fondo scuro ma
+      non uniforme perde i contorni.
+    -->
+    <style name="PokerInfo">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/silver</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:shadowColor">#000000</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">4</item>
+    </style>
+
+    <!-- Il piatto: lo stesso carattere, un corpo piu' grande. E' l'unica riga del tavolo
+         che sta un gradino sopra le altre, perche' e' quella che si cerca con l'occhio.
+         Due righe ammesse, non una: "Piatto: 240$" ne occupa sempre una sola, ma a mano
+         finita questa riga diventa l'avviso di vincita, e "Avversario 2 vince 240$" a 19sp
+         su uno schermo da 320dp non ci sta in una riga. Tagliato con i puntini sarebbe
+         l'unico avviso importante del tavolo a non leggersi. -->
+    <style name="PokerInfo.Pot">
+        <item name="android:maxLines">2</item>
+        <item name="android:textSize">19sp</item>
+    </style>
+
+    <!--
+      I cinque pulsanti del poker, tutti uguali.
+
+      MISURA FISSA, e non autoSizeTextType. Il ridimensionamento automatico decide il corpo
+      in base alla LUNGHEZZA del testo del singolo pulsante: "Passo" veniva grande e
+      "Rilancio 40$" piccolo, quindi tre pulsanti affiancati avevano tre corpi diversi -
+      esattamente il contrario dell'uniformita' che sembrava garantire. A 14sp grassetto
+      "Rilancio 40$" sta in 12 caratteri, cioe' circa 85dp: in uno schermo da 320dp un
+      pulsante su tre e' largo 93dp, quindi ci sta.
+
+      ARGENTO PER TUTTI: prima Cambia e Mano successiva erano oro. Erano gli unici due
+      pulsanti d'oro e non erano ne' piu' importanti ne' piu' rari degli altri - "Cambia" e'
+      il pulsante di tutte le mani.
+    -->
+    <style name="PokerButton">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:background">@drawable/btn_cartiglio</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingStart">6dp</item>
+        <item name="android:paddingEnd">6dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/silver</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <!-- righe del riepilogo di fine mano (dialog_score.xml) -->
     <style name="ScoreLabel">
         <item name="android:layout_width">wrap_content</item>
