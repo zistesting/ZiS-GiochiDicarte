@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
@@ -68,12 +69,11 @@ class PokerActivity : AppCompatActivity() {
     private var cardH = 0
 
     /**
-     * Di quanto avanza ogni carta nelle due file laterali, e di quanto la fila esce dallo
-     * schermo. Cinque carte della misura piena, di fianco, non ci stanno: si accavallano
-     * di meta' carta e la fila scivola fuori. Vedi [misura].
+     * Di quanto avanza ogni carta nelle due colonne di fianco, e quanto e' alta una riga di
+     * testo girato. Vedi [misura] e [mettiAPostoLaterale].
      */
     private var passoLaterale = 0
-    private var sfalsoLaterale = 0
+    private var altoTesto = 0
 
     // I tre posti, per indirizzarli con un indice invece che per nome. L'ordine e' quello
     // del giro: sinistra, alto, destra, cioe' i giocatori 1, 2 e 3.
@@ -109,7 +109,7 @@ class PokerActivity : AppCompatActivity() {
         b.btnNext.setOnClickListener { avantiDopoLaMano() }
 
         misura()
-        game = PokerGame(giocatori)
+        game = partitaNuova()
         if (!restoreState()) iniziaPartita()
     }
 
@@ -163,7 +163,7 @@ class PokerActivity : AppCompatActivity() {
     }
 
     private fun nuovaPartita() {
-        game = PokerGame(giocatori)
+        game = partitaNuova()
         nuovaMano()
     }
 
@@ -250,8 +250,11 @@ class PokerActivity : AppCompatActivity() {
         b.btnNext.visibility = View.GONE
         b.txtStatus.text = ""
         render()
-        aggiornaOdds()
-        if (azioni.isEmpty()) post(t.trickPause) { avanti() }   // all-in: non c'e' niente da fare
+        if (azioni.isEmpty()) {
+            post(t.trickPause) { avanti() }   // all-in: non c'e' niente da fare
+            return
+        }
+        finestraOdds()
     }
 
     private fun mossa(azione: PokerGame.Azione) {
@@ -270,7 +273,7 @@ class PokerActivity : AppCompatActivity() {
         aggiornaTestoScarto()
         b.txtStatus.text = ""
         render()
-        aggiornaOdds()
+        finestraOdds()
     }
 
     private fun aggiornaTestoScarto() {
@@ -360,24 +363,24 @@ class PokerActivity : AppCompatActivity() {
      * va oltre 66dp perche' su un tablet cinque carte enormi sarebbero solo cinque carte
      * enormi. Questa misura vale per TUTTI: tua mano, posto in alto, posti di fianco.
      *
-     * LE DUE FILE DI FIANCO. Cinque carte della misura piena affiancate sono larghe quanto
-     * tutto lo schermo, quindi di fianco si accavallano di meta' carta: la fila diventa
-     * `cardW + 4 * cardW/2`, cioe' tre carte. Se anche cosi' le due file e il mazzo non
-     * stanno nella larghezza, la fila SCIVOLA FUORI dallo schermo - fino a un terzo della
-     * sua larghezza, non oltre, sennoche' la prima carta sparirebbe del tutto. Di un dorso
-     * si perde solo dorso: sono tutti uguali e non c'e' niente da leggere.
+     * LE DUE COLONNE DI FIANCO sono girate di 90 gradi, quindi in larghezza si portano via
+     * l'ALTEZZA di una carta piu' due righe di testo girato: `cardH + 2 * altoTesto`, cioe'
+     * 122dp su un telefono da 360 e 111 su uno da 320. Due colonne piu' il mazzo fanno 303dp
+     * su 360 e 273 su 320: entrano sempre, e lo scivolamento fuori schermo che serviva quando
+     * le file erano orizzontali non serve piu'.
      *
-     * Il conto e' esatto: due file, il mazzo in mezzo e 16dp di respiro per lato. Su uno
-     * schermo largo viene zero e le file restano tutte dentro.
+     * IL PASSO DELLA COLONNA e' un quarto di carta, e qui il vincolo e' l'ALTEZZA: la colonna
+     * parte dal bordo alto del mazzo e non deve arrivare sulla tua mano. Lunga `cardW + 4 *
+     * passo`, cioe' due carte, misura 118dp su un telefono da 360 - dove sotto il mazzo ce ne
+     * sono 199 - e 99dp su uno da 320x480, il piu' piccolo che Android 7 possa avere, dove ce
+     * ne sono 112. A un terzo di carta sarebbero 119, e su quello schermo non ci starebbero.
      */
     private fun misura() {
         val schermo = (resources.configuration.screenWidthDp * resources.displayMetrics.density).toInt()
         cardW = minOf((schermo - dp(32)) / 5 - dp(6), dp(66))
         cardH = (cardW * 1.4f).toInt()
-        passoLaterale = cardW / 2
-        val fila = cardW + 4 * passoLaterale
-        val serve = 2 * fila + cardW + 2 * dp(16)
-        sfalsoLaterale = ((serve - schermo) / 2).coerceIn(0, fila / 3)
+        passoLaterale = cardW / 4
+        altoTesto = dp(20)
     }
 
     private fun render() {
@@ -393,25 +396,69 @@ class PokerActivity : AppCompatActivity() {
             seatBox[slot].visibility = View.VISIBLE
             seatName[slot].text = nomeDi(p) + "  " + getString(R.string.poker_chips, game.fiches[p])
             seatInfo[slot].text = statoDi(p)
-            disegnaMano(seatHand[slot], p, laterale = slot != POSTO_ALTO)
+            val giro = rotazioneDelPosto(slot)
+            if (giro != 0f) mettiAPostoLaterale(slot, giro)
+            disegnaMano(seatHand[slot], p, giro)
         }
-        // le due file di fianco escono dallo schermo: la translation non entra nella misura
-        // del riquadro, quindi sposta le carte senza spostare nome e stato, che restano
-        // leggibili sul bordo. (Vale per l'italiano e l'inglese, tutti due da sinistra a
-        // destra: in una lingua da destra a sinistra i due segni andrebbero scambiati.)
-        b.handLeft.translationX = -sfalsoLaterale.toFloat()
-        b.handRight.translationX = sfalsoLaterale.toFloat()
+        disegnaMano(b.youHand, 0, 0f)
+    }
 
-        disegnaMano(b.youHand, 0, laterale = false)
+    /** Di quanto e' girato il posto [slot]: meno 90 a sinistra, piu' 90 a destra, zero in alto. */
+    private fun rotazioneDelPosto(slot: Int): Float = when (slot) {
+        POSTO_SINISTRA -> -90f
+        POSTO_DESTRA -> 90f
+        else -> 0f
+    }
+
+    /**
+     * Mette a posto un posto di fianco: misura il riquadro e sposta i tre pezzi.
+     *
+     * COME FUNZIONA UNA VISTA GIRATA. La rotazione non entra nella misura: una vista larga A
+     * e alta B, girata di 90 gradi, resta A x B per il layout e diventa B x A per l'occhio,
+     * col CENTRO nello stesso punto. Quindi tutti e tre i pezzi - la colonna delle carte e le
+     * due righe di testo - stanno al centro del riquadro (layout_gravity="center" nel layout)
+     * e da la' si spostano con la translation, che invece si applica nello spazio NON girato
+     * del riquadro. Sono tre numeri, simmetrici fra destra e sinistra: basta cambiare segno.
+     *
+     * Il riquadro e' largo quanto una carta girata piu' due righe di testo, e alto quanto la
+     * colonna: le carte stanno sul bordo dello schermo, i due testi verso il centro del
+     * tavolo, dove non c'e' un bordo che li tagli.
+     *
+     * La colonna misura cardH per carta ma se ne vede cardW, e la differenza e' simmetrica
+     * rispetto al centro: percio' un riquadro alto `cardW + 4 * passo` contiene esattamente
+     * quello che si vede. Il conto sta in [misura].
+     */
+    private fun mettiAPostoLaterale(slot: Int, giro: Float) {
+        val g = if (giro < 0) -1 else 1                  // -1 a sinistra, +1 a destra
+        val lungo = cardW + 4 * passoLaterale            // quanto e' lunga la colonna
+        val box = seatBox[slot]
+        val lpBox = box.layoutParams as ViewGroup.LayoutParams
+        lpBox.width = cardH + 2 * altoTesto
+        lpBox.height = lungo
+        box.layoutParams = lpBox
+        seatHand[slot].translationX = (g * altoTesto).toFloat()
+        for (tv in listOf(seatName[slot], seatInfo[slot])) {
+            val lp = tv.layoutParams as FrameLayout.LayoutParams
+            lp.width = lungo; lp.height = altoTesto
+            tv.layoutParams = lp
+            tv.rotation = giro
+        }
+        seatName[slot].translationX = (-g * (cardH - altoTesto) / 2).toFloat()
+        seatInfo[slot].translationX = (-g * (cardH + altoTesto) / 2).toFloat()
     }
 
     /**
      * Il piatto, e a mano finita l'avviso di vincita AL SUO POSTO.
      *
      * Sono la stessa riga perche' dicono la stessa cosa in due momenti: quanto c'e' in
-     * mezzo, e dove e' andato. Ed e' l'unico posto del tavolo dove compare l'oro: se
-     * l'oro fosse anche il colore dei nomi e dei pulsanti - come era prima - la vincita
-     * non si distinguerebbe da tutto il resto.
+     * mezzo, e dove e' andato. Ed e' l'unico posto del tavolo dove compaiono dei colori: se
+     * fossero anche il colore dei nomi e dei pulsanti - come era prima - la vincita non si
+     * distinguerebbe da tutto il resto.
+     *
+     * DUE COLORI E NON UNO: oro quando vinci tu, celeste quando vince un avversario. Il
+     * colore lo si vede prima di aver letto la riga, quindi dice "e' andata bene" o "e'
+     * andata male" nell'istante in cui la mano si chiude; il nome e la cifra si leggono
+     * dopo. Il celeste e' lo stesso dell'app, non un colore nuovo.
      *
      * "Piatto laterale: xx" non c'e' piu'. Quel numero compariva solo quando qualcuno era
      * all-in, non diceva a chi andasse, e la somma che conta - quella che vinci davvero -
@@ -424,7 +471,7 @@ class PokerActivity : AppCompatActivity() {
                 if (it == 0) getString(R.string.poker_you_win, game.incasso[it])
                 else getString(R.string.poker_wins, nomeDi(it), game.incasso[it])
             }
-            b.txtPot.setTextColor(getColor(R.color.gold))
+            b.txtPot.setTextColor(getColor(if (0 in vincite) R.color.gold else R.color.celeste))
         } else {
             b.txtPot.text = getString(R.string.poker_pot, game.piatto)
             b.txtPot.setTextColor(getColor(R.color.silver))
@@ -483,6 +530,13 @@ class PokerActivity : AppCompatActivity() {
      *
      * Il passo si dimezza in quattro: venti carte al passo di dieci farebbero un secondo di
      * attesa prima di poter giocare, e un secondo per mano si sente.
+     *
+     * SI RAGIONA SUI CENTRI, non sugli angoli, e per le carte di fianco e' obbligatorio: una
+     * vista girata ha l'angolo in alto a sinistra da un'altra parte, ma il CENTRO dove era
+     * prima, perche' la rotazione gira attorno al centro. Il centro di una carta si prende
+     * dalla posizione della sua FILA piu' left/top della carta dentro la fila: la fila non e'
+     * girata - a girare sono le carte, una per una - quindi quel conto e' esatto in tutti e
+     * quattro i posti.
      */
     private fun distribuisci(): Long {
         if (t.fast) return 0L
@@ -491,11 +545,12 @@ class PokerActivity : AppCompatActivity() {
         val passo = if (giocatori > 2) t.dealStep / 2 else t.dealStep
         b.root.doOnLayout {
             if (destroyed || b.deckBox.width == 0) return@doOnLayout
-            val (dx, dy) = nellaFinestra(b.deckBox)
+            val (dx, dy) = centroDelMazzo()
             var ritardo = 0L
-            for (v in ordineDiDistribuzione()) {
+            for (i in 0 until 5) for (riga in fileInGioco()) {
+                val v = riga.getChildAt(i) ?: continue
                 if (v.width == 0) continue
-                val (tx, ty) = nellaFinestra(v)
+                val (tx, ty) = centroDellaCarta(riga, v)
                 val restare = v.alpha
                 v.alpha = 0f
                 v.translationX = (dx - tx).toFloat()
@@ -508,21 +563,25 @@ class PokerActivity : AppCompatActivity() {
         return (carte - 1) * passo + t.dealDur
     }
 
-    /** Le carte nell'ordine in cui si danno: la prima a tutti, poi la seconda, e via. */
-    private fun ordineDiDistribuzione(): List<View> {
+    /** Le file che in questa mano ricevono carte: la tua e quelle dei posti in gioco. */
+    private fun fileInGioco(): List<LinearLayout> {
         val file = ArrayList<LinearLayout>()
         file.add(b.youHand)
         for (slot in 0..2) if (giocatoreNelPosto(slot) >= 0) file.add(seatHand[slot])
-        val fuori = ArrayList<View>()
-        for (i in 0 until 5) for (riga in file) riga.getChildAt(i)?.let { fuori.add(it) }
-        return fuori
+        return file
     }
 
-    /** Angolo in alto a sinistra di [v] nella finestra: al volo servono solo le differenze. */
-    private fun nellaFinestra(v: View): Pair<Int, Int> {
+    private fun centroDelMazzo(): Pair<Int, Int> {
         val loc = IntArray(2)
-        v.getLocationInWindow(loc)
-        return Pair(loc[0], loc[1])
+        b.deckBox.getLocationInWindow(loc)
+        return Pair(loc[0] + b.deckBox.width / 2, loc[1] + b.deckBox.height / 2)
+    }
+
+    /** Centro della carta [v] dentro la fila [riga], nella finestra. Vedi [distribuisci]. */
+    private fun centroDellaCarta(riga: View, v: View): Pair<Int, Int> {
+        val loc = IntArray(2)
+        riga.getLocationInWindow(loc)
+        return Pair(loc[0] + v.left + v.width / 2, loc[1] + v.top + v.height / 2)
     }
 
     /**
@@ -541,11 +600,21 @@ class PokerActivity : AppCompatActivity() {
         else -> if (slot < giocatori - 1) slot + 1 else -1
     }
 
-    private fun nomeDi(p: Int): String = when {
-        p == 0 -> getString(R.string.poker_you)
-        giocatori == 2 -> getString(R.string.poker_bank)
-        else -> getString(R.string.poker_opponent, p)
-    }
+    /**
+     * Il nome di un posto: N, E, S, W come al bridge, e S sei tu perche' S sta in basso.
+     *
+     * In due ci sono solo S e N, uno di fronte all'altro. In quattro il giro e' S, W, N, E:
+     * sono i giocatori 0, 1, 2 e 3 nell'ordine dei turni, che e' anche l'ordine in cui
+     * girano i posti a schermo. Una lettera sta in qualunque avviso; "Avversario 2" no, e
+     * poi non diceva niente che non si vedesse gia'.
+     */
+    private fun nomeDi(p: Int): String = getString(when {
+        p == 0 -> R.string.poker_seat_s
+        giocatori == 2 -> R.string.poker_seat_n
+        p == 1 -> R.string.poker_seat_w
+        p == 2 -> R.string.poker_seat_n
+        else -> R.string.poker_seat_e
+    })
 
     /** La riga sotto il posto: cosa ha fatto quel giocatore in questa mano. */
     private fun statoDi(p: Int): String = when {
@@ -571,7 +640,7 @@ class PokerActivity : AppCompatActivity() {
      * davvero allo showdown: se hanno passato tutti tranne uno restano coperte, ed e' mezzo
      * poker. Lo dice [PokerGame.carteMostrate], non questa schermata.
      */
-    private fun disegnaMano(riga: LinearLayout, p: Int, laterale: Boolean) {
+    private fun disegnaMano(riga: LinearLayout, p: Int, giro: Float) {
         val carte = game.mani[p]
         val tua = p == 0
         val scoperte = tua || (game.carteMostrate && game.inMano(p))
@@ -587,15 +656,17 @@ class PokerActivity : AppCompatActivity() {
             cv.french = true
             val lp = cv.layoutParams as LinearLayout.LayoutParams
             lp.width = cardW; lp.height = cardH
-            if (laterale) {
-                // meta' carta a vista: il margine fra due carte e' negativo di quello che
-                // manca al passo, e la prima non ha niente davanti
-                lp.marginStart = if (i == 0) 0 else passoLaterale - cardW
-                lp.marginEnd = 0
+            if (giro != 0f) {
+                // colonna: un quarto di carta a vista. La carta resta larga cardW e alta
+                // cardH - e' girata, non deformata - quindi il margine che porta al passo
+                // voluto e' negativo di tutta l'altezza meno il passo.
+                lp.marginStart = 0; lp.marginEnd = 0
+                lp.topMargin = if (i == 0) 0 else passoLaterale - cardH
             } else {
-                lp.marginStart = dp(3); lp.marginEnd = dp(3)
+                lp.marginStart = dp(3); lp.marginEnd = dp(3); lp.topMargin = 0
             }
             cv.layoutParams = lp
+            cv.rotation = giro
             cv.card = if (scoperte) carte[i] else null
             cv.faceUp = scoperte
             cv.alpha = if (tua || game.inMano(p)) 1f else 0.35f
@@ -613,16 +684,23 @@ class PokerActivity : AppCompatActivity() {
     // ------------------------------------------------- le probabilita' a schermo
 
     /**
-     * Il pannello didattico. Si calcola UNA VOLTA per decisione, qui, e non dentro [render]:
-     * render viene chiamata a ogni tocco su una carta, e sedici millisecondi per tocco si
-     * sentirebbero.
+     * Il pannello didattico, che dalla 4.6 e' UNA FINESTRA con il pulsante Continua.
+     *
+     * Prima era un riquadro fisso sopra la tua mano, e costava 86dp di schermo a tutti,
+     * sempre, anche a chi non lo guardava - su un telefono corto era lo spazio che mancava
+     * al tavolo. E soprattutto era un pannello da leggere mentre si guarda altro: quei
+     * quattro numeri servono a fermarsi un attimo prima di decidere, quindi tanto vale che
+     * fermino davvero, e che si chiudano con un gesto quando si e' letto.
+     *
+     * Si calcola UNA VOLTA per decisione, qui, e non dentro [render]: render viene chiamata
+     * a ogni tocco su una carta, e sedici millisecondi per tocco si sentirebbero.
      */
-    private fun aggiornaOdds() {
-        if (!mostraOdds || game.mani[0].size < 5) { b.oddsBox.visibility = View.GONE; return }
-        b.oddsBox.visibility = View.VISIBLE
+    private fun finestraOdds() {
+        if (!mostraOdds || game.mani[0].size < 5) return
+        val righe = ArrayList<String>()
 
         val punteggio = PokerHand.valuta(game.mani[0])
-        b.txtOddsHand.text = getString(R.string.odds_hand, nomeCombinazione(punteggio))
+        righe.add(getString(R.string.odds_hand, nomeCombinazione(punteggio)))
 
         val avversari = (1 until giocatori).count { game.inMano(it) }
         val letti = (1 until giocatori).filter { game.inMano(it) }.map {
@@ -639,31 +717,37 @@ class PokerActivity : AppCompatActivity() {
             bluffPuntata = PokerOdds.frequenzaBluff(game.piatto, game.puntataCorrente())
         )
         val e = if (avversari == 0) 1.0
-                else PokerOdds.equita(game.mani[0], letti, CAMPIONI_SCHERMO, modello = modello)
-        b.txtOddsEquity.text = getString(R.string.odds_equity, Math.round(e * 100).toInt())
+                else PokerOdds.equita(game.mani[0], letti, CAMPIONI_SCHERMO,
+                                      modello = modello, valori = game.valori)
+        righe.add(getString(R.string.odds_equity, Math.round(e * 100).toInt()))
 
         val daPareggiare = game.daPareggiare(0)
         if (daPareggiare > 0) {
             val soglia = PokerOdds.quoteDelPiatto(game.piatto, daPareggiare)
             val ce = Math.round(e * 100).toInt()
             val cs = Math.round(soglia * 100).toInt()
-            b.txtOddsCall.text = getString(
-                if (e > soglia) R.string.odds_call_good else R.string.odds_call_bad, ce, cs)
+            righe.add(getString(
+                if (e > soglia) R.string.odds_call_good else R.string.odds_call_bad, ce, cs))
         } else {
-            b.txtOddsCall.text = getString(R.string.odds_bluff_rate,
-                Math.round(PokerOdds.frequenzaBluff(game.piatto, game.puntataCorrente()) * 100).toInt())
+            righe.add(getString(R.string.odds_bluff_rate,
+                Math.round(PokerOdds.frequenzaBluff(game.piatto, game.puntataCorrente()) * 100).toInt()))
         }
 
         // la lettura dell'avversario: e' l'informazione che il 5-Card Draw regala
         val servito = (1 until giocatori).firstOrNull { game.inMano(it) && game.cambiate[it] == 0 }
         val cambiato = (1 until giocatori).firstOrNull { game.inMano(it) && game.cambiate[it] > 0 }
-        b.txtOddsRead.text = when {
-            servito != null -> getString(R.string.odds_read_pat)
-            cambiato != null -> getString(R.string.odds_read_changed, game.cambiate[cambiato])
-            daPareggiare > 0 -> getString(R.string.odds_defend_rate,
-                Math.round(PokerOdds.frequenzaDifesa(game.piatto, daPareggiare) * 100).toInt())
-            else -> ""
+        when {
+            servito != null -> righe.add(getString(R.string.odds_read_pat))
+            cambiato != null -> righe.add(getString(R.string.odds_read_changed, game.cambiate[cambiato]))
+            daPareggiare > 0 -> righe.add(getString(R.string.odds_defend_rate,
+                Math.round(PokerOdds.frequenzaDifesa(game.piatto, daPareggiare) * 100).toInt()))
         }
+
+        track(AlertDialog.Builder(this)
+            .setTitle(R.string.show_odds)
+            .setMessage(righe.joinToString("\n\n"))
+            .setPositiveButton(R.string.poker_continue) { _, _ -> }
+            .show())
     }
 
     private fun nomeCombinazione(punteggio: Int): String = getString(
@@ -682,6 +766,22 @@ class PokerActivity : AppCompatActivity() {
 
     // ------------------------------------------------------------- salvataggio
 
+    /**
+     * Una partita con i parametri scelti nelle impostazioni.
+     *
+     * Sta in un posto solo perche' serve in tre - la partita nuova, quella dopo un reset e
+     * la prova per il salvataggio - e se in uno dei tre mancasse un parametro la partita
+     * ripresa non combacerebbe con quella salvata, quindi si butterebbe senza motivo. I
+     * valori si leggono qui e non si tengono in un campo: le impostazioni possono cambiare
+     * mentre questa schermata sta in fondo alla pila.
+     */
+    private fun partitaNuova() = PokerGame(
+        giocatori,
+        Prefs.pokerFiches(this),
+        Prefs.pokerApertura(this),
+        Prefs.pokerRilancio(this),
+        Prefs.pokerMazzoCorto(this))
+
     private fun saveState() {
         if (game.partitaFinita) return
         val w = SavedGame.Writer()
@@ -691,7 +791,6 @@ class PokerActivity : AppCompatActivity() {
         // altra cosa. Scritto in fondo non si poteva leggere se non dopo aver gia' letto tutto
         // il resto con la misura sbagliata, e leggere con la misura sbagliata non da' errore:
         // consuma un numero diverso di sezioni e va avanti. Vedi [restoreState].
-        w.ints(listOf(giocatori))
         game.save(w)
         SavedGame.write(this, SavedGame.POKER, w)
     }
@@ -718,9 +817,9 @@ class PokerActivity : AppCompatActivity() {
     private fun restoreState(): Boolean {
         val r = SavedGame.read(this, SavedGame.POKER) ?: return false
         try {
-            val m = r.ints()
-            if (m.size != 1 || m[0] != giocatori) { SavedGame.clear(this, SavedGame.POKER); return false }
-            val prova = PokerGame(giocatori)
+            // i parametri della partita stanno in testa al salvataggio e li controlla
+            // PokerGame.load: se non combaciano lancia, e il catch qui sotto butta la mano
+            val prova = partitaNuova()
             prova.load(r)
             game = prova
         } catch (e: Exception) {
@@ -752,8 +851,11 @@ class PokerActivity : AppCompatActivity() {
     }
 
     private companion object {
+        // I tre posti, nell'ordine del giro: sinistra, alto, destra, cioe' W, N, E.
+        const val POSTO_SINISTRA = 0
         /** Il posto di fronte a te: l'unico che si usa quando si gioca in due. */
         const val POSTO_ALTO = 1
+        const val POSTO_DESTRA = 2
 
         /**
          * Campioni per le probabilita' mostrate a schermo. Misurato: nel caso peggiore -

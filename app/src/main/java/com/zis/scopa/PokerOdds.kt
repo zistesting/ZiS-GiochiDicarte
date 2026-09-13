@@ -241,11 +241,12 @@ object PokerOdds {
      */
     fun equita(mano: List<Card>, letti: List<Avversario>,
                campioni: Int = CAMPIONI, rnd: Random = Random.Default,
-               modello: Modello = Modello()): Double {
+               modello: Modello = Modello(),
+               valori: List<Int> = PokerGame.VALORI_PIENI): Double {
         val avversari = letti.size
         if (avversari <= 0) return 1.0
-        val ignote = ArrayList<Card>(52)
-        for (s in 0..3) for (v in 1..13) {
+        val ignote = ArrayList<Card>(4 * valori.size)
+        for (s in 0..3) for (v in valori) {
             val c = Card(s, v)
             if (c !in mano) ignote.add(c)
         }
@@ -256,7 +257,8 @@ object PokerOdds {
         // barare. Vedi [riservaPunteggi].
         val riserve = letti.map { riservaPunteggi(ignote, it, campioni, rnd, modello) }
         val effettivi = riserve.minOf { it.size }
-        if (effettivi == 0) return equita(mano, List(avversari) { Avversario() }, campioni, rnd, modello)
+        if (effettivi == 0)
+            return equita(mano, List(avversari) { Avversario() }, campioni, rnd, modello, valori)
 
         var punti = 0.0
         for (i in 0 until effettivi) {
@@ -349,9 +351,9 @@ object PokerOdds {
      *
      * Non si usa nell'app, e' troppo lenta. Serve a controllare che [equita] dica il vero.
      */
-    fun equitaEsatta(mano: List<Card>): Double {
-        val ignote = ArrayList<Card>(47)
-        for (s in 0..3) for (v in 1..13) {
+    fun equitaEsatta(mano: List<Card>, valori: List<Int> = PokerGame.VALORI_PIENI): Double {
+        val ignote = ArrayList<Card>(4 * valori.size)
+        for (s in 0..3) for (v in valori) {
             val c = Card(s, v)
             if (c !in mano) ignote.add(c)
         }

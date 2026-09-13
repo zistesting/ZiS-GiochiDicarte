@@ -418,6 +418,158 @@
                         android:textSize="17sp" />
                 </RadioGroup>
 
+                <!-- ===== gli importi: tre righe con meno e piu' ===== -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/poker_money"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/poker_start_label"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnFichesMeno"
+                        style="@style/PokerButton"
+                        android:layout_width="52dp"
+                        android:contentDescription="@string/cd_less"
+                        android:text="\u2212" />
+
+                    <TextView
+                        android:id="@+id/txtFiches"
+                        android:layout_width="86dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnFichesPiu"
+                        style="@style/PokerButton"
+                        android:layout_width="52dp"
+                        android:contentDescription="@string/cd_more"
+                        android:text="+" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/poker_ante_label"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnAperturaMeno"
+                        style="@style/PokerButton"
+                        android:layout_width="52dp"
+                        android:contentDescription="@string/cd_less"
+                        android:text="\u2212" />
+
+                    <TextView
+                        android:id="@+id/txtApertura"
+                        android:layout_width="86dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnAperturaPiu"
+                        style="@style/PokerButton"
+                        android:layout_width="52dp"
+                        android:contentDescription="@string/cd_more"
+                        android:text="+" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/poker_raise_label"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnRilancioMeno"
+                        style="@style/PokerButton"
+                        android:layout_width="52dp"
+                        android:contentDescription="@string/cd_less"
+                        android:text="\u2212" />
+
+                    <TextView
+                        android:id="@+id/txtRilancio"
+                        android:layout_width="86dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnRilancioPiu"
+                        style="@style/PokerButton"
+                        android:layout_width="52dp"
+                        android:contentDescription="@string/cd_more"
+                        android:text="+" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/poker_money_desc"
+                    android:textColor="@color/silver"
+                    android:textSize="13sp" />
+
+                <!-- ===== le combinazioni facili: mazzo dal 6 all'asso ===== -->
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switchMazzoCorto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/poker_short_deck"
+                    android:textColor="@color/silver"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/poker_short_deck_desc"
+                    android:textColor="@color/silver"
+                    android:textSize="13sp" />
+
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/switchOdds"
                     android:layout_width="match_parent"

@@ -202,7 +202,7 @@ object PokerBot {
             sogliaPuntata = PokerOdds.forza(sogliaPuntataComeForza(avversari)),
             bluffPuntata = frequenzaBluff(g, avversari)
         )
-        return PokerOdds.equita(g.mani[p], letti, campioniBanco, rnd, modello)
+        return PokerOdds.equita(g.mani[p], letti, campioniBanco, rnd, modello, g.valori)
     }
 
     /**
@@ -235,6 +235,14 @@ object PokerBot {
 
     /**
      * La soglia di puntata espressa in FORZA e non in equita'.
+     *
+     * COL MAZZO CORTO questo numero e' un po' generoso: [PokerOdds.forza] e' un percentile
+     * calcolato sul mazzo da cinquantadue, e con trentasei carte le combinazioni buone sono
+     * molto piu' frequenti, quindi la soglia corrisponde in verita' a una mano piu' comune di
+     * quello che il Banco crede. Il Banco gioca un filo largo, e non e' un difetto che si
+     * veda: e' la stessa direzione in cui sbaglia un giocatore in carne e ossa quando passa
+     * al mazzo corto. Rifare la tabella per il mazzo corto vorrebbe dire ricalcolarla, e
+     * quella tabella e' un conto esaustivo fatto fuori dall'app.
      *
      * Serve al modello dell'avversario: [PokerOdds.forza] e' un percentile fra tutte le mani
      * possibili, l'equita' e' la probabilita' di battere N avversari, e non sono la stessa

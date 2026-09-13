@@ -274,4 +274,39 @@ object Prefs {
     fun setPokerOdds(ctx: Context, v: Boolean) {
         p(ctx).edit().putBoolean("poker_odds", v).apply()
     }
+
+    /**
+     * GLI IMPORTI DEL POKER, che dalla 4.6 li scegli tu: il gruzzolo di partenza, la posta
+     * che mette ognuno prima delle carte, e quanto vale un rilancio nel primo giro (nel
+     * secondo vale il doppio, e quello resta una regola del gioco, non un'impostazione).
+     *
+     * I valori di partenza sono quelli di [PokerGame], che e' l'unico posto dove sono
+     * scritti: qui si leggono, non si ripetono. I limiti li mette [pokerImportoValido] e
+     * sono larghi ma non infiniti - un'apertura piu' grande del gruzzolo vorrebbe dire
+     * essere all-in prima di vedere le carte, a ogni mano, per sempre.
+     */
+    fun pokerFiches(ctx: Context): Int = p(ctx).getInt("poker_fiches", PokerGame.FICHES_INIZIALI)
+
+    fun setPokerFiches(ctx: Context, value: Int) {
+        p(ctx).edit().putInt("poker_fiches", value).apply()
+    }
+
+    fun pokerApertura(ctx: Context): Int = p(ctx).getInt("poker_apertura", PokerGame.APERTURA)
+
+    fun setPokerApertura(ctx: Context, value: Int) {
+        p(ctx).edit().putInt("poker_apertura", value).apply()
+    }
+
+    fun pokerRilancio(ctx: Context): Int = p(ctx).getInt("poker_rilancio", PokerGame.RILANCIO)
+
+    fun setPokerRilancio(ctx: Context, value: Int) {
+        p(ctx).edit().putInt("poker_rilancio", value).apply()
+    }
+
+    /** Il mazzo corto dal 6 all'asso: le "combinazioni facili". */
+    fun pokerMazzoCorto(ctx: Context): Boolean = p(ctx).getBoolean("poker_mazzo_corto", false)
+
+    fun setPokerMazzoCorto(ctx: Context, value: Boolean) {
+        p(ctx).edit().putBoolean("poker_mazzo_corto", value).apply()
+    }
 }

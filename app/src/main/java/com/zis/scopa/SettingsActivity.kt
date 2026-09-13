@@ -69,6 +69,13 @@ class SettingsActivity : AppCompatActivity() {
         b.switchOdds.isChecked = Prefs.pokerOdds(this)
         b.switchOdds.setOnCheckedChangeListener { _, checked -> Prefs.setPokerOdds(this, checked) }
 
+        importi()
+
+        b.switchMazzoCorto.isChecked = Prefs.pokerMazzoCorto(this)
+        b.switchMazzoCorto.setOnCheckedChangeListener { _, checked ->
+            Prefs.setPokerMazzoCorto(this, checked)
+        }
+
         setupPauseSwitch()
 
         b.switchAuto.isChecked = Prefs.autoPlay(this)
@@ -157,4 +164,71 @@ class SettingsActivity : AppCompatActivity() {
             refreshPauseUi()
         }
     }
+    /**
+     * I TRE IMPORTI DEL POKER: fiches di partenza, apertura, rilancio.
+     *
+     * Meno e piu' invece di tre caselle da scrivere. Da un campo di testo puo' uscire
+     * qualunque cosa - zero, un milione, una lettera, il campo vuoto - e ogni valore assurdo
+     * andrebbe intercettato e spiegato; con meno e piu' i valori impossibili NON ESISTONO,
+     * non serve la tastiera, e si vede di quanto si sale prima di salire.
+     *
+     * I LIMITI SONO LEGATI FRA LORO, e non sono tre gabbie indipendenti:
+     *   - l'apertura non supera il rilancio, perche' una posta piu' grande di una puntata
+     *     non e' poker;
+     *   - il rilancio non scende sotto l'apertura, che e' la stessa regola letta al
+     *     rovescio, ed e' il motivo per cui i due tasti si aggiustano a vicenda invece di
+     *     bloccarsi;
+     *   - le fiches di partenza non scendono sotto dieci volte l'apertura, sennonche' la
+     *     partita sarebbe finita prima di cominciare - dieci mani di sola posta.
+     * Quando un limite morde, l'altro valore si sposta di conseguenza e si riscrive a
+     * schermo: non c'e' nessun avviso da leggere, si vede.
+     *
+     * Ogni tocco scrive subito nelle impostazioni, come tutto il resto di questa schermata.
+     * La mano eventualmente in corso nel poker si chiude da se': il suo salvataggio non
+     * combacia piu' coi parametri e viene scartato (vedi PokerGame.parametri).
+     */
+    private fun importi() {
+        b.btnFichesMeno.setOnClickListener { cambiaFiches(-PASSO_FICHES) }
+        b.btnFichesPiu.setOnClickListener { cambiaFiches(PASSO_FICHES) }
+        b.btnAperturaMeno.setOnClickListener { cambiaApertura(-PASSO_PUNTATA) }
+        b.btnAperturaPiu.setOnClickListener { cambiaApertura(PASSO_PUNTATA) }
+        b.btnRilancioMeno.setOnClickListener { cambiaRilancio(-PASSO_PUNTATA) }
+        b.btnRilancioPiu.setOnClickListener { cambiaRilancio(PASSO_PUNTATA) }
+        scriviImporti()
+    }
+
+    private fun cambiaFiches(d: Int) {
+        val minimo = maxOf(PASSO_FICHES, 10 * Prefs.pokerApertura(this))
+        Prefs.setPokerFiches(this, (Prefs.pokerFiches(this) + d).coerceIn(minimo, FICHES_MAX))
+        scriviImporti()
+    }
+
+    private fun cambiaApertura(d: Int) {
+        val a = (Prefs.pokerApertura(this) + d).coerceIn(PASSO_PUNTATA, PUNTATA_MAX)
+        Prefs.setPokerApertura(this, a)
+        if (Prefs.pokerRilancio(this) < a) Prefs.setPokerRilancio(this, a)
+        if (Prefs.pokerFiches(this) < 10 * a)
+            Prefs.setPokerFiches(this, minOf(FICHES_MAX, 10 * a))
+        scriviImporti()
+    }
+
+    private fun cambiaRilancio(d: Int) {
+        val minimo = maxOf(PASSO_PUNTATA, Prefs.pokerApertura(this))
+        Prefs.setPokerRilancio(this, (Prefs.pokerRilancio(this) + d).coerceIn(minimo, PUNTATA_MAX))
+        scriviImporti()
+    }
+
+    private fun scriviImporti() {
+        b.txtFiches.text = getString(R.string.poker_amount, Prefs.pokerFiches(this))
+        b.txtApertura.text = getString(R.string.poker_amount, Prefs.pokerApertura(this))
+        b.txtRilancio.text = getString(R.string.poker_amount, Prefs.pokerRilancio(this))
+    }
+
+    private companion object {
+        const val PASSO_FICHES = 50
+        const val FICHES_MAX = 2000
+        const val PASSO_PUNTATA = 5
+        const val PUNTATA_MAX = 100
+    }
+
 }

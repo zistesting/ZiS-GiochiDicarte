@@ -31,15 +31,50 @@ package com.zis.scopa
  * importo sia ammesso lo dice [puntataCorrente]. Il giorno che si volesse il no-limit si
  * cambia quel metodo e si aggiunge un parametro, non si riscrive niente.
  */
-class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
+class PokerGame(
+    val giocatori: Int,
+    val fichesIniziali: Int = FICHES_INIZIALI,
+    /** La posta che mette ognuno prima di vedere le carte. */
+    val apertura: Int = APERTURA,
+    /** Quanto vale un rilancio nel primo giro; nel secondo vale il doppio. */
+    val rilancio: Int = RILANCIO,
+    /**
+     * Il mazzo corto, dal 6 all'asso: trentasei carte invece di cinquantadue.
+     *
+     * E' la scelta "combinazioni facili" delle impostazioni, e facili lo sono per davvero:
+     * togliendo i nove valori bassi le carte alte si incontrano molto piu' spesso, quindi
+     * doppie coppie, tris e colori diventano ordinari. Le scale possibili sono solo quelle
+     * dal 6-7-8-9-10 al 10-J-Q-K-A, e l'asso-basso non esiste piu'.
+     *
+     * TRENTASEI CARTE BASTANO, ed e' un conto esatto: in quattro se ne distribuiscono venti,
+     * e nel caso peggiore - tutti e quattro cambiano quattro carte - se ne pescano altre
+     * sedici. Venti piu' sedici fa trentasei, cioe' il mazzo intero. Non avanza nulla, ma non
+     * manca nulla. Sotto, in [scarta], c'e' comunque la rete per il giorno che uno di questi
+     * numeri cambi.
+     */
+    val mazzoCorto: Boolean = false
+) {
 
     companion object {
-        const val FICHES_INIZIALI = 1000
-        const val POSTA = 10
-        const val PUNTATA_PRIMO = 20
-        const val PUNTATA_SECONDO = 40
+        /**
+         * I valori di partenza, che dalla 4.6 sono solo valori DI PARTENZA: l'importo
+         * iniziale, l'apertura e il rilancio li scegli nelle impostazioni.
+         *
+         * Duecento fiches con apertura dieci e rilancio venti fanno una partita che dura:
+         * una mano costa la posta piu' uno o due rilanci, quindi un gruzzolo regge una
+         * ventina di mani prima che qualcuno vada in difficolta'. Con mille - il valore di
+         * prima - ci volevano in media 2245 mani per chiudere una partita in quattro, e
+         * nessuno gioca 2245 mani.
+         */
+        const val FICHES_INIZIALI = 200
+        const val APERTURA = 10
+        const val RILANCIO = 20
         const val RILANCI_MAX = 3
         const val SCARTO_MAX = 4
+
+        /** Il mazzo intero, e il mazzo corto delle combinazioni facili: dal 6 all'asso. */
+        val VALORI_PIENI = (1..13).toList()
+        val VALORI_CORTI = listOf(1, 6, 7, 8, 9, 10, 11, 12, 13)
 
         const val PUNTATE_1 = 0
         const val SCARTO = 1
@@ -49,6 +84,10 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
 
     enum class Azione { PASSA, PARIFICA, RILANCIA }
 
+    /** I cinque numeri che devono combaciare perche' un salvataggio sia di questa partita. */
+    fun parametri(): List<Int> =
+        listOf(giocatori, fichesIniziali, apertura, rilancio, if (mazzoCorto) 1 else 0)
+
     // ---- il tavolo ----
     /**
      * Il gruzzolo di ciascuno. Il valore di partenza e' un parametro e non la costante, per
@@ -57,6 +96,9 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
      * sessanta fiche a testa si finisce all-in a ogni mano, ed e' cosi' che quel codice si
      * mette alla prova. Nell'app il parametro non si passa e vale [FICHES_INIZIALI].
      */
+    /** I valori di carta che stanno nel mazzo di questa partita. Li legge anche PokerOdds. */
+    val valori: List<Int> = if (mazzoCorto) VALORI_CORTI else VALORI_PIENI
+
     val fiches = IntArray(giocatori) { fichesIniziali }
     val mani = Array(giocatori) { ArrayList<Card>() }
     val eliminato = BooleanArray(giocatori)
@@ -101,7 +143,7 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
     fun quantiInMano(): Int = (0 until giocatori).count { inMano(it) }
 
     /** La puntata di questo giro: e' qui che vive la regola del limite fisso. */
-    fun puntataCorrente(): Int = if (fase == PUNTATE_2) PUNTATA_SECONDO else PUNTATA_PRIMO
+    fun puntataCorrente(): Int = if (fase == PUNTATE_2) 2 * rilancio else rilancio
 
     /** Quanto deve mettere [p] per restare in gioco. Meno delle sue fiches se va all-in. */
     fun daPareggiare(p: Int): Int = minOf(livello - impegno[p], fiches[p])
@@ -125,12 +167,12 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
             fuori[p] = eliminato[p]
         }
         deck.clear(); scarti.clear()
-        for (s in 0..3) for (v in 1..13) deck.add(Card(s, v))
+        for (s in 0..3) for (v in valori) deck.add(Card(s, v))
         deck.shuffle()
 
-        // la posta: la mette chiunque partecipi, e chi ha meno di dieci fiches la mette
-        // per quello che ha e resta all-in prima ancora di vedere le carte
-        for (p in 0 until giocatori) if (inMano(p)) versa(p, POSTA)
+        // la posta: la mette chiunque partecipi, e chi ha meno dell'apertura la mette per
+        // quello che ha e resta all-in prima ancora di vedere le carte
+        for (p in 0 until giocatori) if (inMano(p)) versa(p, apertura)
         // denaro morto: nessuno la deve pareggiare
         for (p in 0 until giocatori) impegno[p] = 0
         livello = 0
@@ -195,19 +237,36 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
     /**
      * Cambia le carte di [p]: [indici] sono le posizioni nella sua mano, da zero a quattro.
      *
-     * Le scartate finiscono in [scarti] e non tornano nel mazzo. Non serve rimescolarle: in
-     * quattro con quattro cambi a testa si arriva a trentasei carte su cinquantadue, e il
-     * mazzo non si esaurisce mai.
+     * Le scartate finiscono in [scarti] e, col mazzo intero, non tornano nel mazzo: in
+     * quattro con quattro cambi a testa si arriva a trentasei carte su cinquantadue.
+     *
+     * COL MAZZO CORTO il conto e' esatto al limite - trentasei distribuite e pescate su
+     * trentasei - quindi il mazzo puo' arrivare a zero, ma solo dopo l'ultima carta che
+     * serviva. La rete qui sotto e' per il giorno che uno di quei numeri cambi: cinque
+     * giocatori, o cinque carte di cambio, e il conto non torna piu'. E' la regola vera del
+     * poker - mazzo finito, si rimescolano gli scarti - e costa tre righe. Senza, pescare da
+     * un mazzo vuoto chiude l'app, che e' esattamente la forma di difetto che questo gioco
+     * ha gia' avuto una volta.
+     *
+     * Le carte appena scartate entrano negli scarti DOPO la pesca, cosi' non possono tornare
+     * subito in mano a chi le ha buttate.
      */
     fun scarta(p: Int, indici: List<Int>) {
         require(fase == SCARTO && p == turno && inMano(p)) { "non e' il momento di scartare" }
         require(indici.size <= SCARTO_MAX) { "si cambiano al massimo $SCARTO_MAX carte" }
         require(indici.distinct().size == indici.size) { "indici ripetuti" }
+        val buttate = ArrayList<Card>(indici.size)
         for (i in indici.sortedDescending()) {
-            scarti.add(mani[p][i])
+            buttate.add(mani[p][i])
             mani[p].removeAt(i)
         }
-        repeat(indici.size) { mani[p].add(deck.removeAt(deck.size - 1)) }
+        repeat(indici.size) {
+            if (deck.isEmpty() && scarti.isNotEmpty()) {
+                deck.addAll(scarti); scarti.clear(); deck.shuffle()
+            }
+            if (deck.isNotEmpty()) mani[p].add(deck.removeAt(deck.size - 1))
+        }
+        scarti.addAll(buttate)
         cambiate[p] = indici.size
         avanzaScarto()
     }
@@ -329,7 +388,16 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
 
     // ------------------------------------------------------------ salvataggio
 
+    /**
+     * Scrive lo stato. In testa vanno i PARAMETRI della partita - quanti giocatori, con
+     * quante fiches, quale apertura, quale rilancio, mazzo intero o corto - perche' sono
+     * quelli che decidono come si legge tutto il resto, e perche' una mano ripresa deve
+     * continuare con gli importi con cui e' cominciata: se cambi le impostazioni a mano
+     * aperta, quella mano si butta e la prossima parte coi valori nuovi. Il controllo e' in
+     * [parametri] e lo fa PokerActivity.restoreState.
+     */
     fun save(w: SavedGame.Writer) {
+        w.ints(parametri())
         w.ints(fiches.toList())
         w.ints(puntato.toList())
         w.ints(impegno.toList())
@@ -350,6 +418,7 @@ class PokerGame(val giocatori: Int, val fichesIniziali: Int = FICHES_INIZIALI) {
     fun load(r: SavedGame.Reader) {
         fun dentro(v: List<Int>, a: IntArray) { for (i in a.indices) a[i] = v[i] }
         fun dentroB(v: List<Int>, a: BooleanArray) { for (i in a.indices) a[i] = v[i] == 1 }
+        require(r.ints() == parametri()) { "il salvataggio e' di una partita con altri parametri" }
         dentro(r.ints(), fiches)
         dentro(r.ints(), puntato)
         dentro(r.ints(), impegno)

@@ -614,22 +614,53 @@ che non somigliavano a un tavolo. Adesso uno sta in alto, uno a sinistra e uno a
 l'ordine dei posti è l'ordine dei turni — tu in basso, poi sinistra, poi alto, poi destra —
 così la mano si vede girare in tondo invece di saltare da un posto all'altro.
 
-Le carte sono **tutte della stessa misura**, e cinque carte piene di fianco non ci stanno: le
-due file laterali si accavallano di mezza carta e scivolano fuori dallo schermo fino a un
-terzo della loro larghezza. Quanto scivolano lo decide un conto, non un numero scritto a mano:
-due file, il mazzo in mezzo e 16dp di respiro per lato. Su un telefono da 360dp viene 40dp, su
-uno da 320dp ne viene 32, su un tablet zero e le file restano tutte dentro. Di un dorso si
-perde solo dorso — sono tutti uguali e non c'è niente da leggere. In cambio, il layout ha
-bisogno di `clipChildren="false"`, altrimenti la parte di fila che esce dal riquadro del posto
-verrebbe tagliata invece di uscire dallo schermo.
+Le carte sono **tutte della stessa misura**, e cinque carte piene di fianco non ci stanno. La
+prima risposta era accavallarle e farle scivolare fuori dallo schermo di un terzo; la risposta
+giusta è **girare di 90 gradi i due posti di fianco** — carte in colonna, ognuna ruotata, nome
+e riga di stato ruotati con loro, che è come stanno le carte di chi siede di lato. Così un
+posto laterale si porta via in larghezza l'*altezza* di una carta più due righe di testo
+girato: 122dp su un telefono da 360, 111 su uno da 320. Due colonne più il mazzo fanno 303dp
+su 360 e 273 su 320 — entrano sempre, e lo scivolamento fuori schermo non serve più.
+
+A ruotare è **ogni carta, non la fila**. Girare la fila una volta sola sembra più furbo e non
+lo è: la `translation` di un figlio dentro un genitore ruotato si applica nello spazio *ruotato*
+del genitore, quindi le carte in distribuzione volerebbero di traverso. Ruotando le carte una
+per una la colonna resta diritta e la distribuzione continua a funzionare senza trigonometria.
+Il vincolo che decide il passo della colonna è l'altezza, non la larghezza: la colonna parte dal
+bordo alto del mazzo e non deve arrivare sulla tua mano, quindi il passo è un quarto di carta —
+115dp di colonna su un telefono da 360, dove sotto il mazzo ce ne sono 199, e 99 su uno da
+320x480, dove ce ne sono 112. A un terzo di carta sarebbero 119 e non ci starebbero.
+
+Una vista girata chiede di ragionare per centri e non per angoli: la rotazione non entra nella
+misura — una vista A x B girata resta A x B per il layout e diventa B x A per l'occhio, col
+centro nello stesso punto — e la `translation`, che si applica dopo, sposta nello spazio non
+girato del genitore. Da lì escono i tre numeri di `mettiAPostoLaterale`, simmetrici fra destra
+e sinistra a meno del segno. E per la stessa ragione la distribuzione misura il **centro** di
+ogni carta (posizione della fila più `left`/`top` della carta) invece dell'angolo, che per una
+vista ruotata è da un'altra parte.
 
 **Un carattere e un colore.** Le info del tavolo avevano quattro corpi diversi (12, 13, 15,
 26sp) e due colori distribuiti per posizione, non per significato: i nomi in argento, gli
 stati in oro, il piatto in oro, due pulsanti su cinque in oro. Ora passano tutte da un solo
-stile, `PokerInfo`, e i cinque pulsanti da `PokerButton`. L'oro è rimasto per **una cosa
-sola**, la vincita, che a mano finita prende il posto della riga del piatto: è la stessa riga
-perché dice la stessa cosa in due momenti — quanto c'è in mezzo, e dove è andato. Un colore
-che significa qualcosa deve comparire quando quella cosa succede, e solo allora.
+stile, `PokerInfo`, e i cinque pulsanti da `PokerButton`, senza grassetto — il grassetto serve
+alle scritte sul velluto, non a un pulsante, che il risalto ce l'ha già dalla cornice.
+
+Il colore è rimasto per **una cosa sola**, la vincita, che a mano finita prende il posto della
+riga del piatto: è la stessa riga perché dice la stessa cosa in due momenti — quanto c'è in
+mezzo, e dove è andato. E sono due colori, non uno: **oro quando vinci tu, celeste quando vince
+un avversario**. Il colore si vede prima di aver letto la riga, quindi dice com'è andata
+nell'istante in cui la mano si chiude; il nome e la cifra si leggono dopo.
+
+**I posti si chiamano come al bridge**, N a nord, E a est, S a sud, W a ovest, e S sei tu perché
+S sta in basso. Erano «Tu», «Banco» e «Avversario 1/2/3»: una parola lunga in una colonna larga
+200dp, per dire una cosa che si vede già — sono tutti avversari tranne te. Una lettera sta in
+qualunque avviso.
+
+**Le probabilità a schermo sono una finestra** con un pulsante Continua, non più un riquadro
+fisso sopra la mano. Da riquadro costavano 86dp di schermo a tutti e sempre, anche a chi non le
+guardava, e su un telefono corto erano lo spazio che mancava al tavolo. Ma la ragione vera è
+un'altra: quei quattro numeri servono a fermarsi un attimo prima di decidere, quindi tanto vale
+che fermino davvero, e che si chiudano con un gesto quando si è letto.
 
 Sui pulsanti è sparito `autoSizeTextType="uniform"`, che sembra la scelta giusta e non lo è: il
 corpo lo decide la lunghezza del testo del singolo pulsante, quindi «Passo» veniva grande e
@@ -643,6 +674,52 @@ copie in un overlay — la scelta di `dealFrom` negli altri tre giochi — e men
 resta vero, così nessuno tocca niente e nessun `render()` le rimette al loro posto di scatto.
 Il passo si dimezza in quattro giocatori: venti carte al passo di due sarebbero un secondo di
 attesa a ogni mano.
+
+**Gli importi sono tuoi.** Fiches di partenza, apertura e rilancio erano tre costanti in
+`PokerGame`; ora sono parametri della partita, scelti nelle impostazioni con tre righe di meno
+e più. Non con tre caselle da scrivere: da un campo di testo può uscire qualunque cosa — zero,
+un milione, una lettera, il campo vuoto — e ogni valore assurdo andrebbe intercettato e
+spiegato, mentre con meno e più i valori impossibili **non esistono**. I limiti sono legati fra
+loro e non sono tre gabbie separate: l'apertura non supera il rilancio, il rilancio non scende
+sotto l'apertura, e le fiches di partenza non scendono sotto dieci volte l'apertura, altrimenti
+la partita sarebbe finita prima di cominciare. Quando un limite morde, l'altro valore si sposta
+di conseguenza e si riscrive a schermo: non c'è nessun avviso da leggere, si vede.
+
+Il valore di partenza delle fiches è sceso da 1000 a **200**, e non per gusto: con mille fiches
+e rilanci da venti ci volevano in media 2245 mani per chiudere una partita in quattro, e nessuno
+gioca 2245 mani. Con duecento un gruzzolo regge una ventina di mani, che è la durata di una
+partita vera.
+
+I cinque parametri — quanti giocatori, quante fiches, apertura, rilancio, mazzo intero o corto —
+si scrivono **in testa al salvataggio** e `load` li pretende uguali. È la stessa regola del
+numero dei giocatori, estesa: una mano ripresa deve continuare con gli importi con cui è
+cominciata, quindi se cambi le impostazioni a mano aperta quella mano si butta e la prossima
+parte coi valori nuovi. Il controllo sta in un posto solo, `PokerGame.parametri()`, e la
+schermata non lo ripete.
+
+**Combinazioni facili: il mazzo dal 6 all'asso.** Trentasei carte invece di cinquantadue.
+Togliendo i valori bassi le carte alte si incontrano molto più spesso, quindi doppie coppie,
+tris e colori diventano ordinari — che è il punto: si impara a riconoscere le combinazioni
+vedendole, non aspettandole. Le scale possibili sono solo quelle dal 6-7-8-9-10 al 10-J-Q-K-A, e
+l'asso basso non esiste più.
+
+Trentasei carte bastano, ed è un conto **esatto**: in quattro se ne distribuiscono venti, e nel
+caso peggiore — tutti e quattro cambiano quattro carte — se ne pescano altre sedici. Venti più
+sedici fa trentasei, cioè il mazzo intero. Non avanza nulla e non manca nulla, e il simulatore
+dice che il caso limite **capita davvero**: su 16.843 mani in quattro col mazzo corto, il minimo
+di carte rimaste nel mazzo è zero. Per questo in `scarta` c'è comunque la regola vera del poker
+— mazzo finito, si rimescolano gli scarti — che costa tre righe e copre il giorno che uno di
+quei numeri cambi: cinque giocatori, o cinque carte di cambio, e il conto non torna più. Senza,
+pescare da un mazzo vuoto chiude l'app, che è esattamente la forma di difetto che questo gioco
+ha già avuto una volta.
+
+Le probabilità a schermo seguono il mazzo in gioco: `PokerOdds.equita` riceve i valori che sono
+davvero in tavola, altrimenti campionerebbe da cinquantadue carte e direbbe numeri sbagliati.
+Resta invece calcolata sul mazzo intero la tabella dei percentili di `forza`, che il Banco usa
+per il modello dell'avversario: col mazzo corto le soglie corrispondono a mani più comuni di
+quello che crede, quindi gioca un filo largo. È la stessa direzione in cui sbaglia un giocatore
+in carne e ossa quando passa al mazzo corto, e rifare quella tabella vorrebbe dire ricalcolare
+un conto esaustivo fatto fuori dall'app.
 
 **Il dorso francese è rosso chiaro.** Era un bordeaux con l'ornato d'oro, bello da vicino e
 invisibile sul velluto — e nel poker i dorsi sono la maggior parte di quello che si vede,

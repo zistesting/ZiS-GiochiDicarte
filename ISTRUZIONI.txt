@@ -1,70 +1,158 @@
-ZiS-GiochiDiCarte-francesi  -  mazzo francese  (53 file)  -  versione 4.5
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 4.7
+                                            importi scelti da te, combinazioni facili
 
->>> PER LA PRIMA VOLTA DALLA 3.9 QUESTO PACCHETTO E' CAMBIATO, ma di un file solo:
-    fr_back.webp, IL DORSO. Le 52 carte sono quelle di sempre, identiche. <<<
+>>> CAMBIA SOLO app1. I quattro pacchetti caricati per la 4.5 (francesi, app2, piacentine-zis,
+    bergamasche-napoletane) vanno bene come sono. <<<
 
-Il progetto completo, alla 4.5, e' fatto di CINQUE pacchetti:
+app1 non aggiunge e non toglie file: gli stessi della 4.6, con nove sostituiti.
 
-    ZiS-GiochiDiCarte-app1                     il programma                CAMBIATO
-    ZiS-GiochiDiCarte-francesi                 mazzo francese (questo)     CAMBIATO (il dorso)
-    ZiS-GiochiDiCarte-app2                     art/ e verifica/            CAMBIATO (uno script)
-    ZiS-GiochiDiCarte-piacentine-zis           mazzi piacentine e ZiS      invariato dalla 3.9
-    ZiS-GiochiDiCarte-bergamasche-napoletane   mazzi bergamasche e nap.    invariato dalla 3.9
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 4.6 che hai sul computer.
 
-Il limite del caricatore web di GitHub e' 100 file per volta, ed e' la ragione per cui i
-pacchetti sono divisi cosi'.
+================================================================================
+COSA CARICARE  -  nove file, tutti in app1
+================================================================================
 
---- cosa c'e' dentro ---
+  app/src/main/java/com/zis/scopa/
+    PokerGame.kt          importi parametrici, mazzo corto, parametri in testa al salvataggio
+    PokerOdds.kt          l'universo delle carte ignote segue il mazzo in gioco
+    PokerBot.kt           passa il mazzo in gioco alle probabilita'
+    Prefs.kt              le quattro impostazioni nuove
+    SettingsActivity.kt   le tre righe meno/piu' e l'interruttore
+    PokerActivity.kt      la partita nasce coi valori scelti
 
-  53  fr_0_1 ... fr_3_13 + fr_back
+  app/src/main/res/layout/activity_settings.xml    importi e combinazioni facili
+  app/src/main/res/values/strings.xml              le stringhe nuove, regole senza cifre fisse
+  app/src/main/res/values-en/strings.xml           le stesse in inglese
+  app/build.gradle                                 versionName: 4.6 -> 4.7
+  README.md                                        le due pagine nuove
 
-Vanno tutti in app/src/main/res/drawable-nodpi/ , e il percorso e' gia' nello zip.
+ORDINE, tre caricamenti:
+  1. README.md               non fa partire niente: paths-ignore ha '**.md'
+  2. i file dentro app/src/  con [skip ci]
+  3. app/build.gradle        SENZA [skip ci]: e' questo che fa partire la build
 
-Gli script che producono queste carte stanno in art/, nel pacchetto app2.
-
---- cosa e' cambiato: il dorso ---
-
-Era un bordeaux con l'ornato d'oro. Bello da vicino, ma sul velluto scuro del tavolo un
-dorso scuro sparisce - e nel poker i dorsi sono la maggior parte di quello che si vede,
-cinque per avversario piu' il mazzo al centro.
-
-Adesso il campo e' un rosso acceso e l'ornato e' bianco, cioe' la scelta dei mazzi da gioco
-veri. Il DISEGNO NON E' CAMBIATO: e' lo stesso di card_back.py, con una tavolozza in piu' -
-la stessa incisione, gli stessi cerchi intrecciati, la stessa rosetta al centro. La cornice
-esterna e' piu' cupa del campo di proposito: da' alla carta un bordo suo, e quando cinque
-carte si accavallano si capisce dove finisce una e comincia l'altra anche da piccole.
-
-197 KB contro i 202 di prima.
-
-LO USA ANCHE IL KLONDIKE. Il mazzo francese e' uno, quindi il dorso nuovo si vede in tutti
-due i giochi. Se lo volessi rosso solo nel poker servirebbe un secondo drawable e una
-proprieta' in CardView, e si puo' fare: per ora e' uno.
-
-La tavolozza sta in art/carte_francesi.py, in genera_dorso, e quel file e' nel pacchetto
-app2 di questa consegna: caricalo, altrimenti il sorgente e l'immagine dicono due cose
-diverse.
-
---- caricamento ---
-
-Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-francesi e trascina QUELLO CHE C'E' DENTRO (la cartella app) ->
-Commit changes.
-
-Se carichi solo il dorso: il file e'
-    app/src/main/res/drawable-nodpi/fr_back.webp
-
-Metti [skip ci] nel messaggio di commit: la build va fatta partire una volta sola, dall'ultimo
-caricamento della consegna. L'ordine completo sta nell'ISTRUZIONI di app1.
+Oppure due gesti: il README da solo, poi la cartella app INTERA senza [skip ci].
 
 NON caricare questo ISTRUZIONI.txt.
 
---- come sono fatte le carte, per memoria ---
+================================================================================
+GLI IMPORTI
+================================================================================
 
-Misura 600x840, cioe' proporzione 1,4: le carte francesi sono piu' tozze delle italiane. Un
-indice solo, in alto a sinistra, perche' nel Klondike le carte stanno in tavola sempre nello
-stesso verso e il secondo indice non si vedrebbe mai; toglierlo libera un terzo dell'altezza
-per il pannello centrale.
+Fiches di partenza, apertura e rilancio erano tre costanti dentro PokerGame; ora sono
+parametri della partita e si scelgono nelle impostazioni, sotto "Importi". Di serie: 200$ di
+partenza, 10$ di apertura, 20$ di rilancio. Nel secondo giro di puntate il rilancio vale il
+doppio, e quella resta una regola del gioco, non un'impostazione.
 
-I quattro semi hanno quattro cromie - carminio, vermiglio, verde, ardesia - e non due: nel
-Klondike le colonne si costruiscono a colori alternati, quindi rosso e nero devono restare
-inconfondibili, e dentro la stessa coppia i due semi devono comunque distinguersi.
+TRE RIGHE CON MENO E PIU', NON TRE CASELLE DA SCRIVERE. Da un campo di testo puo' uscire
+qualunque cosa - zero, un milione, una lettera, il campo vuoto - e ogni valore assurdo andrebbe
+intercettato e spiegato. Con meno e piu' i valori impossibili non esistono, non serve la
+tastiera, e si vede di quanto si sale prima di salire. Passi: 50$ per le fiches, 5$ per
+apertura e rilancio. Limiti: fiches da 50 a 2000, apertura e rilancio da 5 a 100.
+
+I LIMITI SONO LEGATI FRA LORO, e non sono tre gabbie separate:
+  - l'apertura non supera il rilancio: una posta piu' grande di una puntata non e' poker;
+  - il rilancio non scende sotto l'apertura, che e' la stessa regola al rovescio;
+  - le fiches di partenza non scendono sotto dieci volte l'apertura, sennonche' la partita
+    sarebbe finita prima di cominciare - dieci mani di sola posta.
+Quando un limite morde, l'altro valore si sposta di conseguenza e si riscrive a schermo: non
+c'e' nessun avviso da leggere, si vede.
+
+PERCHE' 200 E NON 1000. Con mille fiches e rilanci da venti ci volevano in media 2245 mani per
+chiudere una partita in quattro - lo diceva il simulatore alla 4.4 - e nessuno gioca 2245 mani.
+Con duecento un gruzzolo regge una ventina di mani.
+
+I CINQUE PARAMETRI VANNO IN TESTA AL SALVATAGGIO e load li pretende uguali: quanti giocatori,
+quante fiches, apertura, rilancio, mazzo intero o corto. Una mano ripresa deve continuare con
+gli importi con cui e' cominciata, quindi se cambi le impostazioni a mano aperta quella mano si
+butta e la prossima parte coi valori nuovi. E' la stessa regola del numero dei giocatori della
+4.4, estesa a tutti e cinque.
+
+IL TESTO DELLE REGOLE (pulsante info nel poker) non dice piu' 10$, 20$ e 40$ a numeri fissi:
+diceva cifre che adesso possono essere altre.
+
+================================================================================
+COMBINAZIONI FACILI: IL MAZZO DAL 6 ALL'ASSO
+================================================================================
+
+Interruttore nelle impostazioni. Trentasei carte invece di cinquantadue: togliendo i valori dal
+2 al 5 le carte alte si incontrano molto piu' spesso, quindi doppie coppie, tris e colori
+diventano ordinari - che e' il punto, si impara a riconoscere le combinazioni vedendole invece
+di aspettarle. Le scale possibili sono solo quelle dal 6-7-8-9-10 al 10-J-Q-K-A, e l'asso basso
+non esiste piu'.
+
+IL CONTO CHE MI AVEVI DATO TORNA, ED E' ESATTO: in quattro si distribuiscono 20 carte e nel caso
+peggiore - tutti e quattro cambiano quattro carte - se ne pescano altre 16. Venti piu' sedici fa
+trentasei, cioe' il mazzo intero. Non avanza nulla e non manca nulla.
+
+E IL CASO LIMITE CAPITA DAVVERO: su 16.843 mani in quattro col mazzo corto, il minimo di carte
+rimaste nel mazzo e' ZERO. Cioe' si arriva a pescare l'ultima carta. Per questo in scarta ho
+messo comunque la regola vera del poker - mazzo finito, si rimescolano gli scarti - che costa
+tre righe e copre il giorno che uno di quei numeri cambi: cinque giocatori, o cinque carte di
+cambio, e il conto non torna piu'. Senza, pescare da un mazzo vuoto chiude l'app, ed e'
+esattamente la forma del difetto che abbiamo chiuso alla 4.4.
+Le carte appena buttate entrano negli scarti DOPO la pesca, cosi' non possono tornare subito in
+mano a chi le ha scartate.
+
+LE PROBABILITA' A SCHERMO SEGUONO IL MAZZO: equita riceve i valori che sono davvero in tavola,
+altrimenti campionerebbe da 52 carte e direbbe numeri sbagliati.
+Resta calcolata sul mazzo intero la tabella dei percentili che il Banco usa per indovinare la
+mano dell'avversario: col mazzo corto le sue soglie corrispondono a mani piu' comuni di quello
+che crede, quindi gioca un filo largo. E' la stessa direzione in cui sbaglia un giocatore in
+carne e ossa quando passa al mazzo corto, e rifare quella tabella vorrebbe dire ricalcolare un
+conto esaustivo fatto fuori dall'app. Sta scritto nel commento, sopra il metodo che la usa.
+
+================================================================================
+COSA PROVARE
+================================================================================
+
+ 1. Impostazioni -> Poker -> Importi: i tre meno/piu'. Prova a scendere sotto il minimo e a
+    salire sopra il massimo: i numeri si fermano.
+ 2. Porta l'apertura a 30$ con il rilancio a 20$: il rilancio deve salire da se' a 30$. Poi
+    porta l'apertura a 100$: le fiches devono salire da se' ad almeno 1000$.
+ 3. Con apertura 10$ e rilancio 20$, entra nel poker: i pulsanti devono dire "Vedo 20$" e
+    "Rilancio 20$" nel primo giro, e 40$ nel secondo. Con rilancio 50$: 50$ e 100$.
+ 4. Le fiches sotto il mazzo devono partire dal valore scelto.
+ 5. Cambia un importo a mano aperta (esci dal poker, cambia, rientra): deve cominciare una mano
+    nuova coi valori nuovi, senza chiudersi.
+ 6. Accendi "Combinazioni facili" e fai qualche mano in quattro: non devono uscire carte dal 2
+    al 5, e le doppie coppie e i tris devono essere frequenti. Fai fare quattro cambi da quattro
+    carte - cambia tu quattro carte e lascia che lo facciano anche gli altri - che e' il caso in
+    cui il mazzo arriva a zero: non deve chiudersi niente.
+ 7. Spegni "Combinazioni facili": tornano i valori bassi.
+ 8. Il pulsante info nel poker: le regole non devono citare cifre fisse.
+ 9. Il numero di versione: 4.7.
+
+================================================================================
+LE PROVE FATTE FUORI DAL TELEFONO
+================================================================================
+
+  - kotlinc sui 23 file: pulito. I 23 XML ben formati. Vincoli di ConstraintLayout: puliti su
+    tutti e dieci i layout. Risorse: nessun riferimento che non si risolve, nessuna risorsa
+    morta, 173 stringhe per lingua pari.
+  - IL SIMULATORE, circa 110.000 mani complete con i parametri nuovi:
+      4 giocatori, mazzo corto, 200/10/20        16.843 mani   minimo nel mazzo 0
+      2 giocatori, mazzo corto                    6.457 mani   minimo 18
+      4 giocatori, mazzo intero                  26.701 mani   minimo 16
+      2 giocatori, mazzo intero                   9.320 mani   minimo 34
+      4 giocatori, 50/5/5, mazzo corto           17.615 mani   minimo 0
+      4 giocatori, 2000/100/100, mazzo corto     11.822 mani   minimo 0
+      4 giocatori, 50/100/100 (impossibile dalle impostazioni: tutti all-in sulla posta)
+      2 giocatori, 50/100/100 idem
+      4 giocatori, 1000/5/100, mazzo intero      12.197 mani
+      3 giocatori, mazzo corto                    9.584 mani   minimo 9
+    In nessuna: eccezioni, mosse illegali, fiches create o perdute, giocatori con meno di
+    cinque carte dopo un cambio, turni assegnati a chi non ha mosse.
+  - IL SALVATAGGIO: 200 andate e ritorno con parametri diversi, tutte rientrate identiche; e
+    cambiando UN parametro solo - fiches, apertura, rilancio, mazzo corto, giocatori - il
+    salvataggio viene scartato in tutti e cinque i casi, e ripreso quando combaciano.
+
+Restano fuori aapt2, R8 e il telefono.
+
+================================================================================
+QUELLO CHE RESTA
+================================================================================
+
+  - Prefs.clearStats non azzera le statistiche del poker: manca GAME_POKER nella lista.
+  - il commento di Decks.kt dice ancora che il mazzo francese serve solo al Klondike.
+  - la variante Texas Hold'em resta spenta nel layout: il motore non la sa giocare.

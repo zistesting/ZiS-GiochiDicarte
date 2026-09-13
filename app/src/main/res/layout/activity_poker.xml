@@ -9,18 +9,13 @@
 
   LE CARTE SONO TUTTE DELLA STESSA MISURA, tue e degli avversari. Prima quelle degli
   avversari erano al 52%, cioe' tre file di carte piccole in cima allo schermo; tutte uguali
-  il tavolo si legge come un tavolo. Cinque carte grandi di fianco non ci starebbero, e per
-  questo le due file laterali si accavallano di due terzi e SCIVOLANO FUORI DALLO SCHERMO di
-  un terzo della loro larghezza: di un dorso si perde solo dorso. Quanto scivolano lo calcola
-  il codice, perche' dipende dalla larghezza dello schermo - su uno schermo largo non
-  scivolano affatto. Vedi PokerActivity.misura e sfalsaLaterali.
-  Percio' qui c'e' clipChildren="false": senza, la parte di fila che esce dal riquadro del
-  posto verrebbe tagliata invece di uscire dallo schermo.
+  il tavolo si legge come un tavolo.
 
-  I TRE POSTI SONO FATTI TUTTI E TRE ALLO STESSO MODO - carte, nome con le fiches, riga di
-  stato - e con gli stessi caratteri. Il nome sta SOTTO le carte anche nel posto in alto:
-  cosi' i tre posti sono lo stesso blocco ripetuto tre volte, e le due file laterali non
-  hanno niente sopra le carte che possa finire addosso alla riga di stato del centro.
+  I DUE POSTI DI FIANCO SONO GIRATI DI 90 GRADI - carte in colonna, ognuna ruotata, nome e
+  stato ruotati con loro - che e' come stanno le carte di chi siede di lato. Di fianco si
+  porta via in larghezza l'altezza di una carta invece della lunghezza di cinque, quindi lo
+  scivolamento fuori schermo che serviva alla 4.5 non serve piu'. Il posto in alto invece e'
+  fatto come il tuo: carte in fila, nome e stato sotto.
 
   IL CENTRO DEL TAVOLO e' una colonna sola, nell'ordine in cui si guarda: il piatto, la riga
   che dice cosa sta facendo il Banco, il mazzo, e sotto il mazzo le tue fiches. La colonna
@@ -59,43 +54,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Le probabilita' a schermo: nascoste per scelta predefinita. Stanno qui, subito
-             sopra la mano e i pulsanti, perche' quei numeri servono nell'istante in cui si
-             decide. -->
-        <LinearLayout
-            android:id="@+id/oddsBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:background="#80000000"
-            android:orientation="vertical"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/txtOddsHand"
-                style="@style/PokerInfo"
-                android:layout_width="match_parent" />
-
-            <TextView
-                android:id="@+id/txtOddsEquity"
-                style="@style/PokerInfo"
-                android:layout_width="match_parent" />
-
-            <TextView
-                android:id="@+id/txtOddsCall"
-                style="@style/PokerInfo"
-                android:layout_width="match_parent" />
-
-            <TextView
-                android:id="@+id/txtOddsRead"
-                style="@style/PokerInfo"
-                android:layout_width="match_parent" />
-        </LinearLayout>
-
         <FrameLayout
             android:id="@+id/youHandBox"
             android:layout_width="match_parent"
@@ -124,6 +82,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.AppCompatButton
@@ -284,16 +243,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- ======================= il posto a sinistra =======================
-             Le carte cominciano all'altezza del mazzo e il nome sta sotto: sopra il mazzo
-             passano gli avvisi del centro, e li' di fianco non deve esserci niente. -->
-        <LinearLayout
+        <!-- ======================= i due posti di fianco =======================
+             GIRATI DI 90 GRADI: le carte in colonna, ognuna ruotata, e il nome e la riga di
+             stato ruotati con loro, che e' come stanno le carte di chi siede di fianco a te.
+             Cosi' un posto laterale si porta via in larghezza l'ALTEZZA di una carta invece
+             della lunghezza di cinque, e lo scivolamento fuori schermo della 4.5 non serve
+             piu': due strisce e il mazzo stanno nella larghezza di qualunque telefono.
+
+             A ruotare e' OGNI CARTA, non la fila. Sembra piu' furbo girare la fila una volta
+             sola, ma la translation di un figlio dentro un genitore ruotato si applica nello
+             spazio RUOTATO del genitore: le carte in distribuzione volerebbero di traverso.
+             Ruotando le carte una per una la colonna resta diritta, e la distribuzione
+             continua a funzionare senza trigonometria. Vedi PokerActivity.mettiAPostoLaterale.
+
+             Riquadro e testi hanno misura wrap_content qui e misura vera nel codice: dipende
+             dalla carta, che dipende dalla larghezza dello schermo. clipChildren="false"
+             perche' la colonna, ruotata, esce dal suo riquadro di layout.
+        -->
+        <FrameLayout
             android:id="@+id/seatLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clipChildren="false"
-            android:gravity="start"
-            android:orientation="vertical"
             app:layout_constraintTop_toTopOf="@id/deckBox"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -301,28 +272,26 @@
                 android:id="@+id/handLeft"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" />
+                android:layout_gravity="center"
+                android:clipChildren="false"
+                android:orientation="vertical" />
 
             <TextView
                 android:id="@+id/nameLeft"
                 style="@style/PokerInfo"
-                android:layout_marginStart="4dp" />
+                android:layout_gravity="center" />
 
             <TextView
                 android:id="@+id/infoLeft"
                 style="@style/PokerInfo"
-                android:layout_marginStart="4dp"
-                android:lines="1" />
-        </LinearLayout>
+                android:layout_gravity="center" />
+        </FrameLayout>
 
-        <!-- ======================= il posto a destra ======================= -->
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/seatRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clipChildren="false"
-            android:gravity="end"
-            android:orientation="vertical"
             app:layout_constraintTop_toTopOf="@id/deckBox"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -330,19 +299,20 @@
                 android:id="@+id/handRight"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" />
+                android:layout_gravity="center"
+                android:clipChildren="false"
+                android:orientation="vertical" />
 
             <TextView
                 android:id="@+id/nameRight"
                 style="@style/PokerInfo"
-                android:layout_marginEnd="4dp" />
+                android:layout_gravity="center" />
 
             <TextView
                 android:id="@+id/infoRight"
                 style="@style/PokerInfo"
-                android:layout_marginEnd="4dp"
-                android:lines="1" />
-        </LinearLayout>
+                android:layout_gravity="center" />
+        </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
