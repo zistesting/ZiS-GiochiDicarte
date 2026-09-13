@@ -1,199 +1,53 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 4.5
-                                            il tavolo da poker rifatto, dorso rosso chiaro
+ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
 
-I cinque pacchetti di questa consegna:
+CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
 
-    ZiS-GiochiDiCarte-app1                     il programma (questo)          CAMBIATO
-    ZiS-GiochiDiCarte-francesi                 le 52 carte e il dorso         CAMBIATO (il dorso)
-    ZiS-GiochiDiCarte-app2                     art/ e verifica/               CAMBIATO (uno script)
-    ZiS-GiochiDiCarte-piacentine-zis           invariato dalla 3.9
-    ZiS-GiochiDiCarte-bergamasche-napoletane   invariato dalla 3.9
+  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
+                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
+  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
+                         per misurare le euristiche fuori dal telefono
 
-app1 non aggiunge e non toglie file: gli stessi della 4.4, con sei sostituiti.
+NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
+nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
+del gioco automatico sono state misurate.
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO. Sostituisce integralmente quella che hai sul
-computer, 4.4 compresa. Se ricaricassi una copia vecchia, tutto tornerebbe indietro senza un
-avviso. Butta le vecchie, dopo aver messo da parte una copia di sicurezza.
+--- cosa e' cambiato ---
 
-================================================================================
-COSA CARICARE  -  sei file in app1, uno in francesi, uno in app2
-================================================================================
+  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
+                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
+                           la cornice esterna piu' cupa del campo.
 
-  cartella app/src/main/java/com/zis/scopa/            -> 1 file
-    PokerActivity.kt         la schermata rifatta: posti attorno al tavolo, carte tutte
-                             della stessa misura, mazzo al centro, distribuzione che vola
+E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
+l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
+stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
+E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
+il lavoro e' peggio di nessuno strumento.
 
-  cartella app/src/main/res/layout/                    -> 1 file
-    activity_poker.xml       il tavolo nuovo
+Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
+card_back.py, che resta identico.
 
-  cartella app/src/main/res/values/                    -> 2 file
-    themes.xml               i due stili nuovi: PokerInfo e PokerButton
-    strings.xml              via "Piatto laterale", dentro "Vinci %1$d$"
+--- caricamento ---
 
-  cartella app/src/main/res/values-en/                 -> 1 file
-    strings.xml              le stesse due in inglese
+Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
+ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
+Commit changes.
 
-  cartella app/                                        -> 1 file
-    build.gradle             versionName: 4.4 -> 4.5
-
-  radice del repository                                -> 1 file
-    README.md                la disposizione del tavolo, l'uniformita' dei testi, il mazzo
-                             al centro, il dorso rosso
-
-  nel pacchetto francesi                               -> 1 file
-    app/src/main/res/drawable-nodpi/fr_back.webp       il dorso rosso chiaro
-
-  nel pacchetto app2                                   -> 1 file
-    art/carte_francesi.py    la tavolozza del dorso, cosi' il sorgente e l'immagine dicono
-                             la stessa cosa
-
-ORDINE, quattro caricamenti:
-
-  1. art/ del pacchetto app2       non fa partire niente: il workflow ignora art/**
-  2. README.md nella radice        idem: paths-ignore ha '**.md'
-  3. fr_back.webp e i cinque file di app1 (java, layout, values, values-en)
-                                   con [skip ci] nel messaggio di commit
-  4. app/build.gradle              SENZA [skip ci]: e' questo che fa partire la build
-
-Il modo rapido per il punto 3 e' trascinare le cartelle intere: app dal pacchetto app1 e app
-dal pacchetto francesi. Le cartelle senza il punto davanti passano dal caricatore web e i
-percorsi dentro si conservano.
-
-ATTENZIONE, IL TRANELLO DI SEMPRE: l'ultimo caricamento deve contenere qualcosa che il
-workflow guarda. paths-ignore ha '**.md', '**.txt', 'art/**' e 'verifica/**': un caricamento
-di soli .md o di sole cose dentro art non fa partire nessuna build.
-
-.github non c'entra: non e' cambiato niente li' dentro.
+Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
+conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
 
 NON caricare questo ISTRUZIONI.txt.
 
-================================================================================
-COSA E' CAMBIATO NEL TAVOLO, punto per punto
-================================================================================
+--- cosa c'e' dentro art/ ---
 
-1. I TRE POSTI ATTORNO AL TAVOLO. Uno in alto, uno a sinistra, uno a destra. L'ordine dei
-   posti e' l'ordine dei turni - tu in basso, poi sinistra, poi alto, poi destra - cosi' la
-   mano si vede girare in tondo invece di saltare da un posto all'altro. In due l'unico
-   avversario sta in alto, di fronte a te, e i due posti di fianco vanno a GONE.
-
-2. CARTE TUTTE DELLA STESSA MISURA. Prima quelle degli avversari erano al 52%. Cinque carte
-   piene di fianco non ci stanno, quindi le due file laterali si accavallano di mezza carta e
-   SCIVOLANO FUORI dallo schermo, fino a un terzo della loro larghezza e non oltre.
-   Quanto scivolano e' un conto, non un numero scritto a mano: due file, il mazzo in mezzo e
-   16dp di respiro per lato. Su un telefono da 360dp la carta viene 59dp e lo scivolamento
-   40; su uno da 320dp, 51 e 32; su un tablet zero, e le file restano tutte dentro. Ho
-   rifatto il disegno del tavolo a mano su sei misure di schermo per controllare i conti -
-   da 320x480 a 600x960 - e i 16dp fra l'ultima carta di fianco e il mazzo ci sono su tutte.
-
-3. UN COLORE SOLO PER I TESTI. Tutte le info e tutti gli avvisi passano da un unico stile,
-   PokerInfo: stesso carattere, 14sp, argento, la stessa ombra. Prima c'erano quattro corpi
-   (12, 13, 15, 26sp) e due colori distribuiti per posizione e non per significato.
-
-4. L'ORO SOLO PER LA VINCITA. A mano finita la riga del piatto diventa "Vinci 240$", in oro.
-   E' la stessa riga perche' dice la stessa cosa in due momenti: quanto c'e' in mezzo, e dove
-   e' andato. ("Tu vince" non era italiano: la vincita tua ha una stringa sua.)
-
-5. LE TUE FICHES SOTTO IL MAZZO, senza il "Tu" davanti: di chi siano lo dice il posto in cui
-   sono, che e' il tuo lato del tavolo.
-
-6. PULSANTI TUTTI UGUALI, stile PokerButton: stesso carattere, 14sp fisso, argento tutti e
-   cinque. Cambia e Mano successiva erano oro, ed erano gli unici due - ne' piu' importanti
-   ne' piu' rari degli altri.
-   E via autoSizeTextType, che sembra la scelta giusta e non lo e': il corpo lo decide la
-   LUNGHEZZA del testo del singolo pulsante, quindi "Passo" veniva grande e "Rilancio 40$"
-   piccolo, e tre pulsanti affiancati avevano tre corpi diversi. La misura fissa e' l'unica
-   che li rende davvero uguali.
-
-7. VIA "PIATTO LATERALE: xx". Compariva solo con qualcuno all-in, non diceva a chi andasse, e
-   la somma che conta la dice comunque la riga della vincita.
-
-8. IL MAZZO AL CENTRO, sotto la riga degli avvisi, e LA DISTRIBUZIONE CHE VOLA: una carta a
-   testa per giro, come a un tavolo vero. Si spostano le viste vere, senza copie in un
-   overlay, ed e' la scelta di dealFrom negli altri tre giochi. Mentre le carte volano non si
-   tocca niente: 0,7 secondi in due come in quattro, perche' in quattro il passo si dimezza.
-
-9. GLI AVVISI DEL BANCO SOTTO IL PIATTO. "Gioca Avversario 2", "passa", "si serve", "va
-   all-in": stanno tutti nella riga sotto il piatto, alta due righe fisse cosi' il tavolo non
-   salta su e giu' quando l'avviso e' lungo.
-
-10. IL DORSO E' ROSSO CHIARO. Era un bordeaux con l'ornato d'oro: bello da vicino e invisibile
-    sul velluto, e nel poker i dorsi sono la maggior parte di quello che si vede. Il disegno
-    e' lo stesso di sempre - card_back.py, una tavolozza in piu' - con il campo rosso acceso e
-    l'ornato bianco; la cornice esterna e' piu' cupa del campo di proposito, cosi' cinque
-    carte accavallate restano cinque carte anche da piccole. 197 KB contro i 202 di prima.
-
-    IL MAZZO FRANCESE LO USA ANCHE IL KLONDIKE, quindi il dorso nuovo si vede anche la'.
-    Secondo me ci sta bene, ma se lo vuoi rosso solo nel poker serve un drawable in piu' e
-    una proprieta' in CardView: si fa, basta dirlo.
-
-================================================================================
-COSA PROVARE
-================================================================================
-
- 1. Poker in quattro: un posto in alto, uno a sinistra, uno a destra. Le carte di fianco
-    devono uscire dallo schermo di circa mezza carta, e fra l'ultima carta di fianco e il
-    mazzo ci deve essere aria.
- 2. Poker in due: solo il posto in alto, e niente resti ai lati.
- 3. La distribuzione: le carte devono partire dal mazzo al centro, una a testa per giro.
-    Fino a quando volano i pulsanti non ci sono.
- 4. Le tue carte e quelle dell'avversario in alto devono essere della STESSA misura.
- 5. I testi: un carattere solo, argento. L'unica cosa d'oro deve comparire a mano finita, al
-    posto di "Piatto: xx", e dire "Vinci xx" o "Avversario 2 vince xx".
- 6. I tre pulsanti delle puntate: il testo deve avere la stessa misura in tutti e tre, anche
-    quando uno dice "Passo" e un altro "Rilancio 40$".
- 7. Le tue fiches: sotto il mazzo, senza "Tu".
- 8. Gli avvisi del Banco: sotto il piatto, non in fondo allo schermo.
- 9. Il dorso: rosso chiaro, tuo e degli avversari e del mazzo. Guarda anche il KLONDIKE, che
-    usa lo stesso mazzo.
-10. Ruota lo schermo a meta' mano: le carte si rimisurano e il mazzo con loro.
-11. Esci col tasto Home a meta' mano e rientra: la mano riprende dov'era, senza ridistribuire.
-12. Il numero di versione nella schermata iniziale: deve dire 4.5.
-
-Se le PROBABILITA' A SCHERMO sono accese, il pannello si porta via 86dp sopra la tua mano: su
-uno schermo molto corto (sotto i 560dp di altezza) il tavolo si stringe. Con il pannello
-spento sta dentro fino a 320x480, che e' il piu' piccolo che Android 7 possa avere.
-
-GLI ALTRI QUATTRO GIOCHI non sono stati toccati, e nessun file condiviso e' cambiato in
-questa consegna tranne il dorso francese, che vale per il Klondike.
-
-================================================================================
-LE PROVE FATTE FUORI DAL TELEFONO
-================================================================================
-
-  - controllo di tipo con kotlinc sui 23 file: pulito.
-  - i 23 XML di res/ sono tutti ben formati. Serve: i commenti che avevo scritto col
-    separatore fatto di trattini non erano XML valido (due trattini di fila dentro un
-    commento non si possono mettere) e aapt2 avrebbe rifiutato il layout.
-  - UN CONTROLLO NUOVO, sui vincoli di ConstraintLayout: ogni riferimento deve puntare a un
-    FRATELLO o al padre. Ha trovato un difetto vero in questo layout - i due posti di fianco
-    erano ancorati al mazzo, che stava dentro un altro riquadro, quindi era un nipote. Cosa
-    sarebbe successo: compila benissimo, il vincolo viene lasciato cadere a runtime e i due
-    posti finiscono in cima al tavolo, addosso a quello in alto. Si vede solo sul telefono.
-    Adesso il centro del tavolo e' una catena di quattro viste allo stesso livello dei posti,
-    e il controllo passa su tutti e dieci i layout dell'app.
-  - il disegno del tavolo ricostruito a mano su sei misure di schermo, con la stessa
-    aritmetica scritta due volte: nessuna sovrapposizione, 16dp fra le file laterali e il
-    mazzo su tutte, e la colonna del centro dentro l'altezza disponibile anche a 320x480.
-  - riferimenti alle risorse sui cinque pacchetti nello stesso albero: 230 drawable citati,
-    nessuno che non si risolve, nessuna risorsa morta, 165 stringhe per lingua pari.
-
-Restano fuori aapt2, R8 e il telefono.
-
-================================================================================
-DUE PICCOLEZZE ANCORA NON FATTE, di proposito
-================================================================================
-
-  - Prefs.clearStats non azzera le statistiche del poker: manca GAME_POKER nella lista.
-  - il commento in cima a Decks.kt dice ancora che il mazzo francese "serve solo al
-    Klondike". Da quando c'e' il poker non e' piu' vero.
-
-================================================================================
-LA REGOLA DA NON DIMENTICARE
-================================================================================
-
-LE PULL REQUEST DI DEPENDABOT NON SI UNISCONO MAI.
-
-Questo progetto si aggiorna caricando file dal PC, cioe' SOVRASCRIVENDO: il pacchetto locale
-e' la verita', il repository e' una macchina che compila. Unire una pull request scrive nel
-repository e rompe l'invariante. Le pull request si LEGGONO: se l'aggiornamento si vuole, il
-numero si cambia nel file locale e si carica come sempre.
+  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
+  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
+  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
+  estrai_carta_singola.py      una carta per volta, per i ritocchi
+  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
+  figure/                      le tre immagini da cui vengono J, Q e K francesi
+  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
+    + logo_app.png             cinque icone classiche del lanciatore
+    + icona_app.png
+  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
+  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
+  README.md                    come si usano

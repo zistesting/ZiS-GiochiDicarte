@@ -382,9 +382,19 @@ def genera_dorso(outdir, card_back_py):
     # anche il riquadro del campo deriva da W e H: ricalcolarlo con le stesse formule del
     # modulo, altrimenti resterebbe quello della carta italiana e il disegno uscirebbe storto
     cb.FX0, cb.FY0, cb.FX1, cb.FY1 = 34, 34, cb.W-34, cb.H-34
-    cb.PALETTES['fr'] = dict(bg_outer="#3A0E12", bg_field="#5E161C", lattice="#8A2A30",
-                             ring="#1F3C6B", accent="#D9A93C", accent_hi="#F2DFA4",
-                             line="#EBD9A8", line_soft="#B08A3C")
+    # ROSSO CHIARO, e il chiaro e' il punto. La prima versione era un bordeaux con
+    # l'ornato d'oro: bella da vicino, ma sul velluto scuro del tavolo un dorso scuro
+    # sparisce - e nel poker i dorsi sono la maggior parte di quello che si vede, cinque
+    # per avversario piu' il mazzo. Qui il campo e' un rosso acceso e l'ornato e' bianco,
+    # cioe' la scelta dei mazzi da gioco veri: si stacca dal tavolo, e cinque carte
+    # accavallate restano cinque carte distinte anche quando sono piccole.
+    #
+    # La cornice esterna e' piu' cupa del campo di proposito: da' alla carta un bordo
+    # suo, e quando le carte si sovrappongono si capisce dove finisce una e comincia
+    # l'altra senza contare sul filetto che CardView disegna attorno.
+    cb.PALETTES['fr'] = dict(bg_outer="#A82C34", bg_field="#E4666C", lattice="#D2535A",
+                             ring="#FFFFFF", accent="#FFE9B8", accent_hi="#FFFFFF",
+                             line="#FFFFFF", line_soft="#F6C9A0")
     svg = cb.build('fr')
     png = cairosvg.svg2png(bytestring=svg.encode(), output_width=OUT_W, output_height=OUT_H)
     f = f'{outdir}/fr_back.webp'
