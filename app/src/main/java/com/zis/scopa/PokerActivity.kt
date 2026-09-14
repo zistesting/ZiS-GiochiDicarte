@@ -369,18 +369,41 @@ class PokerActivity : AppCompatActivity() {
      * su 360 e 273 su 320: entrano sempre, e lo scivolamento fuori schermo che serviva quando
      * le file erano orizzontali non serve piu'.
      *
-     * IL PASSO DELLA COLONNA e' un quarto di carta, e qui il vincolo e' l'ALTEZZA: la colonna
-     * parte dal bordo alto del mazzo e non deve arrivare sulla tua mano. Lunga `cardW + 4 *
-     * passo`, cioe' due carte, misura 118dp su un telefono da 360 - dove sotto il mazzo ce ne
-     * sono 199 - e 99dp su uno da 320x480, il piu' piccolo che Android 7 possa avere, dove ce
-     * ne sono 112. A un terzo di carta sarebbero 119, e su quello schermo non ci starebbero.
+     * IL PASSO DELLA COLONNA, e qui alla 4.7 avevo sbagliato di brutto. Avevo tenuto un
+     * quarto di carta, come quando le file erano orizzontali, ma girando la carta il passo
+     * non corre piu' lungo il lato lungo (cardH, 82dp): corre lungo il lato CORTO, che e'
+     * cardW, 59dp. Un quarto di 59 fa 14dp, cioe' cinque carte accatastate di cui si vedeva
+     * una striscia: sovrapposte e illeggibili, ed e' esattamente cosi' che si vedevano.
+     *
+     * Adesso il passo lo decide lo SPAZIO CHE C'E': la colonna comincia al bordo alto del
+     * mazzo e deve stare sopra la tua mano, quindi si divide quello che resta per le quattro
+     * carte che seguono la prima. Il conto qui sotto rifa' a mano quello che il layout fa da
+     * se' - e' l'unico modo di saperlo PRIMA di disegnare, e disegnare due volte litigherebbe
+     * con l'animazione della distribuzione - ma il risultato non e' lasciato al caso: viene
+     * stretto fra un quarto e due terzi di carta. Se un giorno il layout cambiasse e il conto
+     * qui sbagliasse, il passo resterebbe comunque in quella forchetta.
+     *
+     * Quanto viene: 39dp su un telefono di oggi (360x915), 34 su uno da 360x640, e 14 su uno
+     * da 320x480 - dove non c'e' spazio e meglio di cosi' non si puo' fare.
      */
     private fun misura() {
         val schermo = (resources.configuration.screenWidthDp * resources.displayMetrics.density).toInt()
+        val altezza = (resources.configuration.screenHeightDp * resources.displayMetrics.density).toInt()
         cardW = minOf((schermo - dp(32)) / 5 - dp(6), dp(66))
         cardH = (cardW * 1.4f).toInt()
-        passoLaterale = cardW / 4
         altoTesto = dp(20)
+
+        // in ordine, dall'alto: il posto in alto, poi la colonna del centro (piatto, due
+        // righe di avvisi, mazzo, fiches) tenuta al 40% dello spazio libero, e in fondo la
+        // tua mano con i pulsanti
+        val basso = cardH + dp(64)
+        val tavolo = altezza - basso
+        val postoAlto = dp(48) + cardH + 2 * altoTesto
+        val sopraIlMazzo = dp(26) + 2 * altoTesto + dp(4)
+        val centro = sopraIlMazzo + cardH + dp(4) + altoTesto
+        val cima = postoAlto + (tavolo - postoAlto - centro).coerceAtLeast(0) * 4 / 10
+        val sottoIlMazzo = tavolo - cima - sopraIlMazzo
+        passoLaterale = ((sottoIlMazzo - cardW) / 4).coerceIn(cardW / 4, cardW * 2 / 3)
     }
 
     private fun render() {

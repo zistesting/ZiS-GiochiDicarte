@@ -627,9 +627,20 @@ lo è: la `translation` di un figlio dentro un genitore ruotato si applica nello
 del genitore, quindi le carte in distribuzione volerebbero di traverso. Ruotando le carte una
 per una la colonna resta diritta e la distribuzione continua a funzionare senza trigonometria.
 Il vincolo che decide il passo della colonna è l'altezza, non la larghezza: la colonna parte dal
-bordo alto del mazzo e non deve arrivare sulla tua mano, quindi il passo è un quarto di carta —
-115dp di colonna su un telefono da 360, dove sotto il mazzo ce ne sono 199, e 99 su uno da
-320x480, dove ce ne sono 112. A un terzo di carta sarebbero 119 e non ci starebbero.
+bordo alto del mazzo e non deve arrivare sulla tua mano. Alla 4.6 avevo tenuto un quarto di
+carta, come quando le file erano orizzontali, e **era sbagliato**: girando la carta il passo non
+corre più lungo il lato lungo (82dp) ma lungo il lato corto (59dp), quindi un quarto faceva 14dp
+— cinque carte accatastate di cui si vedeva una striscia. Ora il passo lo decide lo spazio che
+c'è davvero: si divide quello che resta fra il bordo alto del mazzo e la tua mano per le quattro
+carte che seguono la prima, e viene 39dp su un telefono di oggi, 34 su uno da 360x640, cioè fra
+il 57% e il 66% di ogni carta a vista invece del 24%.
+
+Il conto sta in `misura()` e rifà a mano quello che il layout fa da sé, perché il passo serve
+*prima* di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il secondo
+disegno litigherebbe con l'animazione della distribuzione. È duplicazione, e si paga: se il
+layout cambia, quel conto sbaglia. Per questo il risultato è stretto fra un quarto e due terzi
+di carta: sbagliando il conto il passo resta comunque in una forchetta sensata, invece di
+diventare zero o mezzo schermo.
 
 Una vista girata chiede di ragionare per centri e non per angoli: la rotazione non entra nella
 misura — una vista A x B girata resta A x B per il layout e diventa B x A per l'occhio, col

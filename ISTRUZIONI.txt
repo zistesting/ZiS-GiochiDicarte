@@ -1,15 +1,54 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 4.7
-                                            importi scelti da te, combinazioni facili
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 4.8
+                                            le carte di W e E non si accatastano piu',
+                                            piu' gli importi scelti da te e le combinazioni
+                                            facili, che erano la 4.7
 
 >>> CAMBIA SOLO app1. I quattro pacchetti caricati per la 4.5 (francesi, app2, piacentine-zis,
     bergamasche-napoletane) vanno bene come sono. <<<
 
-app1 non aggiunge e non toglie file: gli stessi della 4.6, con nove sostituiti.
+app1 non aggiunge e non toglie file.
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 4.6 che hai sul computer.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce tutto quello che hai sul computer.
+
+>>> PRIMA UNA DOMANDA: LA 4.7 L'HAI GIA' CARICATA?
+    Se NO - e probabilmente no, te l'ho mandata pochi minuti prima che mi scrivessi - non
+    fare due giri: carica la cartella app INTERA da questa copia, piu' il README, e salta
+    l'elenco qui sotto. Dentro c'e' tutta la 4.7 piu' la correzione.
+    Se SI', allora di nuovo cambia un file solo: PokerActivity.kt (piu' build.gradle e il
+    README).
 
 ================================================================================
-COSA CARICARE  -  nove file, tutti in app1
+COSA CARICARE  -  la correzione e' un file
+================================================================================
+
+  app/src/main/java/com/zis/scopa/PokerActivity.kt   il passo della colonna di fianco
+  app/build.gradle                                   versionName: 4.7 -> 4.8
+  README.md                                          il perche', scritto nero su bianco
+
+LA CORREZIONE. Le carte di W e E erano accatastate perche' il passo della colonna era un
+quarto di carta - il numero che andava bene quando le file erano ORIZZONTALI. Girando la carta
+di 90 gradi il passo non corre piu' lungo il lato lungo (82dp) ma lungo il lato CORTO, che e'
+59dp: un quarto fa 14dp, e di ogni carta si vedeva una striscia. Colpa mia, ed era un errore di
+ragionamento, non di aritmetica.
+
+Adesso il passo lo decide lo spazio che c'e' davvero: si divide quello che resta fra il bordo
+alto del mazzo e la tua mano per le quattro carte che seguono la prima. Viene 39dp su un
+telefono di oggi (360x915 o 411x891), 34 su uno da 360x640, 27 su uno da 320x570 - cioe' fra il
+52% e il 66% di ogni carta a vista, invece del 24% di prima. Su uno schermo da 320x480 resta 14:
+la' non c'e' spazio e meglio non si puo' fare.
+
+Il conto sta in misura() e rifa' a mano quello che il layout fa da se', perche' il passo serve
+PRIMA di disegnare: misurarlo dopo vorrebbe dire disegnare due volte, e il secondo disegno
+litigherebbe con l'animazione della distribuzione. E' duplicazione, e si paga: se il layout
+cambia, quel conto sbaglia. Per questo il risultato viene stretto fra un quarto e due terzi di
+carta - sbagliando il conto il passo resta in una forchetta sensata invece di diventare zero o
+mezzo schermo.
+
+Ho ridisegnato il tavolo a mano su otto misure di schermo per controllare, e in tutte e otto la
+colonna sta fra il mazzo e la tua mano senza sforare.
+
+================================================================================
+E QUESTO ERA IL CONTENUTO DELLA 4.7  -  nove file
 ================================================================================
 
   app/src/main/java/com/zis/scopa/
