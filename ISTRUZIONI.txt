@@ -1,10 +1,58 @@
 ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 4.8
+                                            (+ la correzione del workflow: vedi qui sotto)
                                             le carte di W e E non si accatastano piu',
                                             piu' gli importi scelti da te e le combinazioni
                                             facili, che erano la 4.7
 
 >>> CAMBIA SOLO app1. I quattro pacchetti caricati per la 4.5 (francesi, app2, piacentine-zis,
     bergamasche-napoletane) vanno bene come sono. <<<
+
+>>> PRIMA DI TUTTO: LA BUILD CHE NON PARTE  -  .github/workflows/build-apk.yml <<<
+
+    La build non fallisce sul codice: si ferma PRIMA di compilare, nel passo che prepara
+    l'SDK. Nel log non c'e' una riga di Kotlin.
+
+    COS'ERA. Il passo "Set up Android SDK" installa, se non gli si dice altro, i pacchetti
+    che ha di serie: `tools platform-tools`. Ma `tools` - il vecchio "Android SDK Tools" -
+    e' obsoleto da anni e non sta piu' nel deposito di Google, quindi sdkmanager scrive
+    "Warning: Failed to find package 'tools'" e finisce con codice 1. L'action lo considera
+    un guasto e si ferma.
+
+    PERCHE' ADESSO E PRIMA NO, a workflow immobile: la v4 e' un'etichetta MOBILE, e adesso
+    porta i cmdline-tools 20.0 al posto dei 12.0 che il runner ha preinstallati - lo dice il
+    tuo log, "Wrong version in preinstalled sdkmanager". Lo sdkmanager nuovo tratta il
+    pacchetto mancante come errore dove quello di prima si limitava ad avvisare.
+
+    LA CORREZIONE e' una riga: gli si dice quali pacchetti vuole, cioe' solo
+    `platform-tools`, che e' l'unico dei due che serviva. La piattaforma API 36 e i
+    build-tools continuano ad arrivare da dove arrivavano prima - l'immagine del runner, o
+    Gradle che se li scarica, cosa che puo' fare perche' le licenze quel passo le accetta
+    comunque.
+
+    COME SI CARICA, che e' l'unica parte scomoda: il caricatore web di GitHub SCARTA le
+    cartelle che cominciano con un punto, quindi non si puo' trascinare .github. Due strade:
+
+      a) entra nel repository in .github/workflows/, apri build-apk.yml, la matita in alto a
+         destra, e sostituisci la riga
+               uses: android-actions/setup-android@v4
+         con queste tre:
+               uses: android-actions/setup-android@v4
+               with:
+                 packages: 'platform-tools'
+         (l'indentazione conta: "with:" allineato a "uses:", "packages:" due spazi piu'
+         dentro). Commit.
+
+      b) oppure: entra in .github/workflows/, Add file -> Upload files, e trascina il
+         build-apk.yml di questa copia. Dentro una cartella il caricatore funziona; e' solo
+         il trascinamento della cartella col punto che non passa.
+
+    Questo commit FA PARTIRE la build - .github non sta in paths-ignore - quindi non serve
+    caricare altro se il resto lo hai gia' messo: e' quel commit stesso che ti produce
+    l'APK 4.8.
+
+    Se una cosa cosi' non deve piu' succedere, la strada e' inchiodare l'action a un commit
+    invece che alla v4: costa un aggiornamento a mano ogni tanto, e in cambio niente piu'
+    sorprese a codice fermo. Dimmelo e lo faccio.
 
 app1 non aggiunge e non toglie file.
 
