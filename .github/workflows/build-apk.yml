@@ -86,11 +86,37 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # La v4 porta anche i cmdline-tools 20.0 al posto dei precedenti: e' l'unica modifica
-      # di comportamento del gruppo, e va nella direzione giusta perche' servono a scaricare
-      # la piattaforma API 36.
+      # PERCHE' C'E' "packages", che prima non c'era.
+      #
+      # Senza quella riga l'action installa quello che ha di serie, cioe' `tools
+      # platform-tools`. Ma `tools` - il vecchio "Android SDK Tools" - e' obsoleto da anni e
+      # non sta piu' nel deposito di Google: sdkmanager non lo trova, scrive
+      #
+      #     Warning: Failed to find package 'tools'
+      #
+      # e finisce con codice 1. L'action considera quel codice un guasto e si ferma, quindi la
+      # build muore PRIMA di compilare: nel log non c'e' una riga di Kotlin, solo la barra di
+      # avanzamento di sdkmanager e un errore di Node.
+      #
+      # Perche' ha smesso di funzionare da un giorno all'altro, a workflow immobile: la v4 e'
+      # un'etichetta mobile, e adesso porta i cmdline-tools 20.0 al posto dei 12.0
+      # preinstallati sul runner - lo dice il log, "Wrong version in preinstalled sdkmanager".
+      # Lo sdkmanager nuovo tratta il pacchetto mancante come errore dove quello di prima si
+      # limitava ad avvisare. Quale delle due cose sia cambiata non importa: il pacchetto
+      # obsoleto non serviva in nessun caso.
+      #
+      # `platform-tools` resta perche' e' quello che c'era e funzionava. Tutto il resto -
+      # la piattaforma API 36 e i build-tools - continua ad arrivare da dove arrivava prima:
+      # l'immagine del runner, o Gradle che se li scarica da se', cosa che puo' fare perche'
+      # questo passo ha comunque accettato le licenze.
+      #
+      # Se un giorno si volesse che una cosa cosi' non possa piu' succedere, la strada e'
+      # inchiodare l'action a un commit invece che alla v4. Costa un aggiornamento a mano
+      # ogni tanto, e in cambio niente piu' sorprese a codice fermo.
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
 
       # Ripristina il keystore dai GitHub Secrets, se configurati, e lo verifica subito.
       #
