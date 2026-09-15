@@ -626,21 +626,29 @@ A ruotare è **ogni carta, non la fila**. Girare la fila una volta sola sembra p
 lo è: la `translation` di un figlio dentro un genitore ruotato si applica nello spazio *ruotato*
 del genitore, quindi le carte in distribuzione volerebbero di traverso. Ruotando le carte una
 per una la colonna resta diritta e la distribuzione continua a funzionare senza trigonometria.
-Il vincolo che decide il passo della colonna è l'altezza, non la larghezza: la colonna parte dal
-bordo alto del mazzo e non deve arrivare sulla tua mano. Alla 4.6 avevo tenuto un quarto di
-carta, come quando le file erano orizzontali, e **era sbagliato**: girando la carta il passo non
-corre più lungo il lato lungo (82dp) ma lungo il lato corto (59dp), quindi un quarto faceva 14dp
-— cinque carte accatastate di cui si vedeva una striscia. Ora il passo lo decide lo spazio che
-c'è davvero: si divide quello che resta fra il bordo alto del mazzo e la tua mano per le quattro
-carte che seguono la prima, e viene 39dp su un telefono di oggi, 34 su uno da 360x640, cioè fra
-il 57% e il 66% di ogni carta a vista invece del 24%.
+Il passo della colonna ha richiesto **tre giri**, e vale raccontarli perché l'errore è
+istruttivo. Alla 4.6 era un quarto di carta, il numero che andava bene quando le file erano
+orizzontali: ma girando la carta il passo non corre più lungo il lato lungo (82dp) bensì lungo
+il lato **corto** (59dp), e un quarto di 59 fa 14dp — cinque carte accatastate di cui si vedeva
+una striscia. Alla 4.8 l'ho legato allo spazio *sotto il mazzo*, e non bastava ancora, perché
+quello spazio era mezzo tavolo.
 
-Il conto sta in `misura()` e rifà a mano quello che il layout fa da sé, perché il passo serve
-*prima* di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il secondo
-disegno litigherebbe con l'animazione della distribuzione. È duplicazione, e si paga: se il
-layout cambia, quel conto sbaglia. Per questo il risultato è stretto fra un quarto e due terzi
-di carta: sbagliando il conto il passo resta comunque in una forchetta sensata, invece di
-diventare zero o mezzo schermo.
+Ora le due colonne prendono **tutta** la fascia fra il posto in alto e la tua mano, e il passo è
+tanto quanto ce ne sta, fino a una carta piena: su un telefono normale le cinque carte stanno
+una sotto l'altra **senza accavallarsi affatto** (63dp di passo su 59 di carta, con 4dp di aria).
+Cinque carte girate sono alte 5 × cardW, cioè 295dp su un telefono da 360 di larghezza, e la
+fascia ne offre 288 su uno da 640 di altezza e 448 su uno da 800.
+
+Il conto della fascia sta in `misura()` e rifà a mano quello che il layout fa da sé, perché il
+passo serve *prima* di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il
+secondo disegno litigherebbe con l'animazione della distribuzione. È duplicazione e si paga se
+il layout cambia; per questo il risultato resta stretto fra mezza carta e una carta, così
+sbagliando il conto il passo resta comunque in una forchetta in cui le cinque carte si vedono.
+
+E il testo di un posto laterale è **una riga sola** — nome, fiches e stato insieme — non per
+brevità: ogni riga ruotata si porta via larghezza al centro del tavolo, e il centro deve restare
+largo abbastanza per scrivere «Piatto: 240$» su una riga. Con due righe il centro scendeva a
+108dp su un telefono da 360; con una resta a 148.
 
 Una vista girata chiede di ragionare per centri e non per angoli: la rotazione non entra nella
 misura — una vista A x B girata resta A x B per il layout e diventa B x A per l'occhio, col
@@ -649,6 +657,24 @@ girato del genitore. Da lì escono i tre numeri di `mettiAPostoLaterale`, simmet
 e sinistra a meno del segno. E per la stessa ragione la distribuzione misura il **centro** di
 ogni carta (posizione della fila più `left`/`top` della carta) invece dell'angolo, che per una
 vista ruotata è da un'altra parte.
+
+**Di chi è il turno lo dice la luce.** Il riquadro delle carte di chi deve giocare si schiarisce
+appena, e la luce gira attorno al tavolo da sola: la mano si racconta senza che nessuno debba
+leggere un avviso, e lo stato del gioco si vede con la coda dell'occhio mentre si guardano le
+proprie carte. A mano finita si spengono tutti, così il tavolo dice anche «è finita».
+
+Il grigio è un **bianco al 15%**, non un grigio pieno: il tavolo non è di un colore solo — è il
+colore di fondo con sopra la trama ripetuta — quindi un grigio fisso coprirebbe il disegno e si
+vedrebbe come una toppa, mentre il bianco trasparente schiarisce quello che c'è sotto, trama
+compresa. Il 15% è scelto guardandolo sul velluto vero: sotto (8, 12%) si perde, sopra (20, 30%)
+diventa un pannello grigio e l'occhio guarda il pannello invece delle carte.
+
+E tutti e quattro i blocchi — i tre posti e il tuo — hanno 6dp di padding, che non è aria
+decorativa: un riquadro della misura esatta delle carte starebbe tutto **sotto** le carte e non
+si vedrebbe. Il padding sta nel layout e non nel codice perché deve esserci sempre, accesa o
+spenta la luce: se comparisse solo col turno, le carte si sposterebbero di sei punti a ogni
+cambio di mano. Quei dodici punti entrano anche nel conto della fascia che decide il passo delle
+colonne laterali, altrimenti il riquadro acceso sborderebbe di quanto il padding misura.
 
 **Un carattere e un colore.** Le info del tavolo avevano quattro corpi diversi (12, 13, 15,
 26sp) e due colori distribuiti per posizione, non per significato: i nomi in argento, gli
@@ -679,7 +705,11 @@ corpo lo decide la lunghezza del testo del singolo pulsante, quindi «Passo» ve
 fissa a 14sp è l'unica che li rende davvero uguali.
 
 **Il mazzo al centro, e le carte che partono da lì.** Prima non c'era: le carte comparivano
-già in mano. Adesso il mazzo sta sotto la riga degli avvisi e la distribuzione vola, una carta
+già in mano. Adesso il mazzo è la prima cosa della colonna centrale, con «Piatto: XX$» subito
+sotto e gli avvisi del Banco sotto ancora — si guarda dall'alto in basso nell'ordine in cui
+serve: da dove vengono le carte, quanto c'è in mezzo, cosa sta facendo l'avversario. Le tue
+fiches invece sono scese in fondo, appena sopra le tue carte: sono tue, e dal tuo lato del
+tavolo si capisce di chi sono senza scriverlo. La distribuzione vola, una carta
 a testa per giro come a un tavolo vero. Si spostano **le viste vere** con `translation`, senza
 copie in un overlay — la scelta di `dealFrom` negli altri tre giochi — e mentre volano `busy`
 resta vero, così nessuno tocca niente e nessun `render()` le rimette al loro posto di scatto.

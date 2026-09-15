@@ -54,10 +54,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <FrameLayout
-            android:id="@+id/youHandBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!-- IL TUO BLOCCO: le fiches e le carte dentro un riquadro solo, che si accende
+             quando tocca a te. Le fiches stanno appena sopra le tue carte perche' sono TUE:
+             dal tuo lato del tavolo si capisce di chi sono senza scriverlo, ed e' per questo
+             che il "Tu" non serve.
+
+             Il padding di 6dp non e' aria decorativa: e' quello che rende VISIBILE il
+             riquadro del turno. Un riquadro esattamente della misura delle carte starebbe
+             tutto sotto le carte e non si vedrebbe. Sta nel layout e non nel codice perche'
+             deve esserci sempre, accesa o spenta la luce: se comparisse solo col turno, le
+             carte si sposterebbero di sei punti a ogni cambio di mano.
+        -->
+        <LinearLayout
+            android:id="@+id/youBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                android:id="@+id/txtChips"
+                style="@style/PokerInfo"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="2dp" />
 
             <LinearLayout
                 android:id="@+id/youHand"
@@ -65,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:orientation="horizontal" />
-        </FrameLayout>
+        </LinearLayout>
 
         <!-- Tre pulsanti per le puntate, piu' uno per lo scarto e uno per andare avanti.
              Il codice ne mostra solo quelli che in quel momento sono mosse ammesse: e'
@@ -148,6 +168,7 @@
             android:clipChildren="false"
             android:gravity="center_horizontal"
             android:orientation="vertical"
+            android:padding="6dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -186,86 +207,79 @@
              I 48dp di margine per lato tengono un avviso lungo lontano dalle carte laterali.
         -->
 
-        <!-- Il piatto. A mano finita diventa l'avviso di vincita, ed e' l'unico posto
-             dell'app dove compare l'oro: il codice cambia colore e testo insieme. -->
-        <TextView
-            android:id="@+id/txtPot"
-            style="@style/PokerInfo.Pot"
-            android:layout_width="0dp"
-            android:layout_marginStart="48dp"
-            android:layout_marginEnd="48dp"
+        <!-- Il mazzo, in cima alla colonna: due dorsi sfalsati, creati dal codice perche'
+             CardView non si costruisce da XML. E' da qui che partono le carte quando si
+             distribuisce, ed e' il motivo per cui sta in cima - il piatto gli va SOTTO, non
+             sopra: prima si vede il mazzo, poi quanto c'e' in mezzo. -->
+        <FrameLayout
+            android:id="@+id/deckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/seatTop"
-            app:layout_constraintBottom_toTopOf="@id/txtStatus"
+            app:layout_constraintBottom_toTopOf="@id/txtPot"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintVertical_bias="0.4"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Le decisioni del Banco: "Gioca Avversario 2", "Avversario 2 passa",
-             "si serve", "va all-in". Due righe fisse, cosi' il tavolo non salta su e giu'
-             quando l'avviso e' lungo. -->
+        <!-- Il piatto, subito sotto il mazzo. A mano finita diventa l'avviso di vincita, ed
+             e' l'unico posto del tavolo dove compaiono dei colori: oro se vinci tu, celeste
+             se vince un avversario. I margini di lato li mette il codice, perche' dipendono
+             da quanto sono larghe le due strisce laterali. -->
+        <TextView
+            android:id="@+id/txtPot"
+            style="@style/PokerInfo.Pot"
+            android:layout_width="0dp"
+            android:layout_marginTop="6dp"
+            app:layout_constraintTop_toBottomOf="@id/deckBox"
+            app:layout_constraintBottom_toTopOf="@id/txtStatus"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Le decisioni del Banco: "Gioca N", "N passa", "si serve", "va all-in". Due righe
+             fisse, cosi' il tavolo non salta su e giu' quando l'avviso e' lungo. -->
         <TextView
             android:id="@+id/txtStatus"
             style="@style/PokerInfo"
             android:layout_width="0dp"
-            android:layout_marginStart="48dp"
-            android:layout_marginEnd="48dp"
             android:lines="2"
             android:maxLines="2"
             app:layout_constraintTop_toBottomOf="@id/txtPot"
-            app:layout_constraintBottom_toTopOf="@id/deckBox"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Il mazzo: due dorsi sfalsati, creati dal codice perche' CardView non si
-             costruisce da XML. E' da qui che partono le carte quando si distribuisce. -->
-        <FrameLayout
-            android:id="@+id/deckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/txtStatus"
-            app:layout_constraintBottom_toTopOf="@id/txtChips"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Le tue fiches, sotto il mazzo e senza il "Tu" davanti: di chi siano lo dice il
-             posto in cui sono, che e' il tuo lato del tavolo. -->
-        <TextView
-            android:id="@+id/txtChips"
-            style="@style/PokerInfo"
-            android:layout_width="0dp"
-            android:layout_marginStart="48dp"
-            android:layout_marginEnd="48dp"
-            android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/deckBox"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- ======================= i due posti di fianco =======================
-             GIRATI DI 90 GRADI: le carte in colonna, ognuna ruotata, e il nome e la riga di
-             stato ruotati con loro, che e' come stanno le carte di chi siede di fianco a te.
-             Cosi' un posto laterale si porta via in larghezza l'ALTEZZA di una carta invece
-             della lunghezza di cinque, e lo scivolamento fuori schermo della 4.5 non serve
-             piu': due strisce e il mazzo stanno nella larghezza di qualunque telefono.
+             GIRATI DI 90 GRADI: le carte in colonna, ognuna ruotata, e una riga di testo
+             ruotata con loro col nome, le fiches e lo stato. E' come stanno le carte di chi
+             siede di fianco a te.
 
-             A ruotare e' OGNI CARTA, non la fila. Sembra piu' furbo girare la fila una volta
-             sola, ma la translation di un figlio dentro un genitore ruotato si applica nello
-             spazio RUOTATO del genitore: le carte in distribuzione volerebbero di traverso.
-             Ruotando le carte una per una la colonna resta diritta, e la distribuzione
-             continua a funzionare senza trigonometria. Vedi PokerActivity.mettiAPostoLaterale.
+             PRENDONO TUTTA L'ALTEZZA fra il posto in alto e la tua mano, e non piu' solo la
+             parte sotto il mazzo: e' la fascia piu' alta che c'e', e serve tutta perche' le
+             cinque carte si vedano SENZA accavallarsi. Il passo della colonna lo calcola
+             PokerActivity.misura da quella fascia; su un telefono normale viene una carta
+             piena, cioe' le cinque carte una sotto l'altra senza sovrapposizione.
 
-             Riquadro e testi hanno misura wrap_content qui e misura vera nel codice: dipende
-             dalla carta, che dipende dalla larghezza dello schermo. clipChildren="false"
-             perche' la colonna, ruotata, esce dal suo riquadro di layout.
+             A ruotare e' OGNI CARTA, non la fila: la translation di un figlio dentro un
+             genitore ruotato si applica nello spazio RUOTATO del genitore, e le carte in
+             distribuzione volerebbero di traverso. Cosi' la colonna resta diritta.
+
+             UNA RIGA DI TESTO E NON DUE, e non e' per brevita': ogni riga ruotata si porta
+             via larghezza al centro del tavolo, e il centro deve restare largo abbastanza
+             per scrivere "Piatto: 240$" su una riga sola.
+
+             Riquadro e testo hanno misura wrap_content qui e misura vera nel codice: dipende
+             dalla carta, che dipende dallo schermo. clipChildren="false" perche' la colonna,
+             girata, esce dal suo riquadro di layout.
         -->
         <FrameLayout
             android:id="@+id/seatLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clipChildren="false"
-            app:layout_constraintTop_toTopOf="@id/deckBox"
+            android:padding="6dp"
+            app:layout_constraintTop_toBottomOf="@id/seatTop"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
             <LinearLayout
@@ -284,7 +298,8 @@
             <TextView
                 android:id="@+id/infoLeft"
                 style="@style/PokerInfo"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:visibility="gone" />
         </FrameLayout>
 
         <FrameLayout
@@ -292,7 +307,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clipChildren="false"
-            app:layout_constraintTop_toTopOf="@id/deckBox"
+            android:padding="6dp"
+            app:layout_constraintTop_toBottomOf="@id/seatTop"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <LinearLayout
@@ -311,7 +328,8 @@
             <TextView
                 android:id="@+id/infoRight"
                 style="@style/PokerInfo"
-                android:layout_gravity="center" />
+                android:layout_gravity="center"
+                android:visibility="gone" />
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,245 +1,109 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 4.8
-                                            (+ la correzione del workflow: vedi qui sotto)
-                                            le carte di W e E non si accatastano piu',
-                                            piu' gli importi scelti da te e le combinazioni
-                                            facili, che erano la 4.7
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.0
+                                            si accende il riquadro di chi deve giocare
 
->>> CAMBIA SOLO app1. I quattro pacchetti caricati per la 4.5 (francesi, app2, piacentine-zis,
-    bergamasche-napoletane) vanno bene come sono. <<<
+>>> CAMBIA SOLO app1, e cambiano CINQUE file. I quattro pacchetti caricati per la 4.5 vanno
+    bene come sono. <<<
 
->>> PRIMA DI TUTTO: LA BUILD CHE NON PARTE  -  .github/workflows/build-apk.yml <<<
-
-    La build non fallisce sul codice: si ferma PRIMA di compilare, nel passo che prepara
-    l'SDK. Nel log non c'e' una riga di Kotlin.
-
-    COS'ERA. Il passo "Set up Android SDK" installa, se non gli si dice altro, i pacchetti
-    che ha di serie: `tools platform-tools`. Ma `tools` - il vecchio "Android SDK Tools" -
-    e' obsoleto da anni e non sta piu' nel deposito di Google, quindi sdkmanager scrive
-    "Warning: Failed to find package 'tools'" e finisce con codice 1. L'action lo considera
-    un guasto e si ferma.
-
-    PERCHE' ADESSO E PRIMA NO, a workflow immobile: la v4 e' un'etichetta MOBILE, e adesso
-    porta i cmdline-tools 20.0 al posto dei 12.0 che il runner ha preinstallati - lo dice il
-    tuo log, "Wrong version in preinstalled sdkmanager". Lo sdkmanager nuovo tratta il
-    pacchetto mancante come errore dove quello di prima si limitava ad avvisare.
-
-    LA CORREZIONE e' una riga: gli si dice quali pacchetti vuole, cioe' solo
-    `platform-tools`, che e' l'unico dei due che serviva. La piattaforma API 36 e i
-    build-tools continuano ad arrivare da dove arrivavano prima - l'immagine del runner, o
-    Gradle che se li scarica, cosa che puo' fare perche' le licenze quel passo le accetta
-    comunque.
-
-    COME SI CARICA, che e' l'unica parte scomoda: il caricatore web di GitHub SCARTA le
-    cartelle che cominciano con un punto, quindi non si puo' trascinare .github. Due strade:
-
-      a) entra nel repository in .github/workflows/, apri build-apk.yml, la matita in alto a
-         destra, e sostituisci la riga
-               uses: android-actions/setup-android@v4
-         con queste tre:
-               uses: android-actions/setup-android@v4
-               with:
-                 packages: 'platform-tools'
-         (l'indentazione conta: "with:" allineato a "uses:", "packages:" due spazi piu'
-         dentro). Commit.
-
-      b) oppure: entra in .github/workflows/, Add file -> Upload files, e trascina il
-         build-apk.yml di questa copia. Dentro una cartella il caricatore funziona; e' solo
-         il trascinamento della cartella col punto che non passa.
-
-    Questo commit FA PARTIRE la build - .github non sta in paths-ignore - quindi non serve
-    caricare altro se il resto lo hai gia' messo: e' quel commit stesso che ti produce
-    l'APK 4.8.
-
-    Se una cosa cosi' non deve piu' succedere, la strada e' inchiodare l'action a un commit
-    invece che alla v4: costa un aggiornamento a mano ogni tanto, e in cambio niente piu'
-    sorprese a codice fermo. Dimmelo e lo faccio.
-
-app1 non aggiunge e non toglie file.
-
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce tutto quello che hai sul computer.
-
->>> PRIMA UNA DOMANDA: LA 4.7 L'HAI GIA' CARICATA?
-    Se NO - e probabilmente no, te l'ho mandata pochi minuti prima che mi scrivessi - non
-    fare due giri: carica la cartella app INTERA da questa copia, piu' il README, e salta
-    l'elenco qui sotto. Dentro c'e' tutta la 4.7 piu' la correzione.
-    Se SI', allora di nuovo cambia un file solo: PokerActivity.kt (piu' build.gradle e il
-    README).
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 4.9 che hai sul computer.
 
 ================================================================================
-COSA CARICARE  -  la correzione e' un file
+COSA CARICARE  -  cinque file piu' il README
 ================================================================================
 
-  app/src/main/java/com/zis/scopa/PokerActivity.kt   il passo della colonna di fianco
-  app/build.gradle                                   versionName: 4.7 -> 4.8
-  README.md                                          il perche', scritto nero su bianco
+  app/src/main/java/com/zis/scopa/PokerActivity.kt   accende e spegne la luce, e i conti
+  app/src/main/res/layout/activity_poker.xml         il tuo blocco, e il padding dei quattro
+  app/src/main/res/drawable/turno_acceso.xml         NUOVO: il riquadro che si accende
+  app/src/main/res/values/colors.xml                 il grigio del turno
+  app/build.gradle                                   versionName: 4.9 -> 5.0
+  README.md                                          la pagina sul turno
 
-LA CORREZIONE. Le carte di W e E erano accatastate perche' il passo della colonna era un
-quarto di carta - il numero che andava bene quando le file erano ORIZZONTALI. Girando la carta
-di 90 gradi il passo non corre piu' lungo il lato lungo (82dp) ma lungo il lato CORTO, che e'
-59dp: un quarto fa 14dp, e di ogni carta si vedeva una striscia. Colpa mia, ed era un errore di
-ragionamento, non di aritmetica.
+ATTENZIONE, UN FILE E' NUOVO: turno_acceso.xml sta in app/src/main/res/drawable/ , che e' la
+cartella dei drawable scritti in XML - non drawable-nodpi, dove stanno le immagini. La
+cartella esiste gia' (ci sono bg_velvet.xml, btn_cartiglio.xml e gli altri): basta entrarci e
+caricare il file.
 
-Adesso il passo lo decide lo spazio che c'e' davvero: si divide quello che resta fra il bordo
-alto del mazzo e la tua mano per le quattro carte che seguono la prima. Viene 39dp su un
-telefono di oggi (360x915 o 411x891), 34 su uno da 360x640, 27 su uno da 320x570 - cioe' fra il
-52% e il 66% di ogni carta a vista, invece del 24% di prima. Su uno schermo da 320x480 resta 14:
-la' non c'e' spazio e meglio non si puo' fare.
-
-Il conto sta in misura() e rifa' a mano quello che il layout fa da se', perche' il passo serve
-PRIMA di disegnare: misurarlo dopo vorrebbe dire disegnare due volte, e il secondo disegno
-litigherebbe con l'animazione della distribuzione. E' duplicazione, e si paga: se il layout
-cambia, quel conto sbaglia. Per questo il risultato viene stretto fra un quarto e due terzi di
-carta - sbagliando il conto il passo resta in una forchetta sensata invece di diventare zero o
-mezzo schermo.
-
-Ho ridisegnato il tavolo a mano su otto misure di schermo per controllare, e in tutte e otto la
-colonna sta fra il mazzo e la tua mano senza sforare.
-
-================================================================================
-E QUESTO ERA IL CONTENUTO DELLA 4.7  -  nove file
-================================================================================
-
-  app/src/main/java/com/zis/scopa/
-    PokerGame.kt          importi parametrici, mazzo corto, parametri in testa al salvataggio
-    PokerOdds.kt          l'universo delle carte ignote segue il mazzo in gioco
-    PokerBot.kt           passa il mazzo in gioco alle probabilita'
-    Prefs.kt              le quattro impostazioni nuove
-    SettingsActivity.kt   le tre righe meno/piu' e l'interruttore
-    PokerActivity.kt      la partita nasce coi valori scelti
-
-  app/src/main/res/layout/activity_settings.xml    importi e combinazioni facili
-  app/src/main/res/values/strings.xml              le stringhe nuove, regole senza cifre fisse
-  app/src/main/res/values-en/strings.xml           le stesse in inglese
-  app/build.gradle                                 versionName: 4.6 -> 4.7
-  README.md                                        le due pagine nuove
-
-ORDINE, tre caricamenti:
-  1. README.md               non fa partire niente: paths-ignore ha '**.md'
-  2. i file dentro app/src/  con [skip ci]
-  3. app/build.gradle        SENZA [skip ci]: e' questo che fa partire la build
-
-Oppure due gesti: il README da solo, poi la cartella app INTERA senza [skip ci].
+ORDINE: prima il README da solo (non fa partire niente), poi i quattro file dentro app/src/
+con [skip ci], per ultimo app/build.gradle senza [skip ci]. Oppure: il README, e poi la
+cartella app INTERA in un colpo, senza [skip ci] - e in quel caso il file nuovo va da se'
+dove deve andare.
 
 NON caricare questo ISTRUZIONI.txt.
 
 ================================================================================
-GLI IMPORTI
+LA LUCE SUL TURNO
 ================================================================================
 
-Fiches di partenza, apertura e rilancio erano tre costanti dentro PokerGame; ora sono
-parametri della partita e si scelgono nelle impostazioni, sotto "Importi". Di serie: 200$ di
-partenza, 10$ di apertura, 20$ di rilancio. Nel secondo giro di puntate il rilancio vale il
-doppio, e quella resta una regola del gioco, non un'impostazione.
+Il riquadro delle carte di chi deve giocare si schiarisce appena, e la luce gira attorno al
+tavolo da sola. A mano finita non tocca a nessuno e si spengono tutti, cosi' il tavolo dice
+anche "e' finita".
 
-TRE RIGHE CON MENO E PIU', NON TRE CASELLE DA SCRIVERE. Da un campo di testo puo' uscire
-qualunque cosa - zero, un milione, una lettera, il campo vuoto - e ogni valore assurdo andrebbe
-intercettato e spiegato. Con meno e piu' i valori impossibili non esistono, non serve la
-tastiera, e si vede di quanto si sale prima di salire. Passi: 50$ per le fiches, 5$ per
-apertura e rilancio. Limiti: fiches da 50 a 2000, apertura e rilancio da 5 a 100.
+IL GRIGIO E' UN BIANCO AL 15%, non un grigio pieno, e la ragione e' il tavolo: il velluto non
+e' di un colore solo - e' il colore di fondo con sopra la trama ripetuta - quindi un grigio
+fisso coprirebbe il disegno e si vedrebbe come una toppa. Il bianco trasparente SCHIARISCE
+quello che c'e' sotto, trama compresa, che e' esattamente "un grigio poco piu' chiaro del
+tavolo" come lo hai chiesto.
 
-I LIMITI SONO LEGATI FRA LORO, e non sono tre gabbie separate:
-  - l'apertura non supera il rilancio: una posta piu' grande di una puntata non e' poker;
-  - il rilancio non scende sotto l'apertura, che e' la stessa regola al rovescio;
-  - le fiches di partenza non scendono sotto dieci volte l'apertura, sennonche' la partita
-    sarebbe finita prima di cominciare - dieci mani di sola posta.
-Quando un limite morde, l'altro valore si sposta di conseguenza e si riscrive a schermo: non
-c'e' nessun avviso da leggere, si vede.
+Il 15% l'ho scelto guardandolo: ho ricostruito il velluto vero - colore di fondo piu' trama -
+e ci ho messo sopra cinque gradazioni con le carte in mezzo. Sotto (8 e 12%) si perde sul
+velluto scuro; sopra (20 e 30%) diventa un pannello grigio, e a quel punto l'occhio guarda il
+pannello invece delle carte. Serve che si veda di chi e' il turno con la coda dell'occhio.
 
-PERCHE' 200 E NON 1000. Con mille fiches e rilanci da venti ci volevano in media 2245 mani per
-chiudere una partita in quattro - lo diceva il simulatore alla 4.4 - e nessuno gioca 2245 mani.
-Con duecento un gruzzolo regge una ventina di mani.
+Angoli arrotondati, e niente bordo: un rettangolo a spigoli su un tavolo sembra un errore di
+disegno, e un bordo aggiungerebbe una riga da guardare.
 
-I CINQUE PARAMETRI VANNO IN TESTA AL SALVATAGGIO e load li pretende uguali: quanti giocatori,
-quante fiches, apertura, rilancio, mazzo intero o corto. Una mano ripresa deve continuare con
-gli importi con cui e' cominciata, quindi se cambi le impostazioni a mano aperta quella mano si
-butta e la prossima parte coi valori nuovi. E' la stessa regola del numero dei giocatori della
-4.4, estesa a tutti e cinque.
+IL TUO BLOCCO ADESSO E' UNO: le fiches e le carte dentro lo stesso riquadro, che si accende
+quando tocca a te. Prima le fiches erano un pezzo a se'; ora i quattro blocchi del tavolo sono
+fatti allo stesso modo - le carte di un giocatore e i suoi numeri - e si accendono allo stesso
+modo.
 
-IL TESTO DELLE REGOLE (pulsante info nel poker) non dice piu' 10$, 20$ e 40$ a numeri fissi:
-diceva cifre che adesso possono essere altre.
+SEI PUNTI DI PADDING IN TUTTI E QUATTRO, e non sono aria decorativa: un riquadro della misura
+esatta delle carte starebbe tutto SOTTO le carte e non si vedrebbe. Il padding sta nel layout
+e non nel codice perche' deve esserci sempre, accesa o spenta la luce: se comparisse solo col
+turno, le carte si sposterebbero di sei punti a ogni cambio di mano.
 
-================================================================================
-COMBINAZIONI FACILI: IL MAZZO DAL 6 ALL'ASSO
-================================================================================
+Quei dodici punti - sei sopra e sei sotto - entrano anche nel conto che decide il passo delle
+colonne laterali, sennonche' il riquadro acceso sborderebbe di quanto misura il padding. Ho
+rifatto i conti su sei misure di schermo:
 
-Interruttore nelle impostazioni. Trentasei carte invece di cinquantadue: togliendo i valori dal
-2 al 5 le carte alte si incontrano molto piu' spesso, quindi doppie coppie, tris e colori
-diventano ordinari - che e' il punto, si impara a riconoscere le combinazioni vedendole invece
-di aspettarle. Le scale possibili sono solo quelle dal 6-7-8-9-10 al 10-J-Q-K-A, e l'asso basso
-non esiste piu'.
+  360x800   passo 63 su carta 59   nessuna sovrapposizione   centro 144dp
+  360x640   passo 48 su carta 59   81% di carta a vista      centro 144dp
+  411x891   passo 70 su carta 66   nessuna sovrapposizione   centro 175dp
+  320x570   passo 38 su carta 51   74% a vista               centro 126dp
+  600x960   passo 70 su carta 66   nessuna sovrapposizione   centro 364dp
+  320x480   passo 25 su carta 51   49% a vista, e il riquadro sborda di 37dp
 
-IL CONTO CHE MI AVEVI DATO TORNA, ED E' ESATTO: in quattro si distribuiscono 20 carte e nel caso
-peggiore - tutti e quattro cambiano quattro carte - se ne pescano altre 16. Venti piu' sedici fa
-trentasei, cioe' il mazzo intero. Non avanza nulla e non manca nulla.
+L'ultima riga e' il caso disperato - 480dp di altezza, un telefono che con Android 7 non
+esiste - e sborda di proposito: il passo non scende sotto mezza carta, perche' meglio un
+riquadro che tocca la tua mano di cinque carte che non si vedono.
 
-E IL CASO LIMITE CAPITA DAVVERO: su 16.843 mani in quattro col mazzo corto, il minimo di carte
-rimaste nel mazzo e' ZERO. Cioe' si arriva a pescare l'ultima carta. Per questo in scarta ho
-messo comunque la regola vera del poker - mazzo finito, si rimescolano gli scarti - che costa
-tre righe e copre il giorno che uno di quei numeri cambi: cinque giocatori, o cinque carte di
-cambio, e il conto non torna piu'. Senza, pescare da un mazzo vuoto chiude l'app, ed e'
-esattamente la forma del difetto che abbiamo chiuso alla 4.4.
-Le carte appena buttate entrano negli scarti DOPO la pesca, cosi' non possono tornare subito in
-mano a chi le ha scartate.
-
-LE PROBABILITA' A SCHERMO SEGUONO IL MAZZO: equita riceve i valori che sono davvero in tavola,
-altrimenti campionerebbe da 52 carte e direbbe numeri sbagliati.
-Resta calcolata sul mazzo intero la tabella dei percentili che il Banco usa per indovinare la
-mano dell'avversario: col mazzo corto le sue soglie corrispondono a mani piu' comuni di quello
-che crede, quindi gioca un filo largo. E' la stessa direzione in cui sbaglia un giocatore in
-carne e ossa quando passa al mazzo corto, e rifare quella tabella vorrebbe dire ricalcolare un
-conto esaustivo fatto fuori dall'app. Sta scritto nel commento, sopra il metodo che la usa.
+Il centro del tavolo e' tornato un po' piu' largo (144dp invece di 124 su un telefono da 360):
+il margine tiene gli avvisi lontani dalle CARTE di fianco, non dai sei punti di padding che le
+circondano. Nel caso peggiore - la lista di chi e' fuori, a fine partita - un avviso lungo
+arriva a sfiorare il bordo del riquadro acceso, e non le carte.
 
 ================================================================================
 COSA PROVARE
 ================================================================================
 
- 1. Impostazioni -> Poker -> Importi: i tre meno/piu'. Prova a scendere sotto il minimo e a
-    salire sopra il massimo: i numeri si fermano.
- 2. Porta l'apertura a 30$ con il rilancio a 20$: il rilancio deve salire da se' a 30$. Poi
-    porta l'apertura a 100$: le fiches devono salire da se' ad almeno 1000$.
- 3. Con apertura 10$ e rilancio 20$, entra nel poker: i pulsanti devono dire "Vedo 20$" e
-    "Rilancio 20$" nel primo giro, e 40$ nel secondo. Con rilancio 50$: 50$ e 100$.
- 4. Le fiches sotto il mazzo devono partire dal valore scelto.
- 5. Cambia un importo a mano aperta (esci dal poker, cambia, rientra): deve cominciare una mano
-    nuova coi valori nuovi, senza chiudersi.
- 6. Accendi "Combinazioni facili" e fai qualche mano in quattro: non devono uscire carte dal 2
-    al 5, e le doppie coppie e i tris devono essere frequenti. Fai fare quattro cambi da quattro
-    carte - cambia tu quattro carte e lascia che lo facciano anche gli altri - che e' il caso in
-    cui il mazzo arriva a zero: non deve chiudersi niente.
- 7. Spegni "Combinazioni facili": tornano i valori bassi.
- 8. Il pulsante info nel poker: le regole non devono citare cifre fisse.
- 9. Il numero di versione: 4.7.
+ 1. Poker in quattro: a ogni mossa la luce deve spostarsi sul giocatore di turno, e girare in
+    tondo - tu, W, N, E - come gira il gioco.
+ 2. Quando tocca a te si accende il TUO blocco, fiches comprese.
+ 3. A mano finita si spengono tutti.
+ 4. Il grigio deve leggersi ma non dare nell'occhio piu' delle carte. Se lo vuoi piu' o meno
+    marcato e' un numero solo, in values/colors.xml: il colore "turno". #1FFFFFFF e' piu'
+    tenue, #33FFFFFF piu' marcato.
+ 5. Poker in due: si accende N quando gioca lui, il tuo blocco quando tocca a te.
+ 6. Col gioco automatico acceso si vede la luce correre da sola: e' anche il modo piu' rapido
+    per controllare che giri nel verso giusto.
+ 7. Il numero di versione: 5.0.
 
 ================================================================================
 LE PROVE FATTE FUORI DAL TELEFONO
 ================================================================================
 
-  - kotlinc sui 23 file: pulito. I 23 XML ben formati. Vincoli di ConstraintLayout: puliti su
-    tutti e dieci i layout. Risorse: nessun riferimento che non si risolve, nessuna risorsa
-    morta, 173 stringhe per lingua pari.
-  - IL SIMULATORE, circa 110.000 mani complete con i parametri nuovi:
-      4 giocatori, mazzo corto, 200/10/20        16.843 mani   minimo nel mazzo 0
-      2 giocatori, mazzo corto                    6.457 mani   minimo 18
-      4 giocatori, mazzo intero                  26.701 mani   minimo 16
-      2 giocatori, mazzo intero                   9.320 mani   minimo 34
-      4 giocatori, 50/5/5, mazzo corto           17.615 mani   minimo 0
-      4 giocatori, 2000/100/100, mazzo corto     11.822 mani   minimo 0
-      4 giocatori, 50/100/100 (impossibile dalle impostazioni: tutti all-in sulla posta)
-      2 giocatori, 50/100/100 idem
-      4 giocatori, 1000/5/100, mazzo intero      12.197 mani
-      3 giocatori, mazzo corto                    9.584 mani   minimo 9
-    In nessuna: eccezioni, mosse illegali, fiches create o perdute, giocatori con meno di
-    cinque carte dopo un cambio, turni assegnati a chi non ha mosse.
-  - IL SALVATAGGIO: 200 andate e ritorno con parametri diversi, tutte rientrate identiche; e
-    cambiando UN parametro solo - fiches, apertura, rilancio, mazzo corto, giocatori - il
-    salvataggio viene scartato in tutti e cinque i casi, e ripreso quando combaciano.
-
-Restano fuori aapt2, R8 e il telefono.
-
-================================================================================
-QUELLO CHE RESTA
-================================================================================
-
-  - Prefs.clearStats non azzera le statistiche del poker: manca GAME_POKER nella lista.
-  - il commento di Decks.kt dice ancora che il mazzo francese serve solo al Klondike.
-  - la variante Texas Hold'em resta spenta nel layout: il motore non la sa giocare.
+  - kotlinc sui 23 file: pulito. XML ben formati, drawable nuovo compreso. Vincoli di
+    ConstraintLayout puliti su tutti e dieci i layout. Risorse: nessun riferimento che non si
+    risolve, nessuna morta.
+  - il grigio provato sul velluto ricostruito, cinque gradazioni, e scelto guardandolo.
+  - il tavolo ridisegnato con la stessa aritmetica del codice, con la luce accesa su W, per
+    vedere che il riquadro cada esattamente attorno alle cinque carte girate e al loro nome.

@@ -10,6 +10,11 @@
     <color name="silver">#C8D0DC</color>
     <color name="silver_dark">#AEB9C6</color>
     <color name="gold">#E9C24C</color>
+    <!-- Il turno nel poker: si accende il riquadro delle carte di chi deve giocare, e la
+         luce gira attorno al tavolo da sola. E' un BIANCO AL 15%, non un grigio pieno:
+         schiarisce il velluto e la sua trama invece di coprirli. Vedi drawable/turno_acceso.xml -->
+    <color name="turno">#26FFFFFF</color>
+
     <!-- sfondo dei riquadri nelle impostazioni (vedi drawable/panel_bg.xml) -->
     <color name="panel">#D40A1220</color>
 

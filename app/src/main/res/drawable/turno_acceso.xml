@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il riquadro che si accende sotto le carte di chi deve giocare.
+
+  Un bianco al 15% sopra il velluto, non un grigio pieno: il tavolo non e' di un colore
+  solo - e' il colore di fondo con sopra la trama ripetuta - quindi un grigio fisso
+  coprirebbe il disegno e si vedrebbe come una toppa. Il bianco trasparente SCHIARISCE
+  quello che c'e' sotto, trama compresa, che e' esattamente "un grigio poco piu' chiaro
+  del tavolo".
+
+  Il 15% e' scelto guardandolo: sotto - 8, 12% - si perde sul velluto scuro; sopra - 20,
+  30% - diventa un pannello grigio, e a quel punto l'occhio guarda il pannello invece delle
+  carte. Serve che si veda DI CHI E' IL TURNO con la coda dell'occhio, non che si veda il
+  riquadro.
+
+  Gli angoli arrotondati perche' un rettangolo a spigoli, su un tavolo, sembra un errore di
+  disegno; e niente bordo, che aggiungerebbe una riga da guardare.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/turno" />
+    <corners android:radius="12dp" />
+</shape>

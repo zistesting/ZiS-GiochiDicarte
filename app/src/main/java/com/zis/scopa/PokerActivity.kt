@@ -55,6 +55,15 @@ class PokerActivity : AppCompatActivity() {
     private var giocatori = 2
     private var mostraOdds = false
 
+    /**
+     * Le due impostazioni di prova, che negli altri tre giochi ci sono da sempre e qui
+     * mancavano: il programma gioca anche la TUA mano, e le carte degli avversari restano
+     * scoperte. Le legge [onResume], perche' si possono cambiare mentre questa schermata sta
+     * in fondo alla pila.
+     */
+    private var autoPlay = false
+    private var mostraCarte = false
+
     /** Gli indici delle carte che hai scelto di cambiare. */
     private val daCambiare = HashSet<Int>()
 
@@ -74,6 +83,9 @@ class PokerActivity : AppCompatActivity() {
      */
     private var passoLaterale = 0
     private var altoTesto = 0
+
+    /** Quanto si porta via in larghezza un posto di fianco: una carta girata piu' il testo. */
+    private var strisciaLaterale = 0
 
     // I tre posti, per indirizzarli con un indice invece che per nome. L'ordine e' quello
     // del giro: sinistra, alto, destra, cioe' i giocatori 1, 2 e 3.
@@ -95,6 +107,11 @@ class PokerActivity : AppCompatActivity() {
 
         giocatori = Prefs.pokerGiocatori(this)
         mostraOdds = Prefs.pokerOdds(this)
+        autoPlay = Prefs.autoPlay(this)
+        mostraCarte = Prefs.showBotCards(this)
+        // col gioco automatico le attese si azzerano tutte, animazione compresa: e' la
+        // stessa riga che hanno gli altri tre giochi in BotGameActivity
+        t.fast = autoPlay
         CardView.setDeck(Prefs.DECK_FR)          // il poker si gioca col mazzo francese
 
         b.btnInfo.setOnClickListener {
@@ -115,7 +132,12 @@ class PokerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // le impostazioni si rileggono qui e non solo in onCreate: si possono cambiare
+        // mentre questa schermata sta in fondo alla pila
         mostraOdds = Prefs.pokerOdds(this)
+        autoPlay = Prefs.autoPlay(this)
+        mostraCarte = Prefs.showBotCards(this)
+        t.fast = autoPlay
         CardView.setDeck(Prefs.DECK_FR)
         misura()
         render()
@@ -198,7 +220,7 @@ class PokerActivity : AppCompatActivity() {
         if (destroyed || isFinishing) return
         if (game.manoFinita) { mostraEsito(); return }
         val p = game.turno
-        if (p == 0) {
+        if (p == 0 && !autoPlay) {
             busy = false
             if (game.fase == PokerGame.SCARTO) chiediScarto() else chiediAzione()
         } else {
@@ -209,6 +231,12 @@ class PokerActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * La mossa di un giocatore che non sei tu - o che sei tu, col gioco automatico acceso.
+     *
+     * Funziona per qualunque indice, zero compreso: le mosse ammesse le chiede al motore e
+     * le carte da cambiare al Banco, e nessuna delle due cose guarda DI CHI sia la mano.
+     */
     private fun giocaIlBanco(p: Int) {
         if (destroyed || game.manoFinita || game.turno != p) { avanti(); return }
         if (game.fase == PokerGame.SCARTO) {
@@ -336,6 +364,9 @@ class PokerActivity : AppCompatActivity() {
         b.btnNext.visibility = View.VISIBLE
         b.btnNext.text = if (game.partitaFinita) getString(R.string.back_home)
                          else getString(R.string.poker_next_hand)
+        // col gioco automatico il pulsante lo premo io: serve a vedere scorrere una partita
+        // intera, e fermarsi a ogni mano a chiedere "avanti?" sarebbe il contrario
+        if (autoPlay && !game.partitaFinita) post(t.trickPause) { nuovaMano() }
     }
 
     private fun avantiDopoLaMano() {
@@ -369,22 +400,28 @@ class PokerActivity : AppCompatActivity() {
      * su 360 e 273 su 320: entrano sempre, e lo scivolamento fuori schermo che serviva quando
      * le file erano orizzontali non serve piu'.
      *
-     * IL PASSO DELLA COLONNA, e qui alla 4.7 avevo sbagliato di brutto. Avevo tenuto un
-     * quarto di carta, come quando le file erano orizzontali, ma girando la carta il passo
-     * non corre piu' lungo il lato lungo (cardH, 82dp): corre lungo il lato CORTO, che e'
-     * cardW, 59dp. Un quarto di 59 fa 14dp, cioe' cinque carte accatastate di cui si vedeva
-     * una striscia: sovrapposte e illeggibili, ed e' esattamente cosi' che si vedevano.
+     * IL PASSO DELLA COLONNA, e ci sono voluti tre giri.
      *
-     * Adesso il passo lo decide lo SPAZIO CHE C'E': la colonna comincia al bordo alto del
-     * mazzo e deve stare sopra la tua mano, quindi si divide quello che resta per le quattro
-     * carte che seguono la prima. Il conto qui sotto rifa' a mano quello che il layout fa da
-     * se' - e' l'unico modo di saperlo PRIMA di disegnare, e disegnare due volte litigherebbe
-     * con l'animazione della distribuzione - ma il risultato non e' lasciato al caso: viene
-     * stretto fra un quarto e due terzi di carta. Se un giorno il layout cambiasse e il conto
-     * qui sbagliasse, il passo resterebbe comunque in quella forchetta.
+     * Alla 4.6 era un quarto di carta, il numero che andava bene quando le file erano
+     * orizzontali; ma girando la carta il passo non corre lungo il lato lungo (cardH, 82dp)
+     * bensi' lungo il lato CORTO, cioe' cardW, 59dp - e un quarto di 59 fa 14dp, cinque
+     * carte accatastate. Alla 4.8 l'avevo legato allo spazio sotto il mazzo, e non bastava
+     * ancora: quello spazio era meta' tavolo.
      *
-     * Quanto viene: 39dp su un telefono di oggi (360x915), 34 su uno da 360x640, e 14 su uno
-     * da 320x480 - dove non c'e' spazio e meglio di cosi' non si puo' fare.
+     * Adesso le due colonne prendono TUTTA la fascia fra il posto in alto e la tua mano, e
+     * il passo e' tanto quanto ce ne sta, fino a una carta piena: su un telefono normale le
+     * cinque carte stanno una sotto l'altra SENZA accavallarsi affatto. Cinque carte girate
+     * sono alte 5 x cardW, cioe' 295dp su un telefono da 360 di larghezza, e la fascia ne
+     * offre 304 su uno da 640 di altezza e 464 su uno da 800.
+     *
+     * Il conto della fascia e' corto e non ha piu' niente a che vedere col centro del
+     * tavolo: l'altezza meno quello che il layout mette in alto (il posto di N: 48dp di
+     * margine, una carta, due righe di testo) e in basso (le tue fiches, le tue carte, i
+     * pulsanti), meno 16dp di riguardo perche' una stima generosa qui vorrebbe dire una
+     * colonna che finisce sulle tue carte. E' duplicazione di quello che il layout sa fare
+     * da se', e si paga se il layout cambia; per questo il risultato resta stretto fra mezza
+     * carta e una carta - sbagliando il conto, il passo resta comunque in una forchetta in
+     * cui le cinque carte si vedono.
      */
     private fun misura() {
         val schermo = (resources.configuration.screenWidthDp * resources.displayMetrics.density).toInt()
@@ -392,18 +429,16 @@ class PokerActivity : AppCompatActivity() {
         cardW = minOf((schermo - dp(32)) / 5 - dp(6), dp(66))
         cardH = (cardW * 1.4f).toInt()
         altoTesto = dp(20)
+        strisciaLaterale = cardH + altoTesto
 
-        // in ordine, dall'alto: il posto in alto, poi la colonna del centro (piatto, due
-        // righe di avvisi, mazzo, fiches) tenuta al 40% dello spazio libero, e in fondo la
-        // tua mano con i pulsanti
-        val basso = cardH + dp(64)
-        val tavolo = altezza - basso
-        val postoAlto = dp(48) + cardH + 2 * altoTesto
-        val sopraIlMazzo = dp(26) + 2 * altoTesto + dp(4)
-        val centro = sopraIlMazzo + cardH + dp(4) + altoTesto
-        val cima = postoAlto + (tavolo - postoAlto - centro).coerceAtLeast(0) * 4 / 10
-        val sottoIlMazzo = tavolo - cima - sopraIlMazzo
-        passoLaterale = ((sottoIlMazzo - cardW) / 4).coerceIn(cardW / 4, cardW * 2 / 3)
+        // i 12dp sono il padding del blocco - 6 sopra e 6 sotto - che c'e' in tutti e
+        // quattro perche' il riquadro del turno si veda
+        val inAlto = dp(48) + cardH + 2 * altoTesto + dp(12)     // il posto di N
+        val inBasso = altoTesto + cardH + dp(64) + dp(12)        // fiches, tua mano, pulsanti
+        val fascia = altezza - inAlto - inBasso - dp(16)
+        // meno il padding della colonna stessa: il riquadro del turno e' alto quanto le
+        // carte piu' dodici punti, e quei dodici punti devono starci dentro anche loro
+        passoLaterale = ((fascia - dp(12) - cardW) / 4).coerceIn(cardW / 2, cardW + dp(4))
     }
 
     private fun render() {
@@ -413,17 +448,58 @@ class PokerActivity : AppCompatActivity() {
         // il posto in cui sono, che e' il tuo lato del tavolo
         b.txtChips.text = getString(R.string.poker_chips, game.fiches[0])
 
+        // DI CHI E' IL TURNO LO DICE LA LUCE, e gira attorno al tavolo da sola: il riquadro
+        // delle carte di chi deve giocare si schiarisce appena. A mano finita non tocca a
+        // nessuno e si spengono tutti, cosi' il tavolo dice anche "e' finita".
+        val attivo = if (game.manoFinita) -1 else game.turno
+
         for (slot in 0..2) {
             val p = giocatoreNelPosto(slot)
             if (p < 0) { seatBox[slot].visibility = View.GONE; continue }
             seatBox[slot].visibility = View.VISIBLE
-            seatName[slot].text = nomeDi(p) + "  " + getString(R.string.poker_chips, game.fiches[p])
-            seatInfo[slot].text = statoDi(p)
+            illumina(seatBox[slot], p == attivo)
+            val nome = nomeDi(p) + "  " + getString(R.string.poker_chips, game.fiches[p])
             val giro = rotazioneDelPosto(slot)
-            if (giro != 0f) mettiAPostoLaterale(slot, giro)
+            if (giro == 0f) {
+                // il posto in alto: nome e stato su due righe, come la tua mano
+                seatName[slot].text = nome
+                seatInfo[slot].text = statoDi(p)
+            } else {
+                // di fianco il testo e' uno solo, girato: due righe ruotate costerebbero
+                // larghezza al centro del tavolo
+                seatName[slot].text = (nome + "  " + statoDi(p)).trim()
+                mettiAPostoLaterale(slot, giro)
+            }
             disegnaMano(seatHand[slot], p, giro)
         }
+        // il centro sta fra le due strisce laterali: i margini dipendono da loro, quindi li
+        // mette il codice e non il layout. In due non ci sono strisce e il centro e' libero.
+        // il margine tiene gli avvisi lontani dalle CARTE di fianco, non dal padding che le
+        // circonda: sei punti in meno di larghezza al centro sono un numero in piu' che sta
+        // su una riga sola, e nel caso peggiore - la lista di chi e' fuori, a fine partita -
+        // un avviso lungo arriva a sfiorare il bordo del riquadro acceso, non le carte
+        val margine = if (giocatori > 2) strisciaLaterale + dp(6) else dp(48)
+        for (tv in listOf(b.txtPot, b.txtStatus)) {
+            val lp = tv.layoutParams as ViewGroup.MarginLayoutParams
+            if (lp.marginStart != margine) {
+                lp.marginStart = margine; lp.marginEnd = margine
+                tv.layoutParams = lp
+            }
+        }
+        illumina(b.youBox, attivo == 0)
         disegnaMano(b.youHand, 0, 0f)
+    }
+
+    /**
+     * Accende o spegne il riquadro di un blocco di carte.
+     *
+     * setBackgroundResource(0) toglie il fondo senza toccare il padding, che sta nel layout
+     * e deve restare: e' il padding a rendere visibile il riquadro - un fondo della misura
+     * esatta delle carte starebbe tutto sotto le carte - e se comparisse e sparisse con la
+     * luce, le carte si sposterebbero di sei punti a ogni cambio di turno.
+     */
+    private fun illumina(v: View, acceso: Boolean) {
+        v.setBackgroundResource(if (acceso) R.drawable.turno_acceso else 0)
     }
 
     /** Di quanto e' girato il posto [slot]: meno 90 a sinistra, piu' 90 a destra, zero in alto. */
@@ -434,40 +510,40 @@ class PokerActivity : AppCompatActivity() {
     }
 
     /**
-     * Mette a posto un posto di fianco: misura il riquadro e sposta i tre pezzi.
+     * Mette a posto un posto di fianco: misura il riquadro e sposta i due pezzi.
      *
      * COME FUNZIONA UNA VISTA GIRATA. La rotazione non entra nella misura: una vista larga A
      * e alta B, girata di 90 gradi, resta A x B per il layout e diventa B x A per l'occhio,
-     * col CENTRO nello stesso punto. Quindi tutti e tre i pezzi - la colonna delle carte e le
-     * due righe di testo - stanno al centro del riquadro (layout_gravity="center" nel layout)
-     * e da la' si spostano con la translation, che invece si applica nello spazio NON girato
-     * del riquadro. Sono tre numeri, simmetrici fra destra e sinistra: basta cambiare segno.
-     *
-     * Il riquadro e' largo quanto una carta girata piu' due righe di testo, e alto quanto la
-     * colonna: le carte stanno sul bordo dello schermo, i due testi verso il centro del
-     * tavolo, dove non c'e' un bordo che li tagli.
+     * col CENTRO nello stesso punto. Quindi i due pezzi - la colonna delle carte e la riga di
+     * testo - stanno al centro del riquadro (layout_gravity="center" nel layout) e da la' si
+     * spostano con la translation, che invece si applica nello spazio NON girato del
+     * riquadro. Due numeri, simmetrici fra destra e sinistra a meno del segno: le carte
+     * vanno verso il bordo dello schermo di mezza riga di testo, il testo va verso il centro
+     * del tavolo di mezza carta.
      *
      * La colonna misura cardH per carta ma se ne vede cardW, e la differenza e' simmetrica
      * rispetto al centro: percio' un riquadro alto `cardW + 4 * passo` contiene esattamente
-     * quello che si vede. Il conto sta in [misura].
+     * quello che si vede. Il conto del passo sta in [misura].
      */
     private fun mettiAPostoLaterale(slot: Int, giro: Float) {
         val g = if (giro < 0) -1 else 1                  // -1 a sinistra, +1 a destra
         val lungo = cardW + 4 * passoLaterale            // quanto e' lunga la colonna
         val box = seatBox[slot]
+        // la misura comprende il padding: dentro, il contenuto resta centrato e quindi le
+        // due translation qui sotto valgono come se il padding non ci fosse
         val lpBox = box.layoutParams as ViewGroup.LayoutParams
-        lpBox.width = cardH + 2 * altoTesto
-        lpBox.height = lungo
+        lpBox.width = strisciaLaterale + 2 * dp(6)
+        lpBox.height = lungo + 2 * dp(6)
         box.layoutParams = lpBox
-        seatHand[slot].translationX = (g * altoTesto).toFloat()
-        for (tv in listOf(seatName[slot], seatInfo[slot])) {
-            val lp = tv.layoutParams as FrameLayout.LayoutParams
-            lp.width = lungo; lp.height = altoTesto
-            tv.layoutParams = lp
-            tv.rotation = giro
-        }
-        seatName[slot].translationX = (-g * (cardH - altoTesto) / 2).toFloat()
-        seatInfo[slot].translationX = (-g * (cardH + altoTesto) / 2).toFloat()
+
+        seatHand[slot].translationX = (g * altoTesto / 2).toFloat()
+
+        val tv = seatName[slot]
+        val lp = tv.layoutParams as FrameLayout.LayoutParams
+        lp.width = lungo; lp.height = altoTesto
+        tv.layoutParams = lp
+        tv.rotation = giro
+        tv.translationX = (-g * cardH / 2).toFloat()
     }
 
     /**
@@ -666,7 +742,7 @@ class PokerActivity : AppCompatActivity() {
     private fun disegnaMano(riga: LinearLayout, p: Int, giro: Float) {
         val carte = game.mani[p]
         val tua = p == 0
-        val scoperte = tua || (game.carteMostrate && game.inMano(p))
+        val scoperte = tua || mostraCarte || (game.carteMostrate && game.inMano(p))
         val scegliendo = tua && game.fase == PokerGame.SCARTO && game.turno == 0 && !busy
 
         while (riga.childCount > carte.size) riga.removeViewAt(riga.childCount - 1)
