@@ -868,13 +868,28 @@ class PokerActivity : AppCompatActivity() {
             val lp = cv.layoutParams as LinearLayout.LayoutParams
             lp.width = cw; lp.height = ch
             if (giro != 0f) {
-                // colonna: la carta resta larga cw e alta ch - e' girata, non deformata -
-                // quindi il margine che porta al passo voluto e' negativo di tutta
-                // l'altezza meno il passo
+                // COLONNA GIRATA. La carta resta larga cw e alta ch - e' girata, non
+                // deformata - quindi fra una carta e l'altra il margine che porta al passo
+                // voluto e' negativo di tutta l'altezza meno il passo.
+                //
+                // E la prima e l'ultima carta hanno un margine negativo IN PIU', che e' la
+                // correzione del difetto per cui l'ultima carta di W e di E si vedeva
+                // tagliata. Una carta girata di 90 gradi occupa nel layout ch di altezza ma
+                // se ne vede cw, e la differenza sta meta' sopra la prima carta e meta'
+                // sotto l'ultima: la colonna misurava (ch + 4 passi) mentre di colonna se ne
+                // vedeva (cw + 4 passi), venti punti in piu' del vero. Venti punti che
+                // uscivano dai propri bordi, e la' qualcuno taglia - lo screenshot lo
+                // mostrava al pixel: carte tagliate a 823, riquadro grigio fino a 837.
+                // Togliendo dieci punti sopra e dieci sotto, il riquadro di layout della
+                // colonna COINCIDE con quello che si vede, e non c'e' piu' niente da
+                // tagliare: ne' qui, ne' nel riquadro del posto, ne' nel tavolo.
+                val sporgenza = (ch - cw) / 2
                 lp.marginStart = 0; lp.marginEnd = 0
-                lp.topMargin = if (i == 0) 0 else passoLaterale - ch
+                lp.topMargin = if (i == 0) -sporgenza else passoLaterale - ch
+                lp.bottomMargin = if (i == carte.size - 1) -sporgenza else 0
             } else {
-                lp.marginStart = dp(3); lp.marginEnd = dp(3); lp.topMargin = 0
+                lp.marginStart = dp(3); lp.marginEnd = dp(3)
+                lp.topMargin = 0; lp.bottomMargin = 0
             }
             cv.layoutParams = lp
             cv.rotation = giro

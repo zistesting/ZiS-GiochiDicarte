@@ -672,6 +672,18 @@ sembrava la riga che si cerca con l'occhio; ma in un tavolo dove tutto il resto 
 misura, una riga più grande non si legge meglio — si legge *prima*, e il tavolo si ritrova una
 gerarchia che non serve a nessuno. Quello che deve saltare all'occhio a mano finita è il colore.
 
+**E una colonna girata misura più di quanto si vede**, che è il difetto che ha resistito a
+cinque versioni. Una carta ruotata di 90 gradi occupa nel layout `ch` di altezza ma se ne vede
+`cw`, e la differenza sta metà sopra la prima carta e metà sotto l'ultima: la colonna misurava
+`ch + 4 passi` mentre di colonna se ne vedeva `cw + 4 passi`, venti punti in più del vero. Il
+`FrameLayout` del posto, che è alto quanto il visibile, tronca a quella misura il figlio che
+dichiara venti punti in più — e `layoutVertical` intanto le carte le posiziona dalla cima, così
+gli ultimi otto punti dell'ultima carta cadevano fuori dai bordi della colonna stessa e lì
+qualcuno taglia. Lo screenshot lo diceva al pixel: carte tagliate a 823, riquadro grigio del
+turno fino a 837. La correzione è un margine negativo di dieci punti sopra la prima carta e
+dieci sotto l'ultima: il riquadro di layout della colonna **coincide** con quello che si vede, e
+non resta niente da tagliare — né nella colonna, né nel riquadro del posto, né nel tavolo.
+
 Una vista girata chiede di ragionare per centri e non per angoli: la rotazione non entra nella
 misura — una vista A x B girata resta A x B per il layout e diventa B x A per l'occhio, col
 centro nello stesso punto — e la `translation`, che si applica dopo, sposta nello spazio non

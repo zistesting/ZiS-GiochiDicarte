@@ -1,8 +1,10 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.2
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.3
+                                            l'ultima carta di W e E non e' piu' tagliata,
+                                            e questa volta so perche'
 
->>> CAMBIA SOLO app1, sei file. I pacchetti dei mazzi e app2 restano quelli della 4.5. <<<
+>>> CAMBIA SOLO app1, quattro file. <<<
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.1 che hai sul computer.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.2 che hai sul computer.
 
 ================================================================================
 COSA CARICARE
@@ -10,109 +12,78 @@ COSA CARICARE
 
   app/src/main/java/com/zis/scopa/PokerActivity.kt
   app/src/main/res/layout/activity_poker.xml
-  app/src/main/res/values/strings.xml
-  app/src/main/res/values-en/strings.xml
-  app/build.gradle                                 versionName: 5.1 -> 5.2
+  app/build.gradle                                 versionName: 5.2 -> 5.3
   README.md
 
-ORDINE: il README da solo (non fa partire niente), poi i quattro file dentro app/src/ con
-[skip ci], per ultimo app/build.gradle senza [skip ci]. Oppure: il README, e poi la cartella
-app INTERA in un colpo senza [skip ci].
+ORDINE: il README da solo, poi i due file dentro app/src/ con [skip ci], per ultimo
+app/build.gradle senza [skip ci].
 
 NON caricare questo ISTRUZIONI.txt.
 
 ================================================================================
-1. L'ULTIMA CARTA DI W E E TAGLIATA, E LO SPAZIO IN ALTO
+IL DIFETTO, MISURATO SULLO SCREENSHOT
 ================================================================================
 
-Hai visto giusto, ed erano LA STESSA COSA. Quando la colonna e' piu' lunga della fascia
-disponibile, il layout la CENTRA: l'eccedenza esce per meta' sopra e per meta' sotto. Quella
-di sopra finiva nel velluto vuoto - il dito di spazio che avevi notato - e quella di sotto la
-tagliava il bordo del riquadro del tavolo.
+Il tuo screenshot mi ha dato la risposta al pixel, e non era quella che avevo immaginato le
+volte prima. Ho misurato la colonna di E:
 
-Perche' la colonna era troppo lunga: la misura delle carte di fianco la decideva una STIMA
-della fascia, e una stima fatta prima che esista un layout non puo' sapere quanto si prendono
-la barra di stato e quella di navigazione. Sbagliava di qualche decina di punti, e quei punti
-erano la carta tagliata.
+    carta 1    y  315 -  417    alta 102 px
+    carta 2    y  422 -  524    alta 102
+    carta 3    y  529 -  631    alta 102
+    carta 4    y  636 -  738    alta 102
+    carta 5    y  743 -  823    alta  80    <-- tagliata di 22 px
+    riquadro grigio del turno    fino a 837
 
-Due correzioni, e la seconda e' quella vera:
+Il riquadro grigio arriva a 837 e le carte si fermano a 823: non e' il tavolo che taglia, e non
+sono le barre di sistema. E' LA COLONNA CHE TAGLIA SE STESSA.
 
-  - clipChildren="false" anche sulla RADICE del layout, non solo sul tavolo. Ogni contenitore
-    taglia i propri figli ai propri bordi: non basta che il tavolo lasci uscire le colonne,
-    serve che la radice lasci uscire il tavolo. E' il motivo per cui il taglio era un taglio
-    netto invece di una sovrapposizione.
+UNA COLONNA GIRATA MISURA PIU' DI QUANTO SI VEDE. Una carta ruotata di 90 gradi occupa nel
+layout l'altezza della carta (71dp) ma se ne vede la larghezza (51dp), e la differenza - venti
+punti - sta meta' sopra la prima carta e meta' sotto l'ultima. Quindi la colonna si dichiarava
+alta (71 + 4 passi) = 283dp mentre di colonna se ne vedeva (51 + 4 passi) = 263dp.
 
-  - la fascia adesso SI MISURA invece di stimarla: a layout fatto, l'altezza del riquadro del
-    tavolo meno dove finisce il posto di N (adattaColonne). Le carte di fianco prendono tutto
-    lo spazio che c'e' davvero, quindi il dito di velluto in alto e' recuperato e la colonna
-    finisce esattamente dove finisce il tavolo. La stima in misura() resta per il primo
-    fotogramma e adesso e' prudente di 72 punti: meglio un fotogramma con le carte un filo
-    piccole che una carta tagliata.
+Il riquadro del posto e' alto quanto il visibile, cioe' 263: misurando un figlio che ne chiede
+283, lo TRONCA a 263 - e intanto le carte restano posizionate dalla cima, quindi gli ultimi
+punti dell'ultima carta cadono FUORI dai bordi della colonna. Fuori dai propri bordi qualcuno
+taglia sempre, e non serve a niente che il tavolo e la radice lascino uscire i figli: il taglio
+avveniva un livello piu' sotto.
 
-La misura si rifa' da se' anche quando ruoti lo schermo, e ridisegna solo se il numero cambia
-davvero, quindi non si innesca da sola.
+LA CORREZIONE e' un margine negativo di dieci punti sopra la prima carta e dieci sotto
+l'ultima. Cosi' la colonna si dichiara alta 263 - esattamente quello che si vede - il riquadro
+non tronca piu' niente, e non resta nulla da tagliare: ne' nella colonna, ne' nel riquadro del
+posto, ne' nel tavolo. L'ho verificato rifacendo a mano il conto di LinearLayout, misura e
+posizioni carta per carta:
 
-DI QUANTO SARANNO LE CARTE DI FIANCO sul tuo telefono non te lo so dire da qui: dipende da
-quanto spazio resta davvero, che e' esattamente il numero che prima sbagliavo a indovinare.
-Sui telefoni alti restano uguali alle tue; su uno schermo corto scendono a quello che ci sta.
-Se le vedessi troppo piccole, dimmelo: la strada alternativa e' spostare il pulsante info
-nell'angolo in alto a DESTRA e far salire il posto di N di quaranta punti, che sono quaranta
-punti in piu' per le colonne.
+    senza compensazione: la colonna misura 283dp, il visibile va da 10 a 273 -> 8 punti oltre
+                         il riquadro troncato a 265
+    con  compensazione:  la colonna misura 263dp, il visibile va da 0 a 263 -> combacia
 
-================================================================================
-2. A PARTITA FINITA: VIA LA FINESTRA
-================================================================================
+In piu' ho messo clipToPadding="false" su tavolo, radice, posti e colonne: e' la seconda rete,
+per il caso che un giorno qualcosa sporga di nuovo. Ma la correzione vera e' quella dei
+margini, e adesso la colonna non sporge affatto.
 
-Il pulsante "Menu" apriva una finestra che diceva chi aveva vinto e aveva un pulsante per
-tornare al menu: due tocchi per dire una cosa che il tavolo aveva gia' scritto - la riga della
-vincita sta al centro - e un pulsante che ripeteva quello appena premuto. Adesso "Menu" porta
-al menu.
-
-Il conteggio della partita nelle statistiche e la pausa responsabile restano: quelli non erano
-la finestra, erano il motivo per cui era stata messa li'.
-
-================================================================================
-3. VIA "X E' FUORI   X E' FUORI   X E' FUORI"
-================================================================================
-
-Non c'e' piu'. Diceva tre volte una cosa che si vede da se': chi e' fuori ha zero dollari
-scritto accanto al nome e le carte spente, e se sono fuori tutti tranne uno la partita e'
-finita - che e' il motivo per cui il pulsante dice "Menu".
-
-La riga sotto il piatto, a mano finita, ora resta vuota.
-
-================================================================================
-4. LA VINCITA: GIALLO PER S, CELESTE PER GLI ALTRI
-================================================================================
-
-Il colore c'era gia' - oro se vinci tu, celeste se vince un altro - ma la frase per te era
-diversa: diceva "Vinci 160$" invece di "S vince 160$". Adesso e' la stessa per tutti, col nome
-del posto davanti.
-
-La frase a parte serviva quando il tuo posto si chiamava "Tu", perche' "Tu vince" non e'
-italiano. Da quando i posti sono lettere, S sta in quella frase come N e come E, e una frase
-in meno e' una stringa in meno da tradurre.
+PERCHE' NON L'AVEVO VISTO PRIMA: cercavo il taglio dove finiva il tavolo, e ogni volta
+rimpicciolivo le carte per farle stare nella fascia. Ma la fascia non era il problema - la
+colonna si tagliava da se' anche quando ce ne stava in abbondanza. Le due carte tagliate delle
+volte prima erano lo stesso difetto, e i tre giri sul passo l'hanno solo reso meno evidente.
 
 ================================================================================
 COSA PROVARE
 ================================================================================
 
- 1. Le carte di W e di E: cinque carte intere, nessuna tagliata, e senza il dito di velluto
-    vuoto sopra la colonna.
- 2. Gioca fino a fine partita (col gioco automatico ci vogliono pochi secondi): il pulsante
-    "Menu" deve portare direttamente al menu, senza finestre.
- 3. Al centro deve restare solo "S vince XXX$" - in giallo se sei tu, in celeste se e' N, E
-    o W - e niente elenco di chi e' fuori.
- 4. Ruota lo schermo durante una mano: le colonne si rimisurano e restano intere.
- 5. Il numero di versione: 5.2.
+ 1. Le carte di W e di E: cinque carte INTERE, tutte e cinque, in due e in quattro.
+ 2. E controlla anche la prima in alto: la correzione tocca la prima e l'ultima, quindi se
+    avessi sbagliato segno si vedrebbe tagliata quella in cima.
+ 3. Ruota lo schermo a meta' mano: devono restare intere.
+ 4. Il numero di versione: 5.3.
 
 ================================================================================
 LE PROVE FATTE FUORI DAL TELEFONO
 ================================================================================
 
-  - kotlinc sui 23 file: pulito. XML ben formati. Vincoli di ConstraintLayout puliti su tutti
-    e dieci i layout. Risorse: nessun riferimento che non si risolve, nessuna risorsa morta -
-    le due stringhe rimaste senza usi (poker_you_win e poker_game_over, quella della finestra)
-    le ho tolte da tutte due le lingue, che restano pari a 171 chiavi.
-  - la geometria ricontrollata con la misura esatta su sei combinazioni di schermo e barre di
-    sistema: in nessuna la colonna sborda dalla fascia.
+  - kotlinc sui 23 file: pulito. XML ben formati. Vincoli di ConstraintLayout puliti.
+    Risorse: nessun riferimento che non si risolve, nessuna morta.
+  - il conto di LinearLayout - misura e posizioni - rifatto a mano con e senza la
+    compensazione: senza, il visibile eccede di 8 punti; con, combacia al punto.
+  - le misure dello screenshot lette a pixel invece che a occhio: e' quello che ha spostato la
+    diagnosi dal tavolo alla colonna.
