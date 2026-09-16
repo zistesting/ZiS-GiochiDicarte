@@ -183,10 +183,6 @@
                 android:id="@+id/nameTop"
                 style="@style/PokerInfo" />
 
-            <TextView
-                android:id="@+id/infoTop"
-                style="@style/PokerInfo"
-                android:lines="1" />
         </LinearLayout>
 
         <!-- ======================= il centro del tavolo =======================
@@ -228,9 +224,10 @@
              da quanto sono larghe le due strisce laterali. -->
         <TextView
             android:id="@+id/txtPot"
-            style="@style/PokerInfo.Pot"
+            style="@style/PokerInfo"
             android:layout_width="0dp"
             android:layout_marginTop="6dp"
+            android:maxLines="2"
             app:layout_constraintTop_toBottomOf="@id/deckBox"
             app:layout_constraintBottom_toTopOf="@id/txtStatus"
             app:layout_constraintStart_toStartOf="parent"
@@ -295,11 +292,6 @@
                 style="@style/PokerInfo"
                 android:layout_gravity="center" />
 
-            <TextView
-                android:id="@+id/infoLeft"
-                style="@style/PokerInfo"
-                android:layout_gravity="center"
-                android:visibility="gone" />
         </FrameLayout>
 
         <FrameLayout
@@ -325,11 +317,6 @@
                 style="@style/PokerInfo"
                 android:layout_gravity="center" />
 
-            <TextView
-                android:id="@+id/infoRight"
-                style="@style/PokerInfo"
-                android:layout_gravity="center"
-                android:visibility="gone" />
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 

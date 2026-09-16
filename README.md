@@ -633,22 +633,32 @@ il lato **corto** (59dp), e un quarto di 59 fa 14dp — cinque carte accatastate
 una striscia. Alla 4.8 l'ho legato allo spazio *sotto il mazzo*, e non bastava ancora, perché
 quello spazio era mezzo tavolo.
 
-Ora le due colonne prendono **tutta** la fascia fra il posto in alto e la tua mano, e il passo è
-tanto quanto ce ne sta, fino a una carta piena: su un telefono normale le cinque carte stanno
-una sotto l'altra **senza accavallarsi affatto** (63dp di passo su 59 di carta, con 4dp di aria).
-Cinque carte girate sono alte 5 × cardW, cioè 295dp su un telefono da 360 di larghezza, e la
-fascia ne offre 288 su uno da 640 di altezza e 448 su uno da 800.
+Ora le due colonne prendono **tutta** la fascia fra il posto in alto e la tua mano, e le cinque
+carte **non si accavallano affatto**: 2dp di aria fra una e l'altra. Per riuscirci quando lo
+schermo è corto la carta di fianco **rimpicciolisce**, e questa è la decisione vera: cinque carte
+girate sono alte cinque volte il lato corto della carta — 295dp con la carta da 59 — e su un
+telefono da 360x640 la fascia ne offre 284. Tre volte ho provato a far bastare lo spazio
+spostando il passo, e tre volte le carte si sono riviste accavallate: lo spazio non c'era. Quindi
+la misura di fianco è la tua finché ci sta (360x800 e oltre: identiche) e scende a quanto ce ne
+sta quando non ci sta — l'88% su un 360x640 — mai sotto la metà. Una carta più piccola dell'11%
+si nota meno di un accavallamento, e in cambio le cinque carte si contano.
 
-Il conto della fascia sta in `misura()` e rifà a mano quello che il layout fa da sé, perché il
-passo serve *prima* di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il
+Il conto della fascia sta in `misura()` e rifà a mano quello che il layout fa da sé, perché la
+misura serve *prima* di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il
 secondo disegno litigherebbe con l'animazione della distribuzione. È duplicazione e si paga se
 il layout cambia; per questo il risultato resta stretto fra mezza carta e una carta, così
 sbagliando il conto il passo resta comunque in una forchetta in cui le cinque carte si vedono.
 
-E il testo di un posto laterale è **una riga sola** — nome, fiches e stato insieme — non per
-brevità: ogni riga ruotata si porta via larghezza al centro del tavolo, e il centro deve restare
-largo abbastanza per scrivere «Piatto: 240$» su una riga. Con due righe il centro scendeva a
-108dp su un telefono da 360; con una resta a 148.
+E il testo di un posto è **una riga sola** — nome, fiches e azione insieme — per tutti e tre i
+posti, non solo per quelli di fianco. Il nome e le fiches non cambiano quasi mai, l'azione cambia
+a ogni mossa: su due righe si leggeva due volte la stessa cosa e la riga dell'azione restava
+vuota per mezza mano. Di fianco, poi, ogni riga ruotata si porta via larghezza al centro del
+tavolo, e il centro deve restare largo abbastanza per «Piatto: 240$» su una riga.
+
+Anche il piatto sta a quattordici punti come tutto il resto. Aveva uno stile suo a 19sp, perché
+sembrava la riga che si cerca con l'occhio; ma in un tavolo dove tutto il resto è alla stessa
+misura, una riga più grande non si legge meglio — si legge *prima*, e il tavolo si ritrova una
+gerarchia che non serve a nessuno. Quello che deve saltare all'occhio a mano finita è il colore.
 
 Una vista girata chiede di ragionare per centri e non per angoli: la rotazione non entra nella
 misura — una vista A x B girata resta A x B per il layout e diventa B x A per l'occhio, col
@@ -703,6 +713,14 @@ Sui pulsanti è sparito `autoSizeTextType="uniform"`, che sembra la scelta giust
 corpo lo decide la lunghezza del testo del singolo pulsante, quindi «Passo» veniva grande e
 «Rilancio 40$» piccolo, e tre pulsanti affiancati finivano con tre corpi diversi. La misura
 fissa a 14sp è l'unica che li rende davvero uguali.
+
+**Le carte volano dal mazzo anche quando si cambiano.** Quali siano le nuove lo sa il motore
+senza doverglielo chiedere: `scarta` toglie le scartate e *aggiunge* le pescate in fondo alla
+mano, quindi le ultime *n* della fila sono quelle appena arrivate, e all'animazione basta un
+numero. Le carte buttate non volano verso il mazzo, e non è pigrizia: nel motore sono già sparite
+dalla mano, e per farle volare bisognerebbe tenerne una copia viva in un overlay — cioè
+esattamente quello che questa schermata non fa. Quello che conta si vede comunque: dal mazzo
+arrivano tre carte, quindi tre ne sono andate.
 
 **Il mazzo al centro, e le carte che partono da lì.** Prima non c'era: le carte comparivano
 già in mano. Adesso il mazzo è la prima cosa della colonna centrale, con «Piatto: XX$» subito

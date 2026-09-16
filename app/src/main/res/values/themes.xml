@@ -27,6 +27,12 @@
       risultato era un tavolo con sei caratteri diversi in cui l'oro non voleva dire niente
       perche' era su tutto.
 
+      E IL PIATTO STA A QUATTORDICI PUNTI COME TUTTO IL RESTO. Aveva uno stile suo a 19sp,
+      perche' sembrava la riga che si cerca con l'occhio; ma in un tavolo dove tutto il resto
+      e' alla stessa misura, una riga piu' grande non si legge meglio - si legge PRIMA, e a
+      quel punto il tavolo ha una gerarchia che non serve a nessuno. Quello che deve saltare
+      all'occhio a mano finita e' il colore, non il corpo.
+
       L'ORO NON STA QUI DENTRO di proposito: e' riservato all'avviso di vincita, e ce lo
       mette il codice a mano finita cambiando testo e colore insieme (PokerActivity.render).
       Un colore che significa qualcosa deve comparire quando quella cosa succede, e solo
@@ -46,17 +52,6 @@
         <item name="android:shadowColor">#000000</item>
         <item name="android:shadowDy">2</item>
         <item name="android:shadowRadius">4</item>
-    </style>
-
-    <!-- Il piatto: lo stesso carattere, un corpo piu' grande. E' l'unica riga del tavolo
-         che sta un gradino sopra le altre, perche' e' quella che si cerca con l'occhio.
-         Due righe ammesse, non una: "Piatto: 240$" ne occupa sempre una sola, ma a mano
-         finita questa riga diventa l'avviso di vincita, e "Avversario 2 vince 240$" a 19sp
-         su uno schermo da 320dp non ci sta in una riga. Tagliato con i puntini sarebbe
-         l'unico avviso importante del tavolo a non leggersi. -->
-    <style name="PokerInfo.Pot">
-        <item name="android:maxLines">2</item>
-        <item name="android:textSize">19sp</item>
     </style>
 
     <!--

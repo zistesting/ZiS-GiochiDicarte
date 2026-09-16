@@ -1,109 +1,125 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.0
-                                            si accende il riquadro di chi deve giocare
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.1
 
->>> CAMBIA SOLO app1, e cambiano CINQUE file. I quattro pacchetti caricati per la 4.5 vanno
-    bene come sono. <<<
+>>> CAMBIA SOLO app1, quattro file. I pacchetti dei mazzi e app2 restano quelli della 4.5. <<<
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 4.9 che hai sul computer.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.0 che hai sul computer.
 
 ================================================================================
-COSA CARICARE  -  cinque file piu' il README
+COSA CARICARE
 ================================================================================
 
-  app/src/main/java/com/zis/scopa/PokerActivity.kt   accende e spegne la luce, e i conti
-  app/src/main/res/layout/activity_poker.xml         il tuo blocco, e il padding dei quattro
-  app/src/main/res/drawable/turno_acceso.xml         NUOVO: il riquadro che si accende
-  app/src/main/res/values/colors.xml                 il grigio del turno
-  app/build.gradle                                   versionName: 4.9 -> 5.0
-  README.md                                          la pagina sul turno
+  app/src/main/java/com/zis/scopa/PokerActivity.kt
+  app/src/main/res/layout/activity_poker.xml
+  app/src/main/res/values/themes.xml
+  app/build.gradle                                     versionName: 5.0 -> 5.1
+  README.md
 
-ATTENZIONE, UN FILE E' NUOVO: turno_acceso.xml sta in app/src/main/res/drawable/ , che e' la
-cartella dei drawable scritti in XML - non drawable-nodpi, dove stanno le immagini. La
-cartella esiste gia' (ci sono bg_velvet.xml, btn_cartiglio.xml e gli altri): basta entrarci e
-caricare il file.
-
-ORDINE: prima il README da solo (non fa partire niente), poi i quattro file dentro app/src/
-con [skip ci], per ultimo app/build.gradle senza [skip ci]. Oppure: il README, e poi la
-cartella app INTERA in un colpo, senza [skip ci] - e in quel caso il file nuovo va da se'
-dove deve andare.
+ORDINE: il README da solo (non fa partire niente), poi i tre file dentro app/src/ con
+[skip ci], per ultimo app/build.gradle senza [skip ci]. Oppure: il README, e poi la cartella
+app INTERA in un colpo senza [skip ci].
 
 NON caricare questo ISTRUZIONI.txt.
 
 ================================================================================
-LA LUCE SUL TURNO
+1. L'AZIONE DI N SULLA STESSA RIGA DELLE SUE FICHES
 ================================================================================
 
-Il riquadro delle carte di chi deve giocare si schiarisce appena, e la luce gira attorno al
-tavolo da sola. A mano finita non tocca a nessuno e si spengono tutti, cosi' il tavolo dice
-anche "e' finita".
+Fatto, e per tutti e tre i posti, non solo per N: "N  250$  cambia 3" su una riga sola. Le
+tre righe di stato separate (infoTop, infoLeft, infoRight) sono sparite dal layout.
 
-IL GRIGIO E' UN BIANCO AL 15%, non un grigio pieno, e la ragione e' il tavolo: il velluto non
-e' di un colore solo - e' il colore di fondo con sopra la trama ripetuta - quindi un grigio
-fisso coprirebbe il disegno e si vedrebbe come una toppa. Il bianco trasparente SCHIARISCE
-quello che c'e' sotto, trama compresa, che e' esattamente "un grigio poco piu' chiaro del
-tavolo" come lo hai chiesto.
+Aveva senso oltre la richiesta: il nome e le fiches non cambiano quasi mai, l'azione cambia a
+ogni mossa, e su due righe si leggeva due volte la stessa cosa mentre la riga dell'azione
+restava vuota per mezza mano.
 
-Il 15% l'ho scelto guardandolo: ho ricostruito il velluto vero - colore di fondo piu' trama -
-e ci ho messo sopra cinque gradazioni con le carte in mezzo. Sotto (8 e 12%) si perde sul
-velluto scuro; sopra (20 e 30%) diventa un pannello grigio, e a quel punto l'occhio guarda il
-pannello invece delle carte. Serve che si veda di chi e' il turno con la coda dell'occhio.
+E una riga in meno in cima al tavolo e' una riga in piu' per le colonne di fianco, che e'
+esattamente quello che serviva al punto 4.
 
-Angoli arrotondati, e niente bordo: un rettangolo a spigoli su un tavolo sembra un errore di
-disegno, e un bordo aggiungerebbe una riga da guardare.
+================================================================================
+2. IL PIATTO ALLA MISURA DI TUTTO IL RESTO
+================================================================================
 
-IL TUO BLOCCO ADESSO E' UNO: le fiches e le carte dentro lo stesso riquadro, che si accende
-quando tocca a te. Prima le fiches erano un pezzo a se'; ora i quattro blocchi del tavolo sono
-fatti allo stesso modo - le carte di un giocatore e i suoi numeri - e si accendono allo stesso
-modo.
+Era a 19sp con uno stile suo (PokerInfo.Pot), adesso e' a 14sp come ogni altra scritta del
+tavolo, e quello stile l'ho eliminato. Sembrava la riga che si cerca con l'occhio, ma in un
+tavolo dove tutto il resto e' alla stessa misura una riga piu' grande non si legge meglio: si
+legge PRIMA, e il tavolo si ritrova una gerarchia che non serve. Quello che deve saltare
+all'occhio a mano finita e' il COLORE - oro se vinci tu, celeste se vince un altro - e quello
+non e' cambiato.
 
-SEI PUNTI DI PADDING IN TUTTI E QUATTRO, e non sono aria decorativa: un riquadro della misura
-esatta delle carte starebbe tutto SOTTO le carte e non si vedrebbe. Il padding sta nel layout
-e non nel codice perche' deve esserci sempre, accesa o spenta la luce: se comparisse solo col
-turno, le carte si sposterebbero di sei punti a ogni cambio di mano.
+Effetto collaterale utile: il piatto piu' piccolo ci sta su una riga anche quando il centro
+del tavolo e' stretto.
 
-Quei dodici punti - sei sopra e sei sotto - entrano anche nel conto che decide il passo delle
-colonne laterali, sennonche' il riquadro acceso sborderebbe di quanto misura il padding. Ho
-rifatto i conti su sei misure di schermo:
+================================================================================
+3. L'ANIMAZIONE ANCHE SUL CAMBIO CARTE
+================================================================================
 
-  360x800   passo 63 su carta 59   nessuna sovrapposizione   centro 144dp
-  360x640   passo 48 su carta 59   81% di carta a vista      centro 144dp
-  411x891   passo 70 su carta 66   nessuna sovrapposizione   centro 175dp
-  320x570   passo 38 su carta 51   74% a vista               centro 126dp
-  600x960   passo 70 su carta 66   nessuna sovrapposizione   centro 364dp
-  320x480   passo 25 su carta 51   49% a vista, e il riquadro sborda di 37dp
+Si', e vale per tutti: quando cambi tu e quando cambiano N, E e W, le carte nuove arrivano dal
+mazzo una dopo l'altra come nella distribuzione. Il gioco aspetta che siano arrivate prima di
+passare al turno dopo.
 
-L'ultima riga e' il caso disperato - 480dp di altezza, un telefono che con Android 7 non
-esiste - e sborda di proposito: il passo non scende sotto mezza carta, perche' meglio un
-riquadro che tocca la tua mano di cinque carte che non si vedono.
+Quali siano le carte nuove non ho dovuto chiederlo: PokerGame.scarta toglie le scartate e
+AGGIUNGE le pescate in fondo alla mano, quindi le ultime n della fila sono quelle appena
+arrivate, e all'animazione basta un numero.
 
-Il centro del tavolo e' tornato un po' piu' largo (144dp invece di 124 su un telefono da 360):
-il margine tiene gli avvisi lontani dalle CARTE di fianco, non dai sei punti di padding che le
-circondano. Nel caso peggiore - la lista di chi e' fuori, a fine partita - un avviso lungo
-arriva a sfiorare il bordo del riquadro acceso, e non le carte.
+Le carte buttate NON volano verso il mazzo, e non e' pigrizia: nel motore sono gia' sparite
+dalla mano nel momento in cui parte l'animazione, e per farle volare bisognerebbe tenerne una
+copia viva in un overlay - cioe' esattamente quello che questa schermata non fa, per non
+lasciare pezzi sospesi se un ridisegno arriva a meta' volo. Quello che conta si vede comunque:
+dal mazzo arrivano tre carte, quindi tre ne sono andate.
+
+Il volo e' diventato una funzione sola (volaDalMazzo) usata dalla distribuzione e dal cambio:
+prima era scritto dentro la distribuzione.
+
+================================================================================
+4. LE CARTE DI W E E: ADESSO NON SI ACCAVALLANO, E COME
+================================================================================
+
+Questo e' il quarto giro sullo stesso punto, e la ragione per cui i tre precedenti non sono
+bastati e' che LO SPAZIO NON C'ERA. Cinque carte girate sono alte cinque volte il lato CORTO
+della carta - 295dp con la carta da 59 - e su un telefono da 360x640 la fascia fra il posto di
+N e la tua mano ne offre 284. Ho spostato il passo tre volte; il conto non tornava comunque.
+
+Quindi ho cambiato la regola: LA CARTA DI FIANCO E' UGUALE ALLA TUA FINCHE' CI STA, e quando
+non ci sta rimpicciolisce di quel tanto che serve, mai sotto la meta'. Il passo e' sempre la
+carta piu' 2dp di aria, quindi le cinque carte sono SEMPRE separate.
+
+Quanto viene, contato su sette misure di schermo:
+
+  360x800   carta tua 59   di fianco 59  (100%)   centro 144dp
+  360x640   carta tua 59   di fianco 52  ( 88%)   centro 164dp
+  411x891   carta tua 66   di fianco 66  (100%)   centro 175dp
+  320x570   carta tua 51   di fianco 43  ( 84%)   centro 148dp
+  360x592   carta tua 59   di fianco 43  ( 72%)   centro 188dp
+  600x960   carta tua 66   di fianco 66  (100%)   centro 364dp
+  320x480   carta tua 51   di fianco 25  ( 49%)   centro 198dp
+
+Sui telefoni di oggi - 800dp di altezza e oltre - le carte di fianco restano identiche alle
+tue. Sotto, sono piu' piccole dell'11 o del 16%: si nota meno di un accavallamento, e in
+cambio le cinque carte si contano. Se il tuo telefono e' da 640 e preferisci le carte uguali
+con un filo di sovrapposizione, e' un numero solo: dimmelo.
+
+Effetto collaterale: carte di fianco piu' piccole vogliono strisce piu' strette, quindi il
+centro del tavolo e' piu' largo di prima proprio sugli schermi dove serviva.
 
 ================================================================================
 COSA PROVARE
 ================================================================================
 
- 1. Poker in quattro: a ogni mossa la luce deve spostarsi sul giocatore di turno, e girare in
-    tondo - tu, W, N, E - come gira il gioco.
- 2. Quando tocca a te si accende il TUO blocco, fiches comprese.
- 3. A mano finita si spengono tutti.
- 4. Il grigio deve leggersi ma non dare nell'occhio piu' delle carte. Se lo vuoi piu' o meno
-    marcato e' un numero solo, in values/colors.xml: il colore "turno". #1FFFFFFF e' piu'
-    tenue, #33FFFFFF piu' marcato.
- 5. Poker in due: si accende N quando gioca lui, il tuo blocco quando tocca a te.
- 6. Col gioco automatico acceso si vede la luce correre da sola: e' anche il modo piu' rapido
-    per controllare che giri nel verso giusto.
- 7. Il numero di versione: 5.0.
+ 1. Le carte di W e di E: cinque carte SEPARATE, con un filo d'aria fra una e l'altra. Se
+    sono ancora attaccate o sovrapposte, dimmi che numero dice la schermata iniziale (5.1) e
+    che telefono e', e mando la variante con la carta uguale e l'accavallamento.
+ 2. La riga di N: nome, fiches e azione tutto su una riga.
+ 3. "Piatto: XX$" della stessa misura delle altre scritte, e a mano finita cambia colore.
+ 4. Cambia due o tre carte: devono arrivare dal mazzo una dopo l'altra. Guarda anche il
+    cambio di N, E e W.
+ 5. Con il gioco automatico acceso si vede tutto scorrere in fretta, animazioni comprese.
+ 6. Il numero di versione: 5.1.
 
 ================================================================================
 LE PROVE FATTE FUORI DAL TELEFONO
 ================================================================================
 
-  - kotlinc sui 23 file: pulito. XML ben formati, drawable nuovo compreso. Vincoli di
-    ConstraintLayout puliti su tutti e dieci i layout. Risorse: nessun riferimento che non si
-    risolve, nessuna morta.
-  - il grigio provato sul velluto ricostruito, cinque gradazioni, e scelto guardandolo.
-  - il tavolo ridisegnato con la stessa aritmetica del codice, con la luce accesa su W, per
-    vedere che il riquadro cada esattamente attorno alle cinque carte girate e al loro nome.
+  - kotlinc sui 23 file: pulito. XML ben formati. Vincoli di ConstraintLayout puliti su tutti
+    e dieci i layout. Risorse: nessun riferimento che non si risolve, nessuna risorsa morta
+    (lo stile del piatto, rimasto senza usi, l'ho eliminato invece di lasciarlo li').
+  - la geometria ricontrollata su sette misure di schermo, e il tavolo ridisegnato e guardato
+    su 360x800 e 360x640, con la luce accesa su W: cinque carte separate in tutte due.
