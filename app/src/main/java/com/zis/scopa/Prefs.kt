@@ -72,9 +72,22 @@ object Prefs {
     fun wonBy(ctx: Context, game: String, you: Boolean): Int =
         p(ctx).getInt("stats_${game}_" + if (you) "you" else "bot", 0)
 
+    /**
+     * Azzera i contatori di TUTTI i giochi, poker compreso.
+     *
+     * Il poker mancava da questa lista: era arrivato con la 4.3, dopo che la lista era stata
+     * scritta, e "Azzera statistiche" lasciava indietro i suoi contatori senza dirlo. Un
+     * pulsante che azzera quasi tutto e' peggio di uno che non azzera niente, perche' chi lo
+     * premi crede di aver ripulito.
+     *
+     * Il giorno che arriva un sesto gioco bisogna ricordarsi di aggiungerlo qui. Si potrebbe
+     * togliere il rischio tenendo l'elenco dei giochi in un posto solo e leggendolo da la',
+     * ma cinque nomi in una riga si controllano a occhio: il giorno che diventano dieci,
+     * conviene.
+     */
     fun clearStats(ctx: Context) {
         val e = p(ctx).edit()
-        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE, GAME_KLONDIKE)) {
+        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE, GAME_KLONDIKE, GAME_POKER)) {
             e.remove("stats_${g}_you"); e.remove("stats_${g}_bot")
         }
         e.apply()

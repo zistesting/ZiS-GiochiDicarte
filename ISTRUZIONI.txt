@@ -1,89 +1,91 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.3
-                                            l'ultima carta di W e E non e' piu' tagliata,
-                                            e questa volta so perche'
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.5
+                                            logo e icona nuovi (la spada e' diritta)
 
->>> CAMBIA SOLO app1, quattro file. <<<
+>>> CAMBIANO app1 (otto file) e app2 (i due sorgenti in art/). Il Hold'em non e' in questa
+    consegna: lo stato dei lavori sta in fondo. <<<
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.2 che hai sul computer.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.4 che hai sul computer.
 
 ================================================================================
 COSA CARICARE
 ================================================================================
 
-  app/src/main/java/com/zis/scopa/PokerActivity.kt
-  app/src/main/res/layout/activity_poker.xml
-  app/build.gradle                                 versionName: 5.2 -> 5.3
-  README.md
+  app/src/main/res/drawable-nodpi/app_logo.webp          500x500   dal logo quadrato
+  app/src/main/res/drawable-nodpi/ic_launcher_fg.webp    500x500   dall'icona tonda
+  app/src/main/res/mipmap-mdpi/ic_launcher.png            48x48    dall'icona tonda
+  app/src/main/res/mipmap-hdpi/ic_launcher.png            72x72
+  app/src/main/res/mipmap-xhdpi/ic_launcher.png           96x96
+  app/src/main/res/mipmap-xxhdpi/ic_launcher.png         144x144
+  app/src/main/res/mipmap-xxxhdpi/ic_launcher.png        192x192
+  app/build.gradle                                       versionName: 5.4 -> 5.5
 
-ORDINE: il README da solo, poi i due file dentro app/src/ con [skip ci], per ultimo
-app/build.gradle senza [skip ci].
+  nel pacchetto app2:
+  art/icona_app.png    il sorgente dell'icona tonda
+  art/logo_app.png     il sorgente del logo quadrato
+
+ORDINE: prima art/ del pacchetto app2 (non fa partire niente: il workflow ignora art/**),
+poi la cartella app di app1 INTERA senza [skip ci]. Oppure i sette file con [skip ci] e
+build.gradle per ultimo senza.
 
 NON caricare questo ISTRUZIONI.txt.
 
-================================================================================
-IL DIFETTO, MISURATO SULLO SCREENSHOT
-================================================================================
+--- questa volta il disegno E' cambiato ---
 
-Il tuo screenshot mi ha dato la risposta al pixel, e non era quella che avevo immaginato le
-volte prima. Ho misurato la colonna di E:
+Alla 4.4 i file che mi avevi dato erano lo stesso disegno di prima, e te l'avevo detto.
+Adesso no: la spada e' diritta invece di ricurva, e la differenza si misura - in media 20
+punti su 255 sui pixel visibili dell'icona, con il 15% dei pixel diversi di piu' di 8. E' un
+disegno nuovo.
 
-    carta 1    y  315 -  417    alta 102 px
-    carta 2    y  422 -  524    alta 102
-    carta 3    y  529 -  631    alta 102
-    carta 4    y  636 -  738    alta 102
-    carta 5    y  743 -  823    alta  80    <-- tagliata di 22 px
-    riquadro grigio del turno    fino a 837
+I sette file dell'APK li ha rifatti art/icona_app.py, non io a mano: due sorgenti, sette
+destinazioni, e i due .webp vengono senza perdita, quindi sono identici bit per bit ai PNG
+che mi hai mandato (controllato). In tutto i sette file pesano 120,8 KB invece di 132,7: la
+spada diritta ha meno contorni da descrivere della scimitarra.
 
-Il riquadro grigio arriva a 837 e le carte si fermano a 823: non e' il tavolo che taglia, e non
-sono le barre di sistema. E' LA COLONNA CHE TAGLIA SE STESSA.
+--- i due numeri che l'icona adattiva pretende, e tornano ---
 
-UNA COLONNA GIRATA MISURA PIU' DI QUANTO SI VEDE. Una carta ruotata di 90 gradi occupa nel
-layout l'altezza della carta (71dp) ma se ne vede la larghezza (51dp), e la differenza - venti
-punti - sta meta' sopra la prima carta e meta' sotto l'ultima. Quindi la colonna si dichiarava
-alta (71 + 4 passi) = 283dp mentre di colonna se ne vedeva (51 + 4 passi) = 263dp.
+  - l'anello chiaro sta a 27 pixel dal bordo su 250 di raggio, cioe' al 10,8%: e' esattamente
+    il margine per cui in mipmap-anydpi-v26/ic_launcher.xml il rientro e' 18dp. Non cambia
+    niente in quel file.
+  - il blu del bordo e' (58,60,121) contro il (59,61,121) di navy_logo, che fa da fondo
+    all'icona adattiva: la stessa tinta, quindi negli angoli che la maschera lascia non
+    compare nessuna cornice attorno al cerchio.
 
-Il riquadro del posto e' alto quanto il visibile, cioe' 263: misurando un figlio che ne chiede
-283, lo TRONCA a 263 - e intanto le carte restano posizionate dalla cima, quindi gli ultimi
-punti dell'ultima carta cadono FUORI dai bordi della colonna. Fuori dai propri bordi qualcuno
-taglia sempre, e non serve a niente che il tavolo e la radice lascino uscire i figli: il taglio
-avveniva un livello piu' sotto.
+Provata montata con le tre maschere - tonda, squircle, quadrata stondata - e guardata:
+l'anello non viene tagliato da nessuna.
 
-LA CORREZIONE e' un margine negativo di dieci punti sopra la prima carta e dieci sotto
-l'ultima. Cosi' la colonna si dichiara alta 263 - esattamente quello che si vede - il riquadro
-non tronca piu' niente, e non resta nulla da tagliare: ne' nella colonna, ne' nel riquadro del
-posto, ne' nel tavolo. L'ho verificato rifacendo a mano il conto di LinearLayout, misura e
-posizioni carta per carta:
+--- da provare ---
 
-    senza compensazione: la colonna misura 283dp, il visibile va da 10 a 273 -> 8 punti oltre
-                         il riquadro troncato a 265
-    con  compensazione:  la colonna misura 263dp, il visibile va da 0 a 263 -> combacia
-
-In piu' ho messo clipToPadding="false" su tavolo, radice, posti e colonne: e' la seconda rete,
-per il caso che un giorno qualcosa sporga di nuovo. Ma la correzione vera e' quella dei
-margini, e adesso la colonna non sporge affatto.
-
-PERCHE' NON L'AVEVO VISTO PRIMA: cercavo il taglio dove finiva il tavolo, e ogni volta
-rimpicciolivo le carte per farle stare nella fascia. Ma la fascia non era il problema - la
-colonna si tagliava da se' anche quando ce ne stava in abbondanza. Le due carte tagliate delle
-volte prima erano lo stesso difetto, e i tre giri sul passo l'hanno solo reso meno evidente.
+ 1. L'icona nel cassetto delle app: spada diritta, e l'anello a filo del bordo.
+ 2. L'icona nelle Impostazioni di Android, che su molti telefoni e' quella classica (i PNG).
+ 3. Il logo grande in cima alla schermata iniziale.
+ 4. Se l'icona vecchia resta in giro e' il lanciatore che la tiene in cache: si sblocca
+    riavviando il telefono.
+ 5. Il numero di versione: 5.5.
 
 ================================================================================
-COSA PROVARE
+IL HOLD'EM: DOV'E' ARRIVATO
 ================================================================================
 
- 1. Le carte di W e di E: cinque carte INTERE, tutte e cinque, in due e in quattro.
- 2. E controlla anche la prima in alto: la correzione tocca la prima e l'ultima, quindi se
-    avessi sbagliato segno si vedrebbe tagliata quella in cima.
- 3. Ruota lo schermo a meta' mano: devono restare intere.
- 4. Il numero di versione: 5.3.
+FATTO E PROVATO, il motore: HoldemGame.kt, PokerBotHoldem.kt e PokerHand.migliore (la mano
+migliore fra le 21 combinazioni di cinque carte su sette). Limite fisso, bui ai due alla
+sinistra del mazziere - in due il mazziere paga il piccolo - quattro giri di puntate,
+salvataggio firmato in testa cosi' non puo' essere confuso con quello del Draw.
+Circa 44.000 mani al simulatore, in due tre e quattro giocatori, mazzo intero e corto, dai
+50$ col buio a 10 ai 2000$ col buio a 100: nessuna eccezione, nessuna mossa illegale, i bui
+pagati da due giocatori e mai da altri, due carte a testa, le comuni sempre quante ne vuole
+il giro, fiches conservate, e allo showdown chi ha il punteggio migliore incassa sempre.
 
-================================================================================
-LE PROVE FATTE FUORI DAL TELEFONO
-================================================================================
+Quei tre file NON sono ancora in questo pacchetto: nessuno li richiama, R8 li butterebbe
+via, e un pacchetto che contiene un gioco che non si puo' aprire e' un pacchetto confuso.
 
-  - kotlinc sui 23 file: pulito. XML ben formati. Vincoli di ConstraintLayout puliti.
-    Risorse: nessun riferimento che non si risolve, nessuna morta.
-  - il conto di LinearLayout - misura e posizioni - rifatto a mano con e senza la
-    compensazione: senza, il visibile eccede di 8 punti; con, combacia al punto.
-  - le misure dello screenshot lette a pixel invece che a occhio: e' quello che ha spostato la
-    diagnosi dal tavolo alla colonna.
+DA FARE, ed e' tutta schermata:
+  HoldemActivity.kt          la schermata, sul modello di quella del poker
+  activity_holdem.xml        le cinque comuni al centro, due carte a testa, via il Cambia
+  MainActivity + layout      il bottone [Hold'em] accanto a [Poker]
+  SettingsActivity + layout  via la scelta della variante, e i giocatori 2/4 del Hold'em
+  Prefs                      GAME_HOLDEM per le statistiche separate, e via pokerVariante
+  strings.xml e values-en    le scritte nuove in due lingue
+  AndroidManifest            la voce della schermata nuova
+
+Sono circa mille righe fra codice e layout, e sono la parte che qui posso solo ragionare e
+non provare: la consegno quando gioca, in un pacchetto solo.

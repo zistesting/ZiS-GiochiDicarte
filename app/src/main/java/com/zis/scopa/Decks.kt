@@ -17,7 +17,8 @@ package com.zis.scopa
  *
  * Indice: seme * 10 + (valore - 1). Semi: 0 denari, 1 coppe, 2 spade, 3 bastoni.
  * Cinque mazzi: le illustrazioni ZiS, le piacentine, le bergamasche, le napoletane e il
- * mazzo francese, che e' l'unico da 52 carte e serve solo al Klondike.
+ * mazzo francese, che e' l'unico da 52 carte. Lo usano il Klondike e il poker - da quando
+ * c'e' il poker, il suo dorso e' rosso chiaro anche nel Klondike, perche' il mazzo e' uno.
  */
 object Decks {
 

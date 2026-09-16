@@ -51,6 +51,35 @@ object PokerHand {
      * Non controlla che siano cinque ne' che siano diverse: chiamarla con altro e' un errore
      * del chiamante, e un controllo qui costerebbe a ogni mano di ogni simulazione.
      */
+    /**
+     * La mano migliore fra le combinazioni di CINQUE carte dentro [carte].
+     *
+     * Serve al Texas Hold'em, dove le carte fra cui scegliere sono sette - due in mano e
+     * cinque in tavola - e le combinazioni di cinque su sette sono ventuno. Si provano tutte
+     * e si tiene la piu' alta: ventuno valutazioni per mano non sono un costo che si senta, e
+     * qualunque scorciatoia sarebbe una seconda copia delle regole del punteggio, cioe' un
+     * posto in piu' dove possono divergere.
+     *
+     * Con meno di cinque carte non c'e' mano: ritorna 0, che e' lo stesso punteggio che
+     * [PokerGame] da' a chi ha passato.
+     */
+    fun migliore(carte: List<Card>): Int {
+        if (carte.size < 5) return 0
+        if (carte.size == 5) return valuta(carte)
+        var meglio = 0
+        val cinque = ArrayList<Card>(5)
+        val n = carte.size
+        for (a in 0 until n - 4) for (b in a + 1 until n - 3) for (c in b + 1 until n - 2)
+            for (d in c + 1 until n - 1) for (e in d + 1 until n) {
+                cinque.clear()
+                cinque.add(carte[a]); cinque.add(carte[b]); cinque.add(carte[c])
+                cinque.add(carte[d]); cinque.add(carte[e])
+                val v = valuta(cinque)
+                if (v > meglio) meglio = v
+            }
+        return meglio
+    }
+
     fun valuta(carte: List<Card>): Int {
         val quanti = IntArray(15)          // quante carte per rango, indici 2..14
         var semeUnico = true
