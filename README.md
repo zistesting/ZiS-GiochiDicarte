@@ -643,8 +643,20 @@ la misura di fianco è la tua finché ci sta (360x800 e oltre: identiche) e scen
 sta quando non ci sta — l'88% su un 360x640 — mai sotto la metà. Una carta più piccola dell'11%
 si nota meno di un accavallamento, e in cambio le cinque carte si contano.
 
-Il conto della fascia sta in `misura()` e rifà a mano quello che il layout fa da sé, perché la
-misura serve *prima* di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il
+La fascia, alla fine, **si misura invece di stimarla**: `misura()` può solo tirare a indovinare
+— lavora prima che esista un layout, e dell'altezza dello schermo non sa quanta se ne prendono la
+barra di stato e quella di navigazione — quindi tiene una stima prudente di 72dp e la misura
+esatta arriva da `adattaColonne()`, che a layout fatto legge l'altezza del riquadro del tavolo
+meno dove finisce il posto di N. Era il difetto che si vedeva nella 5.1: una colonna più lunga
+della fascia viene *centrata*, cioè esce di sopra e di sotto per metà ciascuna, e quella di sotto
+la taglia il bordo del tavolo — l'ultima carta di W e di E era tagliata e sopra restava un dito
+di velluto vuoto, che era la stessa eccedenza divisa in due. E `clipChildren="false"` serve anche
+sulla **radice**, non solo sul tavolo: ogni contenitore taglia i propri figli ai propri bordi,
+quindi non basta che il tavolo lasci uscire le sue colonne, serve che la radice lasci uscire il
+tavolo.
+
+Il conto di `misura()` rifà a mano quello che il layout fa da sé, perché una misura serve *prima*
+di disegnare — misurare a posteriori vorrebbe dire disegnare due volte, e il
 secondo disegno litigherebbe con l'animazione della distribuzione. È duplicazione e si paga se
 il layout cambia; per questo il risultato resta stretto fra mezza carta e una carta, così
 sbagliando il conto il passo resta comunque in una forchetta in cui le cinque carte si vedono.

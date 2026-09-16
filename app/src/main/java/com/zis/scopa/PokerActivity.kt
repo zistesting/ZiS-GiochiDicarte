@@ -132,6 +132,9 @@ class PokerActivity : AppCompatActivity() {
         b.btnNext.setOnClickListener { avantiDopoLaMano() }
 
         misura()
+        // la misura esatta delle colonne appena il tavolo esiste, e prima che la
+        // distribuzione registri la sua: cosi' le carte volano verso la posizione buona
+        b.root.doOnLayout { adattaColonne() }
         game = partitaNuova()
         if (!restoreState()) iniziaPartita()
     }
@@ -147,6 +150,7 @@ class PokerActivity : AppCompatActivity() {
         CardView.setDeck(Prefs.DECK_FR)
         misura()
         render()
+        b.root.doOnLayout { adattaColonne() }
         if (stopped) {
             stopped = false
             // si riparte guardando lo stato reale: la mossa differita e' sparita insieme
@@ -359,16 +363,19 @@ class PokerActivity : AppCompatActivity() {
     // ---------------------------------------------------------------- fine mano
 
     /**
-     * Fine mano. La vincita la scrive [render] al posto del piatto, in oro; qui resta solo
-     * chi e' rimasto senza fiches, che va nella riga degli avvisi come tutto il resto.
+     * Fine mano: la vincita la scrive [render] al posto del piatto, e la riga degli avvisi
+     * si svuota.
+     *
+     * "N e' fuori   E e' fuori   W e' fuori" non c'e' piu'. Compariva sotto la vincita a
+     * partita chiusa e diceva tre volte una cosa che si vedeva da se': chi e' fuori ha zero
+     * fiches scritto accanto al nome, le carte spente, e se sono fuori tutti tranne uno la
+     * partita e' finita - che e' il motivo per cui quel pulsante dice "Menu".
      */
     private fun mostraEsito() {
         busy = true
         nascondiPulsanti()
         render()
-        b.txtStatus.text = (0 until giocatori)
-            .filter { game.eliminato[it] && game.fiches[it] == 0 }
-            .joinToString("   ") { getString(R.string.poker_out, nomeDi(it)) }
+        b.txtStatus.text = ""
         b.btnNext.visibility = View.VISIBLE
         b.btnNext.text = if (game.partitaFinita) getString(R.string.back_home)
                          else getString(R.string.poker_next_hand)
@@ -377,20 +384,22 @@ class PokerActivity : AppCompatActivity() {
         if (autoPlay && !game.partitaFinita) post(t.trickPause) { nuovaMano() }
     }
 
+    /**
+     * Il pulsante sotto la tua mano: la mano dopo, o il menu se la partita e' chiusa.
+     *
+     * NIENTE FINESTRA a partita finita. Ce n'era una che diceva chi aveva vinto e aveva un
+     * pulsante per tornare al menu: due tocchi per dire una cosa che il tavolo aveva gia'
+     * scritto - la riga della vincita sta al centro, in oro o in celeste - e un pulsante che
+     * ripeteva il pulsante appena premuto. Chi premeva "Menu" voleva il menu.
+     *
+     * Il conteggio della partita e la pausa responsabile restano, perche' quelli non erano
+     * la finestra: erano il motivo per cui la finestra era stata messa li'.
+     */
     private fun avantiDopoLaMano() {
         if (!game.partitaFinita) { nuovaMano(); return }
-        // la partita e' chiusa: si registra e si torna al menu. La pausa responsabile
-        // scatta qui, cioe' quando resta un solo giocatore con le fiches.
-        val vinta = game.vincitore() == 0
-        Prefs.recordMatch(this, Prefs.GAME_POKER, vinta)
+        Prefs.recordMatch(this, Prefs.GAME_POKER, game.vincitore() == 0)
         Prefs.markMatchEnded(this)
-        val dialogo = AlertDialog.Builder(this)
-            .setTitle(R.string.round_over)
-            .setMessage(getString(R.string.poker_game_over, nomeDi(game.vincitore().coerceAtLeast(0))))
-            .setCancelable(false)
-            .setPositiveButton(R.string.back_home) { _, _ -> finish() }
-            .show()
-        track(dialogo)
+        finish()
     }
 
     // ------------------------------------------------------------------ disegno
@@ -442,7 +451,12 @@ class PokerActivity : AppCompatActivity() {
         // quattro perche' il riquadro del turno si veda
         val inAlto = dp(48) + cardH + altoTesto + dp(12)         // il posto di N
         val inBasso = altoTesto + cardH + dp(64) + dp(12)        // fiches, tua mano, pulsanti
-        val fascia = altezza - inAlto - inBasso - dp(16)
+        // I 72dp sono le barre di sistema, che questo conto non puo' conoscere: l'altezza
+        // della configurazione e' quella dello schermo, non quella che resta dopo la barra
+        // di stato e quella di navigazione, e il riquadro del tavolo si prende solo la
+        // seconda. Sottrarli tiene la stima PRUDENTE - carte un filo piccole invece che
+        // tagliate - e la misura esatta la fa [adattaColonne] appena il tavolo esiste.
+        val fascia = altezza - inAlto - inBasso - dp(72)
 
         // LE CINQUE CARTE DI FIANCO NON SI ACCAVALLANO PIU', e per riuscirci quando lo
         // schermo e' corto rimpiccioliscono. Era l'unica strada che restava: girate, cinque
@@ -461,6 +475,37 @@ class PokerActivity : AppCompatActivity() {
         cardLatH = (cardLatW * 1.4f).toInt()
         passoLaterale = cardLatW + dp(2)
         strisciaLaterale = cardLatH + altoTesto
+    }
+
+    /**
+     * La misura delle carte di fianco, rifatta sul tavolo VERO.
+     *
+     * [misura] puo' solo stimare la fascia disponibile: lavora prima che esista un layout, e
+     * dell'altezza dello schermo non sa quanta se ne prendono la barra di stato e quella di
+     * navigazione. La stima e' prudente di 72 punti, quindi da sola fa le carte un po'
+     * piccole; qui invece la fascia si MISURA - l'altezza del riquadro del tavolo meno dove
+     * finisce il posto di N - e le carte prendono tutto lo spazio che c'e'.
+     *
+     * Era il difetto che si vedeva: la colonna piu' lunga della fascia viene centrata, cioe'
+     * esce di sopra e di sotto per meta' ciascuna, e quella di sotto la taglia il bordo del
+     * tavolo. L'ultima carta di W e di E era tagliata, e sopra restava un dito di velluto
+     * vuoto: era la stessa eccedenza, divisa in due.
+     *
+     * Si chiama a layout fatto e ridisegna solo se la misura cambia davvero, quindi non si
+     * innesca da sola: cambiare la carta di fianco non muove ne' il posto di N ne' l'altezza
+     * del tavolo, che sono le due cose da cui dipende.
+     */
+    private fun adattaColonne() {
+        if (giocatori <= 2 || b.table.height == 0) return
+        val fascia = b.table.height - b.seatTop.bottom - dp(4)
+        val stanno = (fascia - dp(12) - 4 * dp(2)) / 5
+        val nuova = stanno.coerceIn(cardW / 2, cardW)
+        if (nuova == cardLatW) return
+        cardLatW = nuova
+        cardLatH = (nuova * 1.4f).toInt()
+        passoLaterale = cardLatW + dp(2)
+        strisciaLaterale = cardLatH + altoTesto
+        render()
     }
 
     private fun render() {
@@ -587,9 +632,12 @@ class PokerActivity : AppCompatActivity() {
     private fun aggiornaPiatto() {
         val vincite = (0 until giocatori).filter { game.incasso[it] > 0 }
         if (game.manoFinita && vincite.isNotEmpty()) {
+            // la stessa frase per tutti, col nome del posto davanti: "S vince 160$" come
+            // "N vince 160$". Una frase a parte per te - "Vinci 160$" - serviva quando il
+            // tuo posto si chiamava "Tu", perche' "Tu vince" non e' italiano; adesso che i
+            // posti sono lettere, S sta in quella frase come N ed E.
             b.txtPot.text = vincite.joinToString("   ") {
-                if (it == 0) getString(R.string.poker_you_win, game.incasso[it])
-                else getString(R.string.poker_wins, nomeDi(it), game.incasso[it])
+                getString(R.string.poker_wins, nomeDi(it), game.incasso[it])
             }
             b.txtPot.setTextColor(getColor(if (0 in vincite) R.color.gold else R.color.celeste))
         } else {

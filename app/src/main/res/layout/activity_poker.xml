@@ -39,7 +39,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_velvet">
+    android:background="@drawable/bg_velvet"
+    android:clipChildren="false">
 
     <!-- ========================= in basso: la tua mano e i pulsanti =========================
          Sta ancorato in fondo e si misura da se': quello che resta sopra e' il tavolo. -->
