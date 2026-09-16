@@ -1,91 +1,53 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.5
-                                            logo e icona nuovi (la spada e' diritta)
+ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
 
->>> CAMBIANO app1 (otto file) e app2 (i due sorgenti in art/). Il Hold'em non e' in questa
-    consegna: lo stato dei lavori sta in fondo. <<<
+CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.4 che hai sul computer.
+  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
+                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
+  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
+                         per misurare le euristiche fuori dal telefono
 
-================================================================================
-COSA CARICARE
-================================================================================
+NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
+nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
+del gioco automatico sono state misurate.
 
-  app/src/main/res/drawable-nodpi/app_logo.webp          500x500   dal logo quadrato
-  app/src/main/res/drawable-nodpi/ic_launcher_fg.webp    500x500   dall'icona tonda
-  app/src/main/res/mipmap-mdpi/ic_launcher.png            48x48    dall'icona tonda
-  app/src/main/res/mipmap-hdpi/ic_launcher.png            72x72
-  app/src/main/res/mipmap-xhdpi/ic_launcher.png           96x96
-  app/src/main/res/mipmap-xxhdpi/ic_launcher.png         144x144
-  app/src/main/res/mipmap-xxxhdpi/ic_launcher.png        192x192
-  app/build.gradle                                       versionName: 5.4 -> 5.5
+--- cosa e' cambiato ---
 
-  nel pacchetto app2:
-  art/icona_app.png    il sorgente dell'icona tonda
-  art/logo_app.png     il sorgente del logo quadrato
+  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
+                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
+                           la cornice esterna piu' cupa del campo.
 
-ORDINE: prima art/ del pacchetto app2 (non fa partire niente: il workflow ignora art/**),
-poi la cartella app di app1 INTERA senza [skip ci]. Oppure i sette file con [skip ci] e
-build.gradle per ultimo senza.
+E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
+l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
+stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
+E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
+il lavoro e' peggio di nessuno strumento.
+
+Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
+card_back.py, che resta identico.
+
+--- caricamento ---
+
+Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
+ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
+Commit changes.
+
+Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
+conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
 
 NON caricare questo ISTRUZIONI.txt.
 
---- questa volta il disegno E' cambiato ---
+--- cosa c'e' dentro art/ ---
 
-Alla 4.4 i file che mi avevi dato erano lo stesso disegno di prima, e te l'avevo detto.
-Adesso no: la spada e' diritta invece di ricurva, e la differenza si misura - in media 20
-punti su 255 sui pixel visibili dell'icona, con il 15% dei pixel diversi di piu' di 8. E' un
-disegno nuovo.
-
-I sette file dell'APK li ha rifatti art/icona_app.py, non io a mano: due sorgenti, sette
-destinazioni, e i due .webp vengono senza perdita, quindi sono identici bit per bit ai PNG
-che mi hai mandato (controllato). In tutto i sette file pesano 120,8 KB invece di 132,7: la
-spada diritta ha meno contorni da descrivere della scimitarra.
-
---- i due numeri che l'icona adattiva pretende, e tornano ---
-
-  - l'anello chiaro sta a 27 pixel dal bordo su 250 di raggio, cioe' al 10,8%: e' esattamente
-    il margine per cui in mipmap-anydpi-v26/ic_launcher.xml il rientro e' 18dp. Non cambia
-    niente in quel file.
-  - il blu del bordo e' (58,60,121) contro il (59,61,121) di navy_logo, che fa da fondo
-    all'icona adattiva: la stessa tinta, quindi negli angoli che la maschera lascia non
-    compare nessuna cornice attorno al cerchio.
-
-Provata montata con le tre maschere - tonda, squircle, quadrata stondata - e guardata:
-l'anello non viene tagliato da nessuna.
-
---- da provare ---
-
- 1. L'icona nel cassetto delle app: spada diritta, e l'anello a filo del bordo.
- 2. L'icona nelle Impostazioni di Android, che su molti telefoni e' quella classica (i PNG).
- 3. Il logo grande in cima alla schermata iniziale.
- 4. Se l'icona vecchia resta in giro e' il lanciatore che la tiene in cache: si sblocca
-    riavviando il telefono.
- 5. Il numero di versione: 5.5.
-
-================================================================================
-IL HOLD'EM: DOV'E' ARRIVATO
-================================================================================
-
-FATTO E PROVATO, il motore: HoldemGame.kt, PokerBotHoldem.kt e PokerHand.migliore (la mano
-migliore fra le 21 combinazioni di cinque carte su sette). Limite fisso, bui ai due alla
-sinistra del mazziere - in due il mazziere paga il piccolo - quattro giri di puntate,
-salvataggio firmato in testa cosi' non puo' essere confuso con quello del Draw.
-Circa 44.000 mani al simulatore, in due tre e quattro giocatori, mazzo intero e corto, dai
-50$ col buio a 10 ai 2000$ col buio a 100: nessuna eccezione, nessuna mossa illegale, i bui
-pagati da due giocatori e mai da altri, due carte a testa, le comuni sempre quante ne vuole
-il giro, fiches conservate, e allo showdown chi ha il punteggio migliore incassa sempre.
-
-Quei tre file NON sono ancora in questo pacchetto: nessuno li richiama, R8 li butterebbe
-via, e un pacchetto che contiene un gioco che non si puo' aprire e' un pacchetto confuso.
-
-DA FARE, ed e' tutta schermata:
-  HoldemActivity.kt          la schermata, sul modello di quella del poker
-  activity_holdem.xml        le cinque comuni al centro, due carte a testa, via il Cambia
-  MainActivity + layout      il bottone [Hold'em] accanto a [Poker]
-  SettingsActivity + layout  via la scelta della variante, e i giocatori 2/4 del Hold'em
-  Prefs                      GAME_HOLDEM per le statistiche separate, e via pokerVariante
-  strings.xml e values-en    le scritte nuove in due lingue
-  AndroidManifest            la voce della schermata nuova
-
-Sono circa mille righe fra codice e layout, e sono la parte che qui posso solo ragionare e
-non provare: la consegno quando gioca, in un pacchetto solo.
+  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
+  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
+  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
+  estrai_carta_singola.py      una carta per volta, per i ritocchi
+  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
+  figure/                      le tre immagini da cui vengono J, Q e K francesi
+  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
+    + logo_app.png             cinque icone classiche del lanciatore
+    + icona_app.png
+  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
+  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
+  README.md                    come si usano
