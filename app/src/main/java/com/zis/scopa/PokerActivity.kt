@@ -120,6 +120,9 @@ class PokerActivity : AppCompatActivity() {
         t.fast = autoPlay
         CardView.setDeck(Prefs.DECK_FR)          // il poker si gioca col mazzo francese
 
+        b.btnSettings.setOnClickListener {
+            startActivity(SettingsActivity.intent(this, Prefs.GAME_POKER))
+        }
         b.btnInfo.setOnClickListener {
             val regole = if (Prefs.pokerVariante(this) == Prefs.POKER_HOLDEM)
                 R.string.rules_poker_holdem else R.string.rules_poker_draw

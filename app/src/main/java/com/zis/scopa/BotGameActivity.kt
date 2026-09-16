@@ -315,7 +315,7 @@ abstract class BotGameActivity : AppCompatActivity() {
      * La parte di onCreate uguale nelle tre schermate. Va chiamata **dopo**
      * setContentView, perche' [rootView] e [overlay] sono getter su un campo `lateinit`.
      */
-    protected fun setupCommon(infoButton: View) {
+    protected fun setupCommon(infoButton: View, settingsButton: View, gioco: String) {
         applySystemBars(rootView)
         // L'overlay e' scenografia e nient'altro. Le copie di carte che ci volano dentro
         // nascono da CardView, quindi con la loro contentDescription: TalkBack le annuncia
@@ -328,6 +328,8 @@ abstract class BotGameActivity : AppCompatActivity() {
         // BotGameActivity.
         overlay.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         infoButton.setOnClickListener { track(InfoDialog.show(this, R.string.info_title, rulesText)) }
+        // le impostazioni di QUESTO gioco: il pannello degli altri non serve a chi sta giocando
+        settingsButton.setOnClickListener { startActivity(SettingsActivity.intent(this, gioco)) }
         readSettings()
         CardView.setDeck(Prefs.deck(this))
         placeCards()

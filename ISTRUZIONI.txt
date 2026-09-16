@@ -1,53 +1,97 @@
-ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 5.6
+                                            le impostazioni di ogni gioco dentro il gioco
 
-CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
+>>> CAMBIA SOLO app1, dieci file. Nessun file aggiunto. <<<
 
-  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
-                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
-  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
-                         per misurare le euristiche fuori dal telefono
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.5 che hai sul computer.
 
-NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
-nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
-del gioco automatico sono state misurate.
+================================================================================
+COSA CARICARE
+================================================================================
 
---- cosa e' cambiato ---
+  app/src/main/java/com/zis/scopa/SettingsActivity.kt   mostra un pannello solo
+  app/src/main/java/com/zis/scopa/BotGameActivity.kt    l'ingranaggio per i tre a prese
+  app/src/main/java/com/zis/scopa/GameActivity.kt       una riga
+  app/src/main/java/com/zis/scopa/BriscolaActivity.kt   una riga
+  app/src/main/java/com/zis/scopa/TresetteActivity.kt   una riga
+  app/src/main/java/com/zis/scopa/KlondikeActivity.kt   due righe
+  app/src/main/java/com/zis/scopa/PokerActivity.kt      due righe
+  app/src/main/res/layout/activity_settings.xml         pannelli separati e con un nome
+  app/src/main/res/layout/activity_game.xml             il pulsante
+  app/src/main/res/layout/activity_briscola.xml         il pulsante
+  app/src/main/res/layout/activity_tresette.xml         il pulsante
+  app/src/main/res/layout/activity_klondike.xml         il pulsante
+  app/src/main/res/layout/activity_poker.xml            il pulsante
+  app/build.gradle                                      versionName: 5.5 -> 5.6
 
-  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
-                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
-                           la cornice esterna piu' cupa del campo.
-
-E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
-l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
-stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
-E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
-il lavoro e' peggio di nessuno strumento.
-
-Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
-card_back.py, che resta identico.
-
---- caricamento ---
-
-Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
-Commit changes.
-
-Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
-conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
+(sono quattordici: la cartella app intera in un colpo, senza [skip ci], e' piu' comoda)
 
 NON caricare questo ISTRUZIONI.txt.
 
---- cosa c'e' dentro art/ ---
+================================================================================
+COSA E' CAMBIATO
+================================================================================
 
-  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
-  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
-  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
-  estrai_carta_singola.py      una carta per volta, per i ritocchi
-  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
-  figure/                      le tre immagini da cui vengono J, Q e K francesi
-  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
-    + logo_app.png             cinque icone classiche del lanciatore
-    + icona_app.png
-  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
-  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
-  README.md                    come si usano
+L'INGRANAGGIO ACCANTO ALL'INFO, in tutte e cinque le schermate di gioco. E' lo stesso
+disegno del menu, e apre le impostazioni di QUEL gioco: si vede il suo pannello e nient'altro.
+Chi apre le impostazioni a meta' partita cerca la regola del gioco che sta giocando, non un
+elenco di tutti e cinque - e prima per arrivare al poker doveva scorrere davanti a Klondike,
+mazzi, Scopa, Briscola e Tresette.
+
+DAL MENU restano le impostazioni generali, e sono le tre che non appartengono a un gioco in
+particolare:
+  - il MAZZO, che vale per i tre giochi italiani insieme, quindi non sta bene in nessuno dei
+    tre;
+  - il GIOCO RESPONSABILE;
+  - le PROVE (gioco automatico e mostra carte del Banco).
+
+"PER QUANTO RESTA SCOPERTA LA CARTA PESCATA" e' passata nel pannello del Tresette, che e'
+l'unico gioco a cui si applica. Stava in fondo alla schermata generale, fra le probabilita'
+del poker e il gioco responsabile: un posto dove nessuno l'avrebbe cercata.
+
+UNA SCHERMATA SOLA, NON CINQUE. I comandi sono gli stessi e li legge e li scrive lo stesso
+codice; cinque schermate vorrebbero dire cinque copie che possono divergere. Quello che cambia
+e' quali pannelli si vedono, e quella e' una riga per pannello: chi apre da un gioco passa il
+nome del gioco nell'Intent, chi apre dal menu non passa niente.
+I pannelli vanno a GONE e non a INVISIBLE: invisibili lascerebbero il buco, e la schermata si
+aprirebbe su un pannello circondato da niente.
+
+E il pannellone che teneva Tresette e Poker dentro la stessa cornice ora e' due pannelli, che
+e' anche il motivo per cui la schermata sembrava piu' affollata di quanto fosse.
+
+================================================================================
+COSA PROVARE
+================================================================================
+
+ 1. In ognuno dei cinque giochi: l'ingranaggio accanto all'info, e le impostazioni che si
+    aprono su un pannello solo, quello giusto.
+ 2. Dal menu: mazzi, gioco responsabile e prove, e nient'altro.
+ 3. Nel Tresette: "per quanto resta scoperta la carta" deve stare nel suo pannello.
+ 4. Cambia qualcosa dalle impostazioni aperte dentro un gioco e torna indietro col tasto
+    Home del telefono o con "Menu": il gioco deve rileggere la modifica. Il caso piu' visibile
+    e' il poker - cambia un importo e la mano in corso si chiude, come sempre.
+ 5. Il numero di versione: 5.6.
+
+================================================================================
+LE PROVE FATTE FUORI DAL TELEFONO
+================================================================================
+
+  - kotlinc sui 23 file: pulito. I 24 XML ben formati, e li ho verificati uno alla volta
+    mentre spezzavo il pannellone: il primo tentativo aveva rotto la struttura del file, me
+    l'ha detto l'analizzatore e sono ripartito dal pacchetto consegnato.
+  - vincoli di ConstraintLayout: puliti su tutti e dieci i layout, pulsante nuovo compreso -
+    i suoi vincoli sono copiati da quelli del pulsante info di ciascuna schermata, che e'
+    l'unico modo per essere sicuri che si agganci alle stesse cose.
+  - risorse: nessun riferimento che non si risolve, nessuna risorsa morta, stringhe italiane e
+    inglesi pari a 171.
+
+Resta fuori il telefono: la cosa da guardare e' che l'ingranaggio non finisca sopra qualcosa
+nelle cinque schermate, perche' e' l'unico pezzo di geometria nuova.
+
+================================================================================
+IL HOLD'EM
+================================================================================
+
+Il motore e' fatto e provato (44.000 mani, vedi la 5.4); resta la schermata, il bottone nel
+menu, le statistiche separate e la pulizia della scelta della variante dalle impostazioni -
+che adesso, con i pannelli divisi, e' una riga in meno di lavoro. E' la prossima consegna.

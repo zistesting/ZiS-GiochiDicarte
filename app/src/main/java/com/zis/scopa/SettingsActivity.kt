@@ -1,11 +1,14 @@
 package com.zis.scopa
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.zis.scopa.databinding.ActivitySettingsBinding
 
 class SettingsActivity : AppCompatActivity() {
+
 
     private lateinit var b: ActivitySettingsBinding
 
@@ -77,6 +80,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         setupPauseSwitch()
+        mostraSoloIlPannelloGiusto()
 
         b.switchAuto.isChecked = Prefs.autoPlay(this)
         b.switchAuto.setOnCheckedChangeListener { _, checked -> Prefs.setAutoPlay(this, checked) }
@@ -224,11 +228,56 @@ class SettingsActivity : AppCompatActivity() {
         b.txtRilancio.text = getString(R.string.poker_amount, Prefs.pokerRilancio(this))
     }
 
-    private companion object {
+    companion object {
+        /**
+         * Il gioco di cui mostrare le impostazioni, messo nell'Intent da chi apre questa
+         * schermata. Senza, si aprono le impostazioni GENERALI.
+         *
+         * Perche' una schermata sola e non cinque: i comandi sono gli stessi, li legge e li
+         * scrive lo stesso codice, e cinque schermate vorrebbero dire cinque copie che
+         * possono divergere. Quello che cambia e' quali pannelli si vedono, e quella e' una
+         * riga per pannello.
+         */
+        const val EXTRA_GIOCO = "gioco"
+
+        /** Apre le impostazioni di un gioco solo. */
+        fun intent(ctx: Context, gioco: String): Intent =
+            Intent(ctx, SettingsActivity::class.java).putExtra(EXTRA_GIOCO, gioco)
+
         const val PASSO_FICHES = 50
         const val FICHES_MAX = 2000
         const val PASSO_PUNTATA = 5
         const val PUNTATA_MAX = 100
+    }
+
+    /**
+     * Accende i pannelli che servono e spegne gli altri.
+     *
+     * DAL MENU si vede quello che non e' di un gioco in particolare: la scelta del mazzo -
+     * che vale per i tre giochi italiani insieme, quindi non sta bene in nessuno dei tre -
+     * il gioco responsabile e le prove.
+     *
+     * DA UN GIOCO si vede il pannello di quel gioco e nient'altro. La schermata era diventata
+     * lunga sei pannelli e mezzo, e chi la apriva a meta' partita per cambiare una cosa
+     * doveva scorrere davanti alle impostazioni di altri quattro giochi.
+     *
+     * A GONE e non a INVISIBLE: invisibile lascerebbe il buco, e la schermata si aprirebbe
+     * su un pannello circondato da niente.
+     */
+    private fun mostraSoloIlPannelloGiusto() {
+        val gioco = intent.getStringExtra(EXTRA_GIOCO)
+        val delGioco = mapOf(
+            Prefs.GAME_SCOPA to b.panelScopa,
+            Prefs.GAME_BRISCOLA to b.panelBriscola,
+            Prefs.GAME_TRESETTE to b.panelTresette,
+            Prefs.GAME_KLONDIKE to b.panelKlondike,
+            Prefs.GAME_POKER to b.panelPoker)
+        val generali = listOf(b.panelDeck, b.panelPausa, b.panelTest)
+
+        for ((chiave, pannello) in delGioco)
+            pannello.visibility = if (chiave == gioco) View.VISIBLE else View.GONE
+        for (pannello in generali)
+            pannello.visibility = if (gioco == null) View.VISIBLE else View.GONE
     }
 
 }

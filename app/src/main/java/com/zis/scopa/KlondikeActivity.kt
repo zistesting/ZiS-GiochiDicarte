@@ -103,6 +103,9 @@ class KlondikeActivity : AppCompatActivity() {
         b.btnRestart.setOnClickListener { chiediRicomincia() }
         b.btnDeal.setOnClickListener { chiediNuovaPartita() }
         b.btnFinish.setOnClickListener { completaDaSolo() }
+        b.btnSettings.setOnClickListener {
+            startActivity(SettingsActivity.intent(this, Prefs.GAME_KLONDIKE))
+        }
         b.btnInfo.setOnClickListener {
             openDialog?.dismiss()
             openDialog = InfoDialog.show(this, R.string.info_title, R.string.rules_klondike)

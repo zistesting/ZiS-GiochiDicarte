@@ -34,6 +34,7 @@
               del gioco invece dell'aspetto o dei tempi.
             -->
             <LinearLayout
+                android:id="@+id/panelKlondike"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -95,6 +96,7 @@
 
             <!-- Mazzo -->
             <LinearLayout
+                android:id="@+id/panelDeck"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -169,6 +171,7 @@
 
             <!-- Scopa -->
             <LinearLayout
+                android:id="@+id/panelScopa"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -222,6 +225,7 @@
 
             <!-- Briscola -->
             <LinearLayout
+                android:id="@+id/panelBriscola"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
@@ -275,6 +279,7 @@
 
             <!-- Tresette -->
             <LinearLayout
+                android:id="@+id/panelTresette"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
@@ -324,6 +329,66 @@
                         android:textColor="@color/silver"
                         android:textSize="17sp" />
                 </RadioGroup>
+
+                <!-- Quanto resta scoperta la carta pescata: e' una regola del Tresette e
+                     sta con le altre del Tresette. Prima era in fondo alla schermata
+                     generale, fra le probabilita' del poker e il gioco responsabile, dove
+                     nessuno l'avrebbe cercata. -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/draw_seconds_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <RadioGroup
+                    android:id="@+id/groupDraw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/radioDraw1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/draw_1s"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <RadioButton
+                        android:id="@+id/radioDraw2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/draw_2s"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+
+                    <RadioButton
+                        android:id="@+id/radioDraw3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/celeste"
+                        android:text="@string/draw_3s"
+                        android:textColor="@color/silver"
+                        android:textSize="17sp" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- Poker -->
+            <LinearLayout
+                android:id="@+id/panelPoker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/panel_bg"
+                android:orientation="vertical"
+                android:padding="18dp">
 
                 <!-- ============================= Poker ============================= -->
 
@@ -588,54 +653,11 @@
                     android:textSize="13sp" />
 
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/draw_seconds_label"
-                    android:textColor="@color/silver"
-                    android:textSize="16sp" />
-
-                <RadioGroup
-                    android:id="@+id/groupDraw"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/radioDraw1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:buttonTint="@color/celeste"
-                        android:text="@string/draw_1s"
-                        android:textColor="@color/silver"
-                        android:textSize="17sp" />
-
-                    <RadioButton
-                        android:id="@+id/radioDraw2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:buttonTint="@color/celeste"
-                        android:text="@string/draw_2s"
-                        android:textColor="@color/silver"
-                        android:textSize="17sp" />
-
-                    <RadioButton
-                        android:id="@+id/radioDraw3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:buttonTint="@color/celeste"
-                        android:text="@string/draw_3s"
-                        android:textColor="@color/silver"
-                        android:textSize="17sp" />
-                </RadioGroup>
             </LinearLayout>
 
             <!-- Gioco responsabile -->
             <LinearLayout
+                android:id="@+id/panelPausa"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
@@ -683,6 +705,7 @@
 
             <!-- Test -->
             <LinearLayout
+                android:id="@+id/panelTest"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"

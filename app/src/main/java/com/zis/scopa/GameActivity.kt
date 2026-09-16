@@ -58,7 +58,7 @@ class GameActivity : BotGameActivity() {
         b = ActivityGameBinding.inflate(layoutInflater)
         setContentView(b.root)
         // Dopo setContentView: rootView e overlay sono getter su b, che e' lateinit.
-        setupCommon(b.btnInfo)
+        setupCommon(b.btnInfo, b.btnSettings, Prefs.GAME_SCOPA)
         // Se c'e' una partita lasciata a meta' si riprende quella, altrimenti se ne comincia una.
         if (!restoreState()) startMatch()
     }
