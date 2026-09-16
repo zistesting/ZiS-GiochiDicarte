@@ -220,8 +220,8 @@
 
     <!-- Poker -->
     <string name="poker">Poker</string>
-    <string name="holdem">Texas Hold'em</string>
-    <string name="poker_section">Poker and Hold'em</string>
+    <string name="holdem">Texas Hold\'em</string>
+    <string name="poker_section">Poker and Hold\'em</string>
     <string name="poker_players">Players</string>
     <string name="poker_players_2">2 - you against the Bank</string>
     <string name="poker_players_4">4 - you against three opponents</string>

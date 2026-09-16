@@ -246,8 +246,8 @@
 
     <!-- Poker -->
     <string name="poker">Poker</string>
-    <string name="holdem">Texas Hold'em</string>
-    <string name="poker_section">Poker e Hold'em</string>
+    <string name="holdem">Texas Hold\'em</string>
+    <string name="poker_section">Poker e Hold\'em</string>
     <string name="poker_players">Giocatori</string>
     <string name="poker_players_2">2 - tu contro il Banco</string>
     <string name="poker_players_4">4 - tu contro tre avversari</string>

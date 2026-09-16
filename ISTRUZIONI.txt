@@ -1,5 +1,22 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.0
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.0  (seconda emissione)
                                             il Texas Hold'em si gioca
+
+>>> SE HAI GIA' CARICATO LA 6.0 E LA BUILD E' FALLITA: cambiano DUE file soli,
+    app/src/main/res/values/strings.xml e app/src/main/res/values-en/strings.xml.
+    Caricali senza [skip ci] e la build riparte. Il numero di versione resta 6.0, perche' di
+    APK 6.0 non ne e' mai uscito uno.
+
+    COS'ERA: l'apostrofo di "Hold'em". In una <string> di Android l'apostrofo va scritto \'
+    se il valore non e' fra virgolette, altrimenti aapt2 rifiuta la risorsa - e il messaggio
+    che da' non parla di apostrofi ma di "Invalid unicode escape sequence", quindi manda a
+    cercare nel posto sbagliato (nel tuo log indicava perfino un file della libreria
+    material, che con questo non c'entra niente).
+
+    PERCHE' NON L'AVEVO VISTO: verificavo i file con un analizzatore XML, e per l'XML quelle
+    stringhe sono ineccepibili - l'apostrofo e' un carattere come un altro. La regola e' di
+    Android, non dell'XML. Ho aggiunto al banco di prova un controllo che guarda i VALORI
+    delle stringhe - apostrofi e virgolette non protetti, sequenze \u incomplete - e adesso
+    passa su tutte e 170 le chiavi di tutte due le lingue.
 
 >>> CAMBIA SOLO app1. Due file NUOVI, undici sostituiti. <<<
 
