@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Il tavolo del Texas Hold'em.
+
+  E' il tavolo del 5-Card Draw con una differenza che decide tutto il resto: LE CINQUE CARTE
+  COMUNI. Cinque carte affiancate sono larghe quanto lo schermo, quindi nella loro fascia non
+  ci puo' stare nient'altro, e i due posti di fianco si fermano SOPRA di loro invece di
+  arrivare al fondo del tavolo. Ci stanno perche' nel Hold'em ognuno ha due carte e non
+  cinque: le colonne di fianco sono corte.
+
+  Il centro si legge dall'alto in basso: il mazzo, le carte comuni, il piatto, e la riga che
+  dice cosa sta facendo il Banco.
+
+  Tutto il resto viene dal tavolo del poker e vale identico: i tre posti attorno al tavolo
+  con W a sinistra, N in alto ed E a destra; le carte di fianco girate di 90 gradi, una per
+  una e non la fila intera; il riquadro che si accende sotto le carte di chi deve giocare; le
+  tue fiches sopra le tue carte; un carattere solo e un colore solo, con l'oro e il celeste
+  riservati alla vincita. I perche' stanno nei commenti di activity_poker.xml, che e' il
+  fratello di questo file: non li ripeto qui, si copierebbero le parole e prima o poi
+  divergerebbero.
+
+  NON C'E' IL PULSANTE CAMBIA: nel Hold'em non si scarta niente.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_velvet"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- ========================= in basso: la tua mano e i pulsanti =========================
+         Sta ancorato in fondo e si misura da se': quello che resta sopra e' il tavolo. -->
+    <LinearLayout
+        android:id="@+id/bottomPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- IL TUO BLOCCO: le fiches e le carte dentro un riquadro solo, che si accende
+             quando tocca a te. Le fiches stanno appena sopra le tue carte perche' sono TUE:
+             dal tuo lato del tavolo si capisce di chi sono senza scriverlo, ed e' per questo
+             che il "Tu" non serve.
+
+             Il padding di 6dp non e' aria decorativa: e' quello che rende VISIBILE il
+             riquadro del turno. Un riquadro esattamente della misura delle carte starebbe
+             tutto sotto le carte e non si vedrebbe. Sta nel layout e non nel codice perche'
+             deve esserci sempre, accesa o spenta la luce: se comparisse solo col turno, le
+             carte si sposterebbero di sei punti a ogni cambio di mano.
+        -->
+        <LinearLayout
+            android:id="@+id/youBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                android:id="@+id/txtChips"
+                style="@style/PokerInfo"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="2dp" />
+
+            <LinearLayout
+                android:id="@+id/youHand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal" />
+        </LinearLayout>
+
+        <!-- Tre pulsanti per le puntate, piu' uno per lo scarto e uno per andare avanti.
+             Il codice ne mostra solo quelli che in quel momento sono mosse ammesse: e'
+             PokerGame.azioniLegali a dirlo, cosi' non c'e' una seconda copia delle regole
+             qui dentro che possa divergere da quella del motore.
+
+             Tutti e cinque hanno lo stesso stile, PokerButton: stesso carattere, stessa
+             misura fissa, stesso argento. Prima avevano autoSizeTextType uniform, che
+             sembra la cosa giusta e non lo e': la misura del testo la decide la LUNGHEZZA
+             di quel testo, quindi "Passo" veniva grande e "Rilancio 40$" piccolo, e tre
+             pulsanti affiancati finivano con tre corpi diversi. -->
+        <LinearLayout
+            android:id="@+id/buttonsRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnFold"
+                style="@style/PokerButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/poker_fold" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnCheck"
+                style="@style/PokerButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/poker_check" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRaise"
+                style="@style/PokerButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/poker_raise" />
+        </LinearLayout>
+
+        <!-- Il passo avanti sta da solo e a tutta larghezza: un pulsante largo si tocca
+             senza sbagliare -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnNext"
+            style="@style/PokerButton"
+            android:layout_width="match_parent"
+            android:layout_marginTop="6dp"
+            android:text="@string/poker_next_hand"
+            android:visibility="gone" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
+    </LinearLayout>
+
+    <!-- ================================ il tavolo ================================ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/table"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomPanel">
+
+        <!-- ========================= il posto in alto ========================= -->
+        <LinearLayout
+            android:id="@+id/seatTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="6dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:id="@+id/handTop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+
+            <TextView
+                android:id="@+id/nameTop"
+                style="@style/PokerInfo" />
+
+        </LinearLayout>
+
+        <!-- ======================= il centro del tavolo =======================
+             QUATTRO VISTE IN CATENA e non una colonna dentro un riquadro, ed e' un vincolo
+             di ConstraintLayout, non un gusto: un vincolo puo' puntare solo a un FRATELLO o
+             al padre. I due posti di fianco devono cominciare all'altezza del MAZZO, quindi
+             il mazzo deve stare qui, allo stesso livello dei posti. Dentro un LinearLayout
+             sarebbe stato un nipote, e il vincolo non si sarebbe risolto: i posti di fianco
+             sarebbero finiti in cima al tavolo, addosso a quello in alto.
+
+             La catena e' "packed" con bias 0.4: le quattro viste stanno attaccate come in
+             una colonna, e il gruppo si tiene un po' piu' in alto del centro perche' lo
+             spazio libero serve in basso, dove i posti di fianco appoggiano nome e stato
+             sotto le carte. Col 40% anche uno schermo da 320x480 - il piu' piccolo che
+             Android 7 possa avere - sta dentro, e su uno schermo normale la fascia vuota
+             sopra il piatto scende da 80 a 61dp.
+
+             I 48dp di margine per lato tengono un avviso lungo lontano dalle carte laterali.
+        -->
+
+        <!-- Il mazzo, in cima alla colonna: due dorsi sfalsati, creati dal codice perche'
+             CardView non si costruisce da XML. E' da qui che partono le carte quando si
+             distribuisce, ed e' il motivo per cui sta in cima - il piatto gli va SOTTO, non
+             sopra: prima si vede il mazzo, poi quanto c'e' in mezzo. -->
+        <FrameLayout
+            android:id="@+id/deckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/seatTop"
+            app:layout_constraintBottom_toTopOf="@id/communityRow"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintVertical_bias="0.4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Il piatto, subito sotto il mazzo. A mano finita diventa l'avviso di vincita, ed
+             e' l'unico posto del tavolo dove compaiono dei colori: oro se vinci tu, celeste
+             se vince un avversario. I margini di lato li mette il codice, perche' dipendono
+             da quanto sono larghe le due strisce laterali. -->
+        <!--
+          LE CINQUE CARTE COMUNI, e prendono tutta la larghezza: e' il vincolo che decide
+          tutto il resto di questa schermata. Cinque carte affiancate sono larghe quanto lo
+          schermo, quindi nella loro fascia non ci puo' stare nient'altro - e allora i due
+          posti di fianco stanno SOPRA, agganciati al bordo alto di questa fila invece che al
+          fondo del tavolo. Nel Hold'em ognuno ha due carte, quindi le colonne di fianco sono
+          corte e lo spazio basta.
+        -->
+        <LinearLayout
+            android:id="@+id/communityRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/deckBox"
+            app:layout_constraintBottom_toTopOf="@id/txtPot"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/txtPot"
+            style="@style/PokerInfo"
+            android:layout_width="0dp"
+            android:layout_marginTop="6dp"
+            android:maxLines="2"
+            app:layout_constraintTop_toBottomOf="@id/communityRow"
+            app:layout_constraintBottom_toTopOf="@id/txtStatus"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Le decisioni del Banco: "Gioca N", "N passa", "si serve", "va all-in". Due righe
+             fisse, cosi' il tavolo non salta su e giu' quando l'avviso e' lungo. -->
+        <TextView
+            android:id="@+id/txtStatus"
+            style="@style/PokerInfo"
+            android:layout_width="0dp"
+            android:lines="2"
+            android:maxLines="2"
+            app:layout_constraintTop_toBottomOf="@id/txtPot"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- ======================= i due posti di fianco =======================
+             GIRATI DI 90 GRADI: le carte in colonna, ognuna ruotata, e una riga di testo
+             ruotata con loro col nome, le fiches e lo stato. E' come stanno le carte di chi
+             siede di fianco a te.
+
+             PRENDONO TUTTA L'ALTEZZA fra il posto in alto e la tua mano, e non piu' solo la
+             parte sotto il mazzo: e' la fascia piu' alta che c'e', e serve tutta perche' le
+             cinque carte si vedano SENZA accavallarsi. Il passo della colonna lo calcola
+             PokerActivity.misura da quella fascia; su un telefono normale viene una carta
+             piena, cioe' le cinque carte una sotto l'altra senza sovrapposizione.
+
+             A ruotare e' OGNI CARTA, non la fila: la translation di un figlio dentro un
+             genitore ruotato si applica nello spazio RUOTATO del genitore, e le carte in
+             distribuzione volerebbero di traverso. Cosi' la colonna resta diritta.
+
+             UNA RIGA DI TESTO E NON DUE, e non e' per brevita': ogni riga ruotata si porta
+             via larghezza al centro del tavolo, e il centro deve restare largo abbastanza
+             per scrivere "Piatto: 240$" su una riga sola.
+
+             Riquadro e testo hanno misura wrap_content qui e misura vera nel codice: dipende
+             dalla carta, che dipende dallo schermo. clipChildren="false" perche' la colonna,
+             girata, esce dal suo riquadro di layout.
+        -->
+        <FrameLayout
+            android:id="@+id/seatLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:padding="6dp"
+            app:layout_constraintTop_toBottomOf="@id/seatTop"
+            app:layout_constraintBottom_toTopOf="@id/communityRow"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <LinearLayout
+                android:id="@+id/handLeft"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/nameLeft"
+                style="@style/PokerInfo"
+                android:layout_gravity="center" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/seatRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:padding="6dp"
+            app:layout_constraintTop_toBottomOf="@id/seatTop"
+            app:layout_constraintBottom_toTopOf="@id/communityRow"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:id="@+id/handRight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/nameRight"
+                style="@style/PokerInfo"
+                android:layout_gravity="center" />
+
+        </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Pulsante info: sta in un angolo sopra tutto, cosi' non sposta il tavolo -->
+    <ImageButton
+        android:id="@+id/btnInfo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="6dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/cd_info"
+        android:scaleType="fitCenter"
+        android:src="@drawable/btn_info"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+    <!--
+      L'INGRANAGGIO ACCANTO ALL'INFO. Le impostazioni di QUESTO gioco si aprono da qui, e
+      nella schermata delle impostazioni compare solo il pannello che riguarda questo gioco:
+      chi sta giocando cerca la regola del gioco che sta giocando, non un elenco di tutti e
+      cinque. Quello generale - i mazzi, il gioco responsabile, le prove - resta nel menu.
+    -->
+    <ImageButton
+        android:id="@+id/btnSettings"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="6dp"
+        android:contentDescription="@string/cd_settings"
+        android:scaleType="fitCenter"
+        android:src="@drawable/btn_settings"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnInfo" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

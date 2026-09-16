@@ -209,6 +209,22 @@
                     android:textStyle="bold" />
 
                 <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnHoldem"
+                    android:layout_width="@dimen/home_btn_w"
+                    android:layout_height="@dimen/home_btn_h"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="@dimen/home_btn_gap"
+                    android:background="@drawable/btn_cartiglio"
+                    android:shadowColor="#000000"
+                    android:shadowDy="2"
+                    android:shadowRadius="4"
+                    android:text="@string/holdem"
+                    android:textAllCaps="false"
+                    android:textColor="@color/silver"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnQuit"
                     android:layout_width="@dimen/home_btn_w"
                     android:layout_height="@dimen/home_btn_h"

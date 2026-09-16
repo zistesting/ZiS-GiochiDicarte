@@ -48,6 +48,12 @@ object Prefs {
     const val GAME_POKER = "poker"
 
     /**
+     * Il Hold'em conta le sue partite a parte. Sono due giochi, non due modi dello stesso:
+     * mescolare i conteggi darebbe una percentuale che non dice niente di nessuno dei due.
+     */
+    const val GAME_HOLDEM = "holdem"
+
+    /**
      * Registra una partita conclusa. Si contano solo le vittorie, da una parte o dall'altra:
      * le partite giocate sono la loro somma. Tenere un terzo contatore separato vorrebbe dire
      * poterlo veder divergere dagli altri due, e non ci sarebbe modo di sapere quale dei tre
@@ -87,7 +93,7 @@ object Prefs {
      */
     fun clearStats(ctx: Context) {
         val e = p(ctx).edit()
-        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE, GAME_KLONDIKE, GAME_POKER)) {
+        for (g in listOf(GAME_SCOPA, GAME_BRISCOLA, GAME_TRESETTE, GAME_KLONDIKE, GAME_POKER, GAME_HOLDEM)) {
             e.remove("stats_${g}_you"); e.remove("stats_${g}_bot")
         }
         e.apply()
@@ -248,19 +254,8 @@ object Prefs {
 
     // ------------------------------------------------------------------ poker
 
-    const val POKER_DRAW = "draw"
-    const val POKER_HOLDEM = "holdem"
 
-    /**
-     * La variante: 5-Card Draw oppure Texas Hold'em. Predefinita la prima, che e' la piu'
-     * semplice da imparare - due soli giri di puntate e nessuna carta comune.
-     */
-    fun pokerVariante(ctx: Context): String =
-        p(ctx).getString("poker_variante", POKER_DRAW) ?: POKER_DRAW
 
-    fun setPokerVariante(ctx: Context, v: String) {
-        p(ctx).edit().putString("poker_variante", v).apply()
-    }
 
     /**
      * Quanti giocano: due, cioe' tu contro il Banco, oppure quattro, cioe' tu contro tre

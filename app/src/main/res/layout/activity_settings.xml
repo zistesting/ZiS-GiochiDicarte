@@ -401,52 +401,11 @@
                     android:textSize="19sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/poker_variant"
-                    android:textColor="@color/silver"
-                    android:textSize="16sp" />
-
-                <RadioGroup
-                    android:id="@+id/groupVariante"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="vertical">
-
-                    <RadioButton
-                        android:id="@+id/radioDraw"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:buttonTint="@color/celeste"
-                        android:text="@string/variant_draw"
-                        android:textColor="@color/silver"
-                        android:textSize="17sp" />
-
-                    <!-- Spento finche' il motore non sa giocarlo. Lasciarlo acceso vorrebbe
-                         dire una voce che si puo' scegliere e che poi non fa quello che dice,
-                         che e' peggio di una voce che si vede e non si tocca. -->
-                    <RadioButton
-                        android:id="@+id/radioHoldem"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:buttonTint="@color/celeste"
-                        android:enabled="false"
-                        android:text="@string/variant_holdem"
-                        android:textColor="@color/silver_dark"
-                        android:textSize="17sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="34dp"
-                        android:text="@string/variant_soon"
-                        android:textColor="@color/silver_dark"
-                        android:textSize="13sp" />
-                </RadioGroup>
+                <!-- La scelta della variante stava qui, ed era un interruttore per una cosa
+                     che adesso e' un gioco a se': nel menu ci sono due bottoni, [Poker] e
+                     [Hold'em], e questo pannello vale per tutti due - stessi giocatori,
+                     stessi importi, stesso mazzo corto. Le statistiche invece sono separate,
+                     perche' due giochi diversi non fanno una percentuale sola. -->
 
                 <TextView
                     android:layout_width="wrap_content"

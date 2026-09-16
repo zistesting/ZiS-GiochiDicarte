@@ -124,8 +124,7 @@ class PokerActivity : AppCompatActivity() {
             startActivity(SettingsActivity.intent(this, Prefs.GAME_POKER))
         }
         b.btnInfo.setOnClickListener {
-            val regole = if (Prefs.pokerVariante(this) == Prefs.POKER_HOLDEM)
-                R.string.rules_poker_holdem else R.string.rules_poker_draw
+            val regole = R.string.rules_poker_draw
             track(InfoDialog.show(this, R.string.info_title, regole))
         }
         b.btnFold.setOnClickListener { mossa(PokerGame.Azione.PASSA) }

@@ -51,6 +51,9 @@ object SavedGame {
     const val KLONDIKE = "klondike"
     const val POKER = "poker"
 
+    /** Il Hold'em ha il suo salvataggio: e' un altro gioco, non una variante. */
+    const val HOLDEM = "holdem"
+
     private fun code(c: Card) = c.suit * 13 + (c.value - 1)
     private fun card(n: Int) = Card(n / 13, n % 13 + 1)
 

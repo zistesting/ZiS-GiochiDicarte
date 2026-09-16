@@ -59,6 +59,15 @@ class MainActivity : AppCompatActivity() {
             closeDialogs()
             track(InfoDialog.show(this, R.string.info_app_title, R.string.info_app))
         }
+        b.btnHoldem.setOnClickListener { startActivity(Intent(this, HoldemActivity::class.java)) }
+        b.btnQuit.setOnClickListener { quitApp() }
+        b.btnSettings.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
+        b.btnStats.setOnClickListener { showStats() }
+        b.btnLang.setOnClickListener { cambiaLingua() }
+        b.btnInfo.setOnClickListener {
+            closeDialogs()
+            track(InfoDialog.show(this, R.string.info_app_title, R.string.info_app))
+        }
         b.btnZis.setOnClickListener {
             try {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://zis.it")))
