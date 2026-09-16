@@ -72,7 +72,8 @@ object PokerBotHoldem {
      * perche' un piatto diviso non e' un piatto perso: contarlo zero renderebbe il Banco
      * timido esattamente sulle mani che non si possono perdere.
      */
-    fun equita(g: HoldemGame, p: Int, avversari: Int, rnd: Random = Random.Default): Double {
+    fun equita(g: HoldemGame, p: Int, avversari: Int, rnd: Random = Random.Default,
+               quanti: Int = campioni): Double {
         if (avversari <= 0) return 1.0
         val mia = g.mani[p]
         if (mia.size < 2) return 0.0
@@ -90,7 +91,7 @@ object PokerBotHoldem {
         var punti = 0.0
         val tavolo = ArrayList<Card>(5)
         val mano = ArrayList<Card>(7)
-        repeat(campioni) {
+        repeat(quanti) {
             // mescolo solo le carte che servono: uno scambio per carta, non tutto il mazzo
             for (i in 0 until servono) {
                 val j = i + rnd.nextInt(ignote.size - i)
@@ -115,6 +116,6 @@ object PokerBotHoldem {
                 else -> 0.0
             }
         }
-        return punti / campioni
+        return punti / quanti
     }
 }

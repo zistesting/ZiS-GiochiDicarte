@@ -1,125 +1,84 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.0  (seconda emissione)
-                                            il Texas Hold'em si gioca
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.2
+                                            la probabilita' di vincere, di fianco alle tue carte
 
->>> SE HAI GIA' CARICATO LA 6.0 E LA BUILD E' FALLITA: cambiano DUE file soli,
-    app/src/main/res/values/strings.xml e app/src/main/res/values-en/strings.xml.
-    Caricali senza [skip ci] e la build riparte. Il numero di versione resta 6.0, perche' di
-    APK 6.0 non ne e' mai uscito uno.
+>>> CAMBIA SOLO app1, sei file. <<<
 
-    COS'ERA: l'apostrofo di "Hold'em". In una <string> di Android l'apostrofo va scritto \'
-    se il valore non e' fra virgolette, altrimenti aapt2 rifiuta la risorsa - e il messaggio
-    che da' non parla di apostrofi ma di "Invalid unicode escape sequence", quindi manda a
-    cercare nel posto sbagliato (nel tuo log indicava perfino un file della libreria
-    material, che con questo non c'entra niente).
-
-    PERCHE' NON L'AVEVO VISTO: verificavo i file con un analizzatore XML, e per l'XML quelle
-    stringhe sono ineccepibili - l'apostrofo e' un carattere come un altro. La regola e' di
-    Android, non dell'XML. Ho aggiunto al banco di prova un controllo che guarda i VALORI
-    delle stringhe - apostrofi e virgolette non protetti, sequenze \u incomplete - e adesso
-    passa su tutte e 170 le chiavi di tutte due le lingue.
-
->>> CAMBIA SOLO app1. Due file NUOVI, undici sostituiti. <<<
-
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 5.6 che hai sul computer.
-Il modo comodo di caricarla: la cartella app INTERA in un colpo, senza [skip ci], e poi
-basta - build.gradle e' dentro.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.1 che hai sul computer.
 
 ================================================================================
 COSA CARICARE
 ================================================================================
 
-  NUOVI
-  app/src/main/java/com/zis/scopa/HoldemActivity.kt     la schermata
-  app/src/main/java/com/zis/scopa/HoldemGame.kt         il motore
-  app/src/main/java/com/zis/scopa/PokerBotHoldem.kt     il Banco
-  app/src/main/res/layout/activity_holdem.xml           il tavolo
-
-  SOSTITUITI
-  app/src/main/java/com/zis/scopa/PokerHand.kt          la mano migliore su sette carte
-  app/src/main/java/com/zis/scopa/Prefs.kt              GAME_HOLDEM, e via la variante
-  app/src/main/java/com/zis/scopa/SavedGame.kt          la chiave del salvataggio
-  app/src/main/java/com/zis/scopa/SettingsActivity.kt   via il gruppo della variante
-  app/src/main/java/com/zis/scopa/PokerActivity.kt      le regole non dipendono dalla variante
-  app/src/main/java/com/zis/scopa/MainActivity.kt       il bottone
-  app/src/main/res/layout/activity_main.xml             il bottone
-  app/src/main/res/layout/activity_settings.xml         via la variante
-  app/src/main/res/values/strings.xml                   + il nome del gioco, - la variante
+  app/src/main/java/com/zis/scopa/HoldemActivity.kt     il numero e quando si calcola
+  app/src/main/java/com/zis/scopa/PokerBotHoldem.kt     equita con i campioni su richiesta
+  app/src/main/res/layout/activity_holdem.xml           il posto del numero, a lato delle carte
+  app/src/main/res/values/strings.xml                   il numero, la voce per TalkBack, le regole
   app/src/main/res/values-en/strings.xml                le stesse in inglese
-  app/src/main/AndroidManifest.xml                      la schermata nuova
-  app/build.gradle                                      versionName: 5.6 -> 6.0
+  app/build.gradle                                      versionName: 6.1 -> 6.2
 
-E' un 6.0 e non un 5.7 perche' c'e' un gioco in piu'.
+ORDINE: i cinque file dentro app/src/ con [skip ci], poi app/build.gradle senza. Oppure la
+cartella app intera in un colpo.
+
+NON caricare questo ISTRUZIONI.txt.
 
 ================================================================================
 COM'E' FATTO
 ================================================================================
 
-DUE GIOCHI, DUE BOTTONI. Nel menu [Poker] e [Hold'em], e la scelta della variante nelle
-impostazioni non c'e' piu': era un interruttore per una cosa che e' un gioco a se'.
+Con "Probabilita' a schermo" accesa (impostazioni generali), di fianco alle tue due carte
+compare la probabilita' di vincere la mano. A FIANCO e non sopra o sotto perche' e' un numero
+che si guarda insieme alle carte, e nel Hold'em di carte in mano ce ne sono due: lo spazio di
+lato c'e'. Con l'impostazione spenta non compare niente.
 
-LE REGOLE, come le hai decise:
-  - LIMITE FISSO: si punta il rilancio delle impostazioni nei primi due giri e il doppio
-    negli ultimi due, non piu' di tre rilanci per giro.
-  - I BUI li pagano solo i due alla sinistra del mazziere, piccolo e grande, e girano col
-    mazziere. IN DUE il mazziere paga il piccolo, che e' la convenzione del poker vero: ne
-    viene che in due parla prima nel giro delle carte coperte e dopo in tutti gli altri.
-  - IN DUE O IN QUATTRO, come il poker.
-  - STATISTICHE SEPARATE: il Hold'em conta le sue partite a parte.
+SI AGGIORNA A OGNI CARTA COMUNE, e anche quando qualcuno esce dalla mano - con un avversario
+in meno la stessa mano vale di piu'. NON si aggiorna quando qualcuno punta, perche' l'equita'
+non cambia: cambiano le quote, non le carte. E' anche il motivo per cui il conto si fa quattro
+volte per mano e non quaranta - la chiave che decide se rifarlo e' fatta di carte comuni,
+avversari vivi e la tua mano, e di nient'altro.
 
-IL PANNELLO DELLE IMPOSTAZIONI E' IN COMUNE - stessi giocatori, stessi importi, stesso mazzo
-corto - e si chiama "Poker e Hold'em". L'ingranaggio della schermata del Hold'em apre quello.
-Se vuoi importi diversi fra i due giochi si fa, ma sono altre tre righe di meno/piu' e un
-pannello nuovo: dimmelo e lo faccio.
+E' UN NUMERO SIMULATO, e si vede dai numeri che ho misurato prima di scegliere:
+  600 simulazioni:  il numero balla di 3,7 punti fra un calcolo e l'altro sulla stessa mano,
+                    e il conto costa fra 6 e 42 millisecondi (misurato qui, su un telefono
+                    conta 3-4 volte tanto)
+  1500 simulazioni: balla di 2,7 punti, ma costa fino a 72 ms - due o tre decimi di secondo
+                    su un telefono, che si sentirebbero
+Ho preso 600: il numero e' giusto a un paio di punti, non al decimale. Se dice 42%, la verita'
+sta fra 40 e 44 - e questo l'ho scritto anche nelle REGOLE del Hold'em (pulsante info), perche'
+un numero a schermo che non dice di essere una stima viene creduto esatto.
 
-IL TAVOLO e' quello del poker con una differenza che decide tutto il resto: le CINQUE CARTE
-COMUNI vogliono tutta la larghezza, quindi i due posti di fianco si fermano SOPRA di loro
-invece di arrivare al fondo del tavolo. Ci stanno perche' nel Hold'em le carte in mano sono
-due e non cinque, quindi le colonne di fianco sono corte. Il centro si legge dall'alto: il
-mazzo, le carte comuni, il piatto, la riga del Banco.
-Non c'e' il pulsante Cambia, perche' non si scarta niente.
+E si calcola FUORI DAL FOTOGRAMMA: al flop compaiono tre carte, e un decimo di secondo di
+conto proprio in quell'istante si vedrebbe come uno scatto. Cosi' il tavolo si disegna e il
+numero arriva un momento dopo.
 
-IL BANCO decide su equita' e quote del piatto e quei due numeri li calcola bene, ma NON legge
-ancora l'avversario: nel Draw lo leggeva da quante carte cambiava, e qui quel segnale non
-esiste. Si vede nei numeri del simulatore: il 90% delle mani arriva allo showdown, perche' un
-Banco che non bluffa e non teme bluff passa solo quando l'aritmetica gli dice di passare. E'
-un avversario onesto da esercizio; la lettura delle puntate, la posizione e il bluff sono il
-passo dopo. E per la stessa ragione nel Hold'em non c'e' ancora la finestra delle probabilita'
-a schermo: quei numeri vengono dal modello dell'avversario, e il modello e' quello che manca.
+PER TALKBACK la voce legge la frase intera - "Probabilita' di vincere: 42 per cento" - mentre
+a schermo c'e' solo "42%": una frase la si leggerebbe invece di guardarla, ma "42%" letto da
+una voce sintetica non si capisce.
+
+UNA COSA DA SAPERE: il numero e' calcolato contro avversari con DUE CARTE QUALUNQUE, perche'
+il Banco non legge ancora le puntate. Quindi e' ottimista quando in mano restano in tre e
+pessimista quando l'unico rimasto ha rilanciato due volte. E' la stessa approssimazione con
+cui gioca il Banco, ed e' il pezzo che manca a tutti due: quando arrivera' la lettura delle
+puntate, migliorera' il numero e migliorera' l'avversario.
 
 ================================================================================
-COSA PROVARE, e qui serve il tuo telefono
+COSA PROVARE
 ================================================================================
 
-Il motore l'ho provato con 44.000 mani al simulatore. La SCHERMATA no: e' nuova, e le ultime
-volte e' stato li' che si sono nascosti i difetti. In ordine di cose che potrebbero non
-tornare:
-
- 1. Apri [Hold'em] dal menu, in due giocatori. Due carte a testa, cinque comuni che compaiono
-    tre, poi una, poi una.
- 2. La geometria: le carte comuni non devono finire sopra le colonne di W e E ne' sotto il
-    piatto, e le colonne di fianco non devono essere tagliate. E' il punto che qui ho potuto
-    solo calcolare.
- 3. In quattro: W a sinistra, N in alto, E a destra, e la luce che gira sul turno.
- 4. I bui: a ogni mano il mazziere gira, quindi gira anche chi paga. In due, guarda che il
-    primo a parlare nel primo giro sia il mazziere e negli altri giri l'altro.
- 5. I pulsanti: "Vedo 20$" / "Rilancio 20$" nei primi due giri, 40$ negli ultimi due (con gli
-    importi di serie).
- 6. Esci col tasto Home a meta' mano e rientra: la mano riprende.
- 7. Il gioco automatico (impostazioni generali) fa scorrere una partita in pochi secondi: e'
-    il modo piu' rapido per vedere se qualcosa si rompe.
- 8. Il poker 5-Card Draw deve essere rimasto identico: e' un file diverso e non l'ho toccato,
-    ma controlla che l'ingranaggio e il pulsante info funzionino ancora.
- 9. Il numero di versione: 6.0.
+ 1. Impostazioni generali -> Probabilita' a schermo, poi Hold'em: il numero di fianco alle
+    tue carte.
+ 2. Guardalo cambiare al flop, al turn e al river. Con una coppia servita deve stare alto; con
+    due carte scoordinate, basso.
+ 3. Quando un avversario passa, deve salire.
+ 4. Spegni l'impostazione: non deve comparire niente.
+ 5. Al flop il tavolo non deve scattare: il conto arriva dopo il disegno.
+ 6. Il numero di versione: 6.2.
 
 ================================================================================
 LE PROVE FATTE FUORI DAL TELEFONO
 ================================================================================
 
-  - kotlinc su 25 file (due in piu'): pulito. I 25 XML ben formati.
-  - vincoli di ConstraintLayout: puliti su tutti e undici i layout, quello nuovo compreso.
-  - risorse: nessun riferimento che non si risolve, nessuna morta; le quattro stringhe della
-    variante tolte da tutte due le lingue, che restano pari a 170 chiavi.
-  - il motore: 44.000 mani (vedi la 5.4), piu' 120 salvataggi andata e ritorno, e la prova che
-    un salvataggio di Draw non si fa leggere come Hold'em - quel controllo l'ha trovato il
-    simulatore, perche' i parametri dei due giochi sono gli stessi cinque numeri e il Hold'em
-    ha dovuto firmarsi.
+  - kotlinc su 25 file: pulito. XML ben formati, vincoli puliti, risorse tutte risolte,
+    stringhe fuori regola nessuna, manifest senza doppioni.
+  - il costo e il ballo del conto misurati su sei situazioni (uno e tre avversari, prima del
+    flop, al flop e al river) e su tre numeri di campioni: e' da quella tabella che escono i
+    600, non da un'impressione.

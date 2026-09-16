@@ -48,6 +48,10 @@ class HoldemActivity : AppCompatActivity() {
     private var autoPlay = false
     private var mostraCarte = false
 
+    /** La probabilita' di vincere a schermo, e la situazione su cui e' stata calcolata. */
+    private var mostraOdds = false
+    private var chiaveEquita = ""
+
     private var cardW = 0
     private var cardH = 0
     private var cardLatW = 0
@@ -91,6 +95,7 @@ class HoldemActivity : AppCompatActivity() {
         super.onResume()
         autoPlay = Prefs.autoPlay(this)
         mostraCarte = Prefs.showBotCards(this)
+        mostraOdds = Prefs.pokerOdds(this)
         t.fast = autoPlay
         CardView.setDeck(Prefs.DECK_FR)
         misura()
@@ -298,12 +303,20 @@ class HoldemActivity : AppCompatActivity() {
         illumina(b.youBox, attivo == 0)
         disegnaMano(b.youHand, 0, 0f, cardW, cardH)
         disegnaComuni()
+        aggiornaEquita()
     }
 
     /** Le carte comuni: scoperte per tutti, e non ce n'e' nessuna quando il giro e' il primo. */
     private fun disegnaComuni() {
         val riga = b.communityRow
         val carte = game.comuni
+        // LA FILA SI TIENE LA SUA ALTEZZA ANCHE QUANDO E' VUOTA, e non e' un vezzo: i due
+        // posti di fianco sono ancorati al suo bordo alto, e la loro misura si calcola una
+        // volta, al primo layout. Se la fila crescesse di una carta al flop, quel bordo
+        // salirebbe di ottanta punti e le colonne - misurate quando la fila era vuota - si
+        // troverebbero addosso alle carte comuni. Era il difetto che si vedeva: W ed E
+        // coperti dalla prima carta comune.
+        riga.minimumHeight = cardH
         while (riga.childCount > carte.size) riga.removeViewAt(riga.childCount - 1)
         while (riga.childCount < carte.size)
             riga.addView(CardView(this).apply { french = true },
@@ -433,6 +446,48 @@ class HoldemActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * LA PROBABILITA' DI VINCERE, di fianco alle tue carte, se l'hai accesa nelle
+     * impostazioni ("Probabilita' a schermo").
+     *
+     * Si calcola SIMULANDO: agli avversari si danno due carte a caso fra quelle che non
+     * vedi, le comuni che mancano si completano a caso, e si conta quante volte la tua mano
+     * risulta la migliore. Seicento simulazioni per volta, ed e' una scelta misurata: con
+     * seicento il numero balla di tre o quattro punti fra un calcolo e l'altro sulla stessa
+     * mano, con millecinquecento di due o tre ma il conto costa fino a settanta millisecondi
+     * - che in mano a un telefono diventano due o tre decimi e si sentirebbero. Quindi il
+     * numero e' giusto a un paio di punti, non al decimale, e chi lo guarda lo deve sapere:
+     * sta scritto nelle regole.
+     *
+     * SI CALCOLA UNA VOLTA PER SITUAZIONE, non a ogni disegno. L'equita' cambia quando
+     * cambiano le carte comuni o quando qualcuno esce dalla mano; NON cambia quando qualcuno
+     * punta. Percio' la chiave qui sotto e' fatta di quelle cose sole, e fra il giro delle
+     * carte coperte e il quinto il conto si fa quattro volte, non quaranta.
+     *
+     * E si calcola FUORI DAL FOTOGRAMMA (post): al flop compaiono tre carte, e un decimo di
+     * secondo di conto proprio in quell'istante si vedrebbe come uno scatto. Cosi' invece il
+     * tavolo si disegna, e il numero arriva un momento dopo.
+     */
+    private fun aggiornaEquita() {
+        val visibile = mostraOdds && !game.manoFinita && game.mani[0].size == 2 && game.inMano(0)
+        if (!visibile) {
+            b.txtEquita.visibility = View.GONE
+            chiaveEquita = ""
+            return
+        }
+        b.txtEquita.visibility = View.VISIBLE
+        val avversari = (1 until giocatori).count { game.inMano(it) }
+        val chiave = "${game.comuni.size}|$avversari|${game.mani[0]}"
+        if (chiave == chiaveEquita) return
+        chiaveEquita = chiave
+        post(0) {
+            if (chiave != chiaveEquita) return@post          // la situazione e' gia' cambiata
+            val e = Math.round(PokerBotHoldem.equita(game, 0, avversari, quanti = CAMPIONI_SCHERMO) * 100).toInt()
+            b.txtEquita.text = getString(R.string.holdem_equity, e)
+            b.txtEquita.contentDescription = getString(R.string.cd_equity, e)
+        }
+    }
+
     private fun illumina(v: View, acceso: Boolean) {
         v.setBackgroundResource(if (acceso) R.drawable.turno_acceso else 0)
     }
@@ -520,4 +575,13 @@ class HoldemActivity : AppCompatActivity() {
         openDialog?.let { if (it.isShowing) it.dismiss() }
         openDialog = null
     }
+    private companion object {
+        /**
+         * Quante simulazioni per il numero a schermo. Vedi [aggiornaEquita]: seicento sono
+         * il punto in cui il conto e' abbastanza preciso (un paio di punti) e abbastanza
+         * rapido da non farsi sentire.
+         */
+        const val CAMPIONI_SCHERMO = 600
+    }
+
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Cornice "cartiglio": frame argento sfumato + interno navy con filetto oro.
+<!-- Cornice "cartiglio": frame argento sfumato + interno navy.
      Sostituisce il vecchio nine-patch: scala correttamente a qualsiasi dimensione. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- frame argento -->
@@ -28,11 +28,15 @@
             <corners android:radius="11dp" />
         </shape>
     </item>
-    <!-- filetto oro -->
+    <!-- La spaziatura interna del testo, che stava attaccata al filetto d'oro.
+         IL FILO D'ORO NON C'E' PIU': era una riga in piu' da guardare dentro una cornice che
+         di righe ne ha gia' tre - argento, battuta scura, navy - e su un pulsante il risalto
+         lo da' la cornice, non un filetto. Ma il <padding> di quella voce serviva: e' quello
+         che tiene il testo lontano dai bordi, quindi la voce resta, trasparente e senza
+         bordo. Togliendola tutta, le scritte finirebbero appiccicate alla cornice. -->
     <item android:left="7dp" android:top="7dp" android:right="7dp" android:bottom="7dp">
         <shape android:shape="rectangle">
             <solid android:color="@android:color/transparent" />
-            <stroke android:width="1dp" android:color="#C9A44A" />
             <corners android:radius="8dp" />
             <padding android:left="12dp" android:top="4dp" android:right="12dp" android:bottom="4dp" />
         </shape>
