@@ -1,76 +1,53 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.7
+ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
 
->>> CAMBIA SOLO app1, sei file. <<<
+CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
 
-  app/src/main/res/layout/activity_holdem.xml         il mazzo esce dal centro
-  app/src/main/java/com/zis/scopa/HoldemActivity.kt   misura, gesto, piatto diviso
-  app/src/main/java/com/zis/scopa/PokerActivity.kt    piatto diviso
-  app/src/main/res/values/strings.xml                 "S e E vincono"
-  app/src/main/res/values-en/strings.xml              la stessa in inglese
-  app/build.gradle                                    versionName: 6.6 -> 6.7
+  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
+                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
+  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
+                         per misurare le euristiche fuori dal telefono
+
+NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
+nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
+del gioco automatico sono state misurate.
+
+--- cosa e' cambiato ---
+
+  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
+                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
+                           la cornice esterna piu' cupa del campo.
+
+E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
+l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
+stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
+E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
+il lavoro e' peggio di nessuno strumento.
+
+Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
+card_back.py, che resta identico.
+
+--- caricamento ---
+
+Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
+ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
+Commit changes.
+
+Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
+conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
 
 NON caricare questo ISTRUZIONI.txt.
 
-================================================================================
-LA TUA SCHERMATA E' CORRETTA, E DUE POSSONO VINCERE DAVVERO
-================================================================================
+--- cosa c'e' dentro art/ ---
 
-Ho rifatto quella mano col motore vero per esserne certo. Tavola: 7 picche, 8 cuori, J
-quadri, 9 fiori, 10 quadri. Quattro carte in fila - 7 8 9 10 - piu' un J.
-
-  S aveva J picche e K quadri  -> scala 7 8 9 10 J, col J della MANO
-  E aveva 9 cuori e K picche   -> scala 7 8 9 10 J, col J della TAVOLA
-
-Punteggio di S: 4915200. Punteggio di E: 4915200. Identici. Due scale al J non si battono
-fra loro - i semi non contano - quindi il piatto si divide: 180 in due, 90 e 90. E' la regola
-del poker, non un difetto: nel Hold'em le cinque carte in mezzo sono di tutti, quindi la
-parita' capita spesso, e quando la tavola contiene da sola una scala capita quasi sempre.
-Sta scritto anche nelle regole del Hold'em, nel paragrafo sulla parita'.
-
-MA IL MIO GESTO DEL MAZZIERE, in quella schermata, DICEVA UNA COSA FALSA: abbassava il J di
-quadri come carta inutile. Per S e' vero, la sua scala usa il J della mano; per E quel J e'
-la carta che ha fatto la scala. Il difetto era che guardavo UN vincitore solo - il primo -
-mentre col piatto diviso i vincitori sono due e possono usare carte diverse. Adesso si prende
-l'UNIONE delle carte che hanno fatto vincere: in quella mano restano su tutte e cinque, ed e'
-giusto, perche' tutte e cinque hanno fatto vincere qualcuno.
-
-E "S vince 90$   E vince 90$" non va piu' a capo, perche' non si scrive piu' cosi': quando le
-somme sono pari la frase e' "S e E vincono 90$". Piu' corta, e piu' vera - due mani pari non
-vincono ognuna per conto suo, dividono. Se le somme sono diverse (piatti laterali) si torna a
-scriverle una per una, perche' allora un numero solo sarebbe falso.
-
-================================================================================
-LE CARTE DI W E E, ORA UGUALI ALLE ALTRE
-================================================================================
-
-Erano piccole perche' lo spazio non c'era, e non c'era per una ragione che si poteva togliere:
-IL MAZZO STAVA IN MEZZO AL TAVOLO, sopra le carte comuni, e si portava via 104 punti - la
-carta piu' il suo stacco. Quei 104 erano esattamente quelli che mancavano.
-
-Adesso il mazzo sta nell'angolo in alto a destra, che e' anche dove lo tiene un mazziere vero:
-di fianco a se', non in mezzo al feltro. Le carte in distribuzione partono ancora da li',
-perche' il volo guarda dove STA il mazzo, non dove e' scritto nel file.
-
-Quanto viene, ricalcolato:
-
-  360x664 (il tuo telefono)   fascia 178dp   carta di fianco 59 su 59 = 100%
-  360x800 con le barre        fascia 242dp   59 su 59 = 100%
-  411x891 con le barre        fascia 279dp   66 su 66 = 100%
-  360x640 con le barre        fascia  82dp   34 su 59 =  57%  (schermo molto corto)
-
-Sul tuo e su tutti i telefoni normali le carte di W e di E sono adesso grandi come le altre.
-
-================================================================================
-COSA PROVARE
-================================================================================
-
- 1. Hold'em: le carte di W e di E grandi come le tue e come quelle di N.
- 2. Il mazzo in alto a destra, e le carte che partono ancora da li' quando si distribuisce.
- 3. A carte scoperte: le comuni che non servono scendono, e con il piatto diviso NON scende
-    una carta che ha fatto vincere uno dei due.
- 4. Un piatto diviso: deve dire "S e E vincono 90$" su una riga sola.
- 5. Il numero di versione: 6.7.
-
-Prove fuori dal telefono: la mano dello screenshot rifatta col motore (punteggi identici,
-unione delle carte usate = tutte e cinque), kotlinc pulito, XML e vincoli puliti, stringhe in
-regola, chiavi italiane e inglesi pari.
+  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
+  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
+  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
+  estrai_carta_singola.py      una carta per volta, per i ritocchi
+  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
+  figure/                      le tre immagini da cui vengono J, Q e K francesi
+  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
+    + logo_app.png             cinque icone classiche del lanciatore
+    + icona_app.png
+  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
+  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
+  README.md                    come si usano
