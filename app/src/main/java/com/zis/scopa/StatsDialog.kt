@@ -46,7 +46,12 @@ object StatsDialog {
             Triple(v.scopaPlayed, v.scopaBot, v.scopaYou) to Prefs.GAME_SCOPA,
             Triple(v.briscPlayed, v.briscBot, v.briscYou) to Prefs.GAME_BRISCOLA,
             Triple(v.trePlayed, v.treBot, v.treYou) to Prefs.GAME_TRESETTE,
-            Triple(v.klonPlayed, v.klonBot, v.klonYou) to Prefs.GAME_KLONDIKE
+            Triple(v.klonPlayed, v.klonBot, v.klonYou) to Prefs.GAME_KLONDIKE,
+            // il poker e il Hold'em mancavano: il poker e' arrivato con la 4.3 e il Hold'em
+            // con la 6.0, entrambi dopo che questa lista era stata scritta, e i loro
+            // contatori giravano senza che nessuno li vedesse
+            Triple(v.pokerPlayed, v.pokerBot, v.pokerYou) to Prefs.GAME_POKER,
+            Triple(v.holdemPlayed, v.holdemBot, v.holdemYou) to Prefs.GAME_HOLDEM
         )
         for ((celle, gioco) in righe) {
             val you = Prefs.wonBy(activity, gioco, true)

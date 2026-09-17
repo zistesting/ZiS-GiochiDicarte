@@ -83,6 +83,20 @@
             <TextView android:id="@+id/klonBot" style="@style/StatsValue" />
         </TableRow>
 
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/poker" />
+            <TextView android:id="@+id/pokerPlayed" style="@style/StatsValue" />
+            <TextView android:id="@+id/pokerYou" style="@style/StatsValue" android:textColor="@color/gold" />
+            <TextView android:id="@+id/pokerBot" style="@style/StatsValue" />
+        </TableRow>
+
+        <TableRow>
+            <TextView style="@style/ScoreLabel" android:maxLines="1" android:ellipsize="end" android:text="@string/holdem" />
+            <TextView android:id="@+id/holdemPlayed" style="@style/StatsValue" />
+            <TextView android:id="@+id/holdemYou" style="@style/StatsValue" android:textColor="@color/gold" />
+            <TextView android:id="@+id/holdemBot" style="@style/StatsValue" />
+        </TableRow>
+
         <View
             android:layout_height="1dp"
             android:layout_marginTop="6dp"

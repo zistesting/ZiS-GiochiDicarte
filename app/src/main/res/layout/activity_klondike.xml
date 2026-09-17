@@ -53,7 +53,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/btn_settings"
         app:layout_constraintBottom_toBottomOf="@id/txtStatus"
-        app:layout_constraintTop_toTopOf="@id/txtStatus" />
+        app:layout_constraintTop_toTopOf="@id/txtStatus"
         app:layout_constraintStart_toEndOf="@id/btnInfo" />
 
 

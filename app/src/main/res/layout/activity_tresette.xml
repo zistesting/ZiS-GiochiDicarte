@@ -14,11 +14,17 @@
         android:paddingEnd="8dp">
 
         <!-- Mano del Banco: dieci carte coperte, sovrapposte a ventaglio (i margini negativi
-             li mette il codice, perche' dipendono dalla larghezza dello schermo) -->
+             li mette il codice, perche' dipendono dalla larghezza dello schermo).
+             I 52dp di margine in cima le tengono SOTTO i due pulsanti in alto a sinistra:
+             il Tresette e' l'unico dei tre giochi a prese in cui la mano del Banco parte
+             dal bordo alto - dieci carte a ventaglio si prendono tutta la larghezza - e
+             finiva sotto l'info e l'ingranaggio. 40dp di pulsante piu' 6 di margine, piu'
+             sei di aria. -->
         <FrameLayout
             android:id="@+id/botHandBox"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="52dp">
 
             <LinearLayout
                 android:id="@+id/botHand"

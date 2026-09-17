@@ -1,104 +1,88 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.3
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.4
 
->>> CAMBIANO app1 (dodici file, di cui sei immagini) e app2 (i due sorgenti in art/). <<<
-    Modo comodo: prima art/ di app2, poi la cartella app INTERA senza [skip ci].
+>>> CAMBIA SOLO app1, otto file. <<<
+    Modo comodo: la cartella app INTERA in un colpo, senza [skip ci].
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.2 che hai sul computer.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.3 che hai sul computer.
 
 ================================================================================
 COSA CARICARE
 ================================================================================
 
-  app/src/main/res/layout/activity_settings.xml   il pannello del poker rifatto
-  app/src/main/res/layout/activity_holdem.xml     le comuni piu' in basso
-  app/src/main/java/com/zis/scopa/SettingsActivity.kt   il pulsante Predefiniti
-  app/src/main/java/com/zis/scopa/HoldemActivity.kt     il gesto del mazziere
-  app/src/main/res/values/strings.xml             + Predefiniti, "2"/"4", "Tx Hold'em"
-  app/src/main/res/values-en/strings.xml          le stesse in inglese
-  app/src/main/res/drawable-nodpi/btn_info.webp        i quattro pulsanti nuovi
-  app/src/main/res/drawable-nodpi/btn_settings.webp
-  app/src/main/res/drawable-nodpi/btn_stats.webp
-  app/src/main/res/drawable-nodpi/btn_lang.webp
-  app/src/main/res/drawable-nodpi/app_logo.webp        logo e icona nuovi
-  app/src/main/res/drawable-nodpi/ic_launcher_fg.webp
-  app/src/main/res/mipmap-*/ic_launcher.png            le cinque densita'
-  app/build.gradle                                     versionName: 6.2 -> 6.3
-
-  nel pacchetto app2:  art/icona_app.png  e  art/logo_app.png
+  app/src/main/res/layout/activity_game.xml         l'ingranaggio sotto l'info
+  app/src/main/res/layout/activity_briscola.xml     l'ingranaggio sotto l'info
+  app/src/main/res/layout/activity_tresette.xml     la mano del Banco piu' in basso
+  app/src/main/res/layout/activity_klondike.xml     i due pulsanti non si sovrappongono
+  app/src/main/res/layout/dialog_stats.xml          poker e Hold'em nella tabella
+  app/src/main/java/com/zis/scopa/StatsDialog.kt    li riempie
+  app/build.gradle                                  versionName: 6.3 -> 6.4
 
 NON caricare questo ISTRUZIONI.txt.
 
 ================================================================================
-IMPOSTAZIONI DEL POKER
+I PULSANTI
 ================================================================================
 
-  - il titolo "Poker e Hold'em" e' celeste;
-  - GIOCATORI: due bottoni sulla stessa riga, "2" e "4". La parola "giocatori" sta gia' nel
-    titolo sopra, quindi scriverla due volte nei bottoni serviva solo a occupare il doppio
-    dello spazio;
-  - IMPORTI: ogni comando SOTTO la sua descrizione. Prima etichetta e valore erano sulla
-    stessa riga e la riga era piena - etichetta, meno, numero, piu' - quindi su uno schermo
-    stretto l'etichetta si stringeva fino a spezzarsi. Sopra e sotto si legge anche
-    nell'ordine in cui si capisce: prima cosa e', poi quanto vale;
-  - PREDEFINITI: il pulsante accanto al titolo "Importi" riporta i tre valori a 200$, 10$ e
-    20$. Sta accanto al TITOLO e non a un importo perche' vale per tutti tre: accanto a uno
-    solo sembrerebbe suo. I valori li legge da PokerGame, che e' l'unico posto dove sono
-    scritti, quindi se un giorno cambiano la' il pulsante li segue da se'.
+SCOPA E BRISCOLA: l'ingranaggio e' passato SOTTO l'info, incolonnato con lui.
+
+TRESETTE: la mano del Banco ha 52dp di margine in cima e sta sotto i due pulsanti. E' l'unico
+dei tre giochi a prese in cui la mano del Banco parte dal bordo alto - dieci carte a ventaglio
+si prendono tutta la larghezza - quindi finiva proprio sotto l'info e l'ingranaggio. 40 di
+pulsante, 6 di margine, 6 di aria.
+
+KLONDIKE, e qui c'era un difetto mio della 5.6. Il vincolo che mette l'ingranaggio a destra
+dell'info era finito FUORI dall'elemento, dopo il /> che lo chiudeva:
+
+        app:layout_constraintTop_toTopOf="@id/txtStatus" />
+        app:layout_constraintStart_toEndOf="@id/btnInfo" />     <-- fuori
+
+Per l'XML quella riga e' semplicemente del TESTO dentro il contenitore, quindi e' un documento
+legittimo e nessuno si lamenta: aapt2 compila, il vincolo non esiste, e il pulsante si ferma a
+x=0 - cioe' sopra l'info. E' la terza volta in una settimana che un mio ritocco con
+un'espressione regolare passa l'analizzatore XML e sbaglia il livello sopra. Ho aggiunto al
+banco di prova il controllo del TESTO VAGANTE: adesso qualunque attributo finito fuori da un
+elemento di layout viene segnalato, e su tutti e undici i layout dice zero.
 
 ================================================================================
-TEXAS HOLD'EM
+LE STATISTICHE
 ================================================================================
 
-LE COMUNI SCENDONO ANCORA. Il gruppo del centro passa dal 62% al 74% dello spazio, e il
-pavimento della misura delle carte laterali scende da mezza carta a un terzo: con due sole
-carte in colonna la differenza fra le due misure e' di pochi punti, e in cambio le colonne
-ci stanno SEMPRE nella fascia. Accavallarsi sulle carte comuni e' peggio che essere un po'
-piu' piccole.
+Nella tabella ci sono anche Poker e Tx Hold'em. Mancavano perche' il poker e' arrivato con la
+4.3 e il Hold'em con la 6.0, tutti due dopo che quella tabella era stata scritta: i contatori
+giravano - "Azzera statistiche" li azzera dalla 5.4 - ma nessuno li vedeva.
 
-IL GESTO DEL MAZZIERE, e mi e' piaciuta come idea. A carte scoperte, le carte comuni che NON
-entrano nella mano vincente scendono di dodici punti e si spengono un po'; le cinque che
-contano restano in alto e piene. E' quello che fa un mazziere vero quando spinge avanti le
-cinque carte buone e lascia indietro le altre, ed e' anche la sola cosa a schermo che dica
-PERCHE' quella mano ha vinto - chi sta imparando guarda proprio quelle cinque.
-
-Quali sono le cinque lo decide lo stesso conto del punteggio: fra le ventuno combinazioni di
-cinque carte su sette si prende la migliore, e si guarda quali vengono dal tavolo. L'ho
-verificato su 4000 showdown simulati - il punteggio delle cinque scelte coincide sempre con
-quello della mano migliore, e gli indici non escono mai dal tavolo.
-Se il piatto e' diviso fra due vincitori si mostra la mano di chi ha il punteggio migliore,
-cioe' quella che ha deciso il piatto principale.
+La colonna "Banco" per questi due giochi conta le partite perse, come per gli altri: nel poker
+in quattro il vincitore e' uno solo, quindi una partita persa non dice CHI ha vinto. Se vuoi
+una riga piu' precisa - per esempio "vinte / perse" senza la colonna del Banco - si fa.
 
 ================================================================================
-HOME E IMMAGINI
+I TESTI DELLE FINESTRE INFO
 ================================================================================
 
-  - il bottone del Hold'em dice "Tx Hold'em": "Texas Hold'em" andava a capo su due righe;
-  - i quattro pulsanti nuovi - info, impostazioni, statistiche, lingua - sono a 300x300 come
-    quelli di prima, in WebP senza perdita, quindi identici ai PNG che hai mandato. Pesano
-    23-31 KB invece di 13-16: 57 KB in piu' in tutto, su dieci megabyte di immagini;
-  - logo e icona rifatti col generatore. I due numeri dell'icona adattiva tornano ancora:
-    anello al 10,8% del raggio e blu del bordo (58,60,121) contro il (59,61,121) di
-    navy_logo, quindi ic_launcher.xml e colors.xml non si toccano.
+Te li ho estratti in un file a parte, testi-finestre-info.txt: tutte e sei le finestre - Scopa,
+Briscola, Tresette, Klondike, Poker e Hold'em - in chiaro, con i segni di Android tradotti
+(\n\n riga vuota, <b> grassetto, \u00e8 la e accentata, \' l'apostrofo) e mandati a capo a 78
+colonne per leggerli in un editor.
+
+Quel file NON va caricato: e' una copia da leggere. Se vuoi correggere un testo, mandamelo
+riscritto e lo rimetto io nel formato di Android - e' proprio la punteggiatura di quel formato
+il punto in cui questa settimana la build e' fallita due volte (l'apostrofo di "Hold'em").
 
 ================================================================================
 COSA PROVARE
 ================================================================================
 
- 1. Impostazioni del poker: titolo celeste, 2 e 4 sulla stessa riga, i tre importi con
-    l'etichetta sopra, e Predefiniti che li riporta a 200/10/20.
- 2. Hold'em in quattro: al flop le comuni NON devono avvicinarsi alle carte di W e E.
- 3. Arriva a carte scoperte e guarda il tavolo: le comuni che non servono devono essere piu'
-    in basso e piu' spente. Con una coppia in mano che vince, per esempio, ne restano in alto
-    tre sole.
- 4. La home: "Tx Hold'em" su una riga.
- 5. Le quattro icone nuove in cima alla home e nelle schermate di gioco.
- 6. Il numero di versione: 6.3.
+ 1. Scopa e Briscola: info sopra, ingranaggio sotto, incolonnati.
+ 2. Tresette: le carte del Banco cominciano sotto i due pulsanti.
+ 3. Klondike: i due pulsanti uno accanto all'altro, non uno sopra l'altro.
+ 4. Statistiche dal menu: sei righe piu' il totale.
+ 5. Il numero di versione: 6.4.
 
 ================================================================================
 LE PROVE FATTE FUORI DAL TELEFONO
 ================================================================================
 
-  - kotlinc su 25 file: pulito. XML ben formati, vincoli puliti su tutti e undici i layout,
-    risorse tutte risolte, stringhe fuori regola nessuna, manifest senza doppioni.
-  - il gesto del mazziere verificato su 4000 showdown simulati.
-  - i due .webp del logo identici bit per bit ai sorgenti, e i due numeri dell'icona misurati.
+  - kotlinc su 25 file: pulito. XML ben formati, risorse risolte, stringhe in regola,
+    manifest senza doppioni.
+  - il controllo dei vincoli, adesso anche col testo vagante: zero su undici layout. E' quello
+    che avrebbe preso il difetto del Klondike un mese prima.
