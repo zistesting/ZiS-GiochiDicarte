@@ -62,12 +62,6 @@
             android:orientation="vertical"
             android:padding="6dp">
 
-            <TextView
-                android:id="@+id/txtChips"
-                style="@style/PokerInfo"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="2dp" />
-
             <!-- Le tue due carte e, di fianco, la probabilita' di vincere questa mano -
                  se l'hai accesa nelle impostazioni. Sta a FIANCO delle carte e non sotto o
                  sopra perche' e' un numero che si guarda INSIEME alle carte, e perche' nel
@@ -85,11 +79,26 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal" />
 
+                <!-- LE TUE FICHES E LA PROBABILITA', in colonna di fianco alle carte.
+                     Le fiches stavano SOPRA le carte, e quella riga costava 22 punti di
+                     altezza a tutto il tavolo: gli stessi 22 che mancavano ai posti di W e
+                     di E per avere le carte grandi come le altre. Di fianco non costano
+                     niente, perche' con due carte in mano lo spazio di lato avanza. -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/txtChips"
+                        style="@style/PokerInfo" />
+
                 <TextView
                     android:id="@+id/txtEquita"
                     style="@style/PokerInfo"
-                    android:layout_marginStart="12dp"
                     android:visibility="gone" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
@@ -245,7 +254,7 @@
             app:layout_constraintTop_toBottomOf="@id/seatTop"
             app:layout_constraintBottom_toTopOf="@id/txtPot"
             app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintVertical_bias="0.62"
+            app:layout_constraintVertical_bias="0.9"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -266,8 +275,7 @@
             android:id="@+id/txtStatus"
             style="@style/PokerInfo"
             android:layout_width="0dp"
-            android:lines="2"
-            android:maxLines="2"
+            android:lines="1"
             app:layout_constraintTop_toBottomOf="@id/txtPot"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

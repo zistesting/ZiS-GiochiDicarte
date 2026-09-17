@@ -52,6 +52,14 @@ class HoldemActivity : AppCompatActivity() {
     private var mostraOdds = false
     private var chiaveEquita = ""
 
+    /**
+     * L'ULTIMA MOSSA DI OGNI GIOCATORE, scritta sotto il suo nome. Il tavolo diceva solo gli
+     * stati definitivi - chi ha passato, chi e' all-in - e la mossa appena fatta compariva
+     * per un attimo nella riga del centro, una sola per tutti: chi guardava un secondo dopo
+     * non sapeva piu' se N avesse visto o rilanciato. Adesso ogni posto se la tiene.
+     */
+    private val ultimaMossa = Array(4) { "" }
+
     private var cardW = 0
     private var cardH = 0
     private var cardLatW = 0
@@ -138,6 +146,7 @@ class HoldemActivity : AppCompatActivity() {
     }
 
     private fun nuovaMano() {
+        for (i in ultimaMossa.indices) ultimaMossa[i] = ""
         game.nuovaMano()
         render()
         val attesa = distribuisci()
@@ -185,7 +194,9 @@ class HoldemActivity : AppCompatActivity() {
         if (azione !in game.azioniLegali(0)) return
         busy = true
         nascondiPulsanti()
+        val da = game.daPareggiare(0)
         game.agisci(0, azione)
+        ultimaMossa[0] = nomeMossa(azione, da)
         render()
         post(t.trickPause) { avanti() }
     }
@@ -195,6 +206,7 @@ class HoldemActivity : AppCompatActivity() {
         val azione = PokerBotHoldem.azione(game, p)
         val daPareggiare = game.daPareggiare(p)
         game.agisci(p, azione)
+        ultimaMossa[p] = nomeMossa(azione, daPareggiare)
         b.txtStatus.text = when (azione) {
             PokerGame.Azione.PASSA -> getString(R.string.poker_folded, nomeDi(p))
             PokerGame.Azione.PARIFICA ->
@@ -248,7 +260,9 @@ class HoldemActivity : AppCompatActivity() {
         val inAlto = dp(48) + cardH + altoTesto + dp(12)
         // le carte comuni, il piatto, la riga del Banco, e sotto il tuo blocco con i
         // pulsanti. Il mazzo non c'e' piu' in mezzo: sta nell'angolo in alto a destra.
-        val inBasso = cardH + dp(6) + altoTesto + dp(38) + altoTesto + cardH + dp(64) + dp(12)
+        // le comuni, il piatto, la riga del Banco, e sotto il tuo blocco: le fiches adesso
+        // stanno DI FIANCO alle carte, non sopra, quindi quella riga non si conta piu'
+        val inBasso = cardH + dp(6) + altoTesto + dp(20) + cardH + dp(64) + dp(12)
         val fascia = altezza - inAlto - inBasso - dp(72)
         misuraLaterali(fascia)
     }
@@ -595,11 +609,25 @@ class HoldemActivity : AppCompatActivity() {
         else -> if (slot < giocatori - 1) slot + 1 else -1
     }
 
+    /** Il nome di una mossa come lo legge un giocatore: parola, vedo 10$, rilancio 20$, passo. */
+    private fun nomeMossa(azione: PokerGame.Azione, daPareggiare: Int): String = when (azione) {
+        PokerGame.Azione.PASSA -> getString(R.string.poker_folded, "").trim()
+        PokerGame.Azione.PARIFICA ->
+            if (daPareggiare == 0) getString(R.string.poker_check)
+            else getString(R.string.poker_call, daPareggiare)
+        PokerGame.Azione.RILANCIA -> getString(R.string.poker_raise, game.puntataCorrente())
+    }
+
+    /**
+     * Cosa si scrive sotto il nome: lo STATO quando e' definitivo - fuori, all-in, ha
+     * passato - altrimenti l'ultima mossa. Uno stato definitivo vale piu' di una mossa:
+     * "all-in" dice anche che non giochera' piu', "vedo 10$" no.
+     */
     private fun statoDi(p: Int): String = when {
         game.eliminato[p] -> getString(R.string.poker_out, "").trim()
         game.fuori[p] -> getString(R.string.poker_folded, "").trim()
         game.fiches[p] == 0 -> getString(R.string.poker_all_in, "").trim()
-        else -> ""
+        else -> ultimaMossa[p]
     }
 
     private fun nomeDi(p: Int): String = getString(when {

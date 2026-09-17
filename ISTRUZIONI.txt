@@ -1,53 +1,64 @@
-ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.9
 
-CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
+>>> CAMBIA SOLO app1, quattro file. <<<
 
-  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
-                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
-  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
-                         per misurare le euristiche fuori dal telefono
-
-NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
-nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
-del gioco automatico sono state misurate.
-
---- cosa e' cambiato ---
-
-  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
-                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
-                           la cornice esterna piu' cupa del campo.
-
-E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
-l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
-stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
-E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
-il lavoro e' peggio di nessuno strumento.
-
-Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
-card_back.py, che resta identico.
-
---- caricamento ---
-
-Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
-Commit changes.
-
-Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
-conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
+  app/src/main/res/layout/activity_holdem.xml         le fiches di fianco alle carte
+  app/src/main/java/com/zis/scopa/HoldemActivity.kt   la misura, che ne tiene conto
+  app/src/main/res/values-en/strings.xml              le traduzioni rifatte
+  app/build.gradle                                    versionName: 6.8 -> 6.9
 
 NON caricare questo ISTRUZIONI.txt.
 
---- cosa c'e' dentro art/ ---
+================================================================================
+LA STRADA (b): E IL 100% ADESSO C'E' ANCHE SUL TUO TELEFONO
+================================================================================
 
-  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
-  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
-  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
-  estrai_carta_singola.py      una carta per volta, per i ritocchi
-  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
-  figure/                      le tre immagini da cui vengono J, Q e K francesi
-  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
-    + logo_app.png             cinque icone classiche del lanciatore
-    + icona_app.png
-  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
-  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
-  README.md                    come si usano
+Le tue fiches sono passate da SOPRA le carte a DI FIANCO, in colonna con la percentuale:
+prima la riga delle fiches, e la percentuale accanto alle carte. Quella riga costava 22 punti
+di altezza a tutto il tavolo, ed erano esattamente i 22 che mancavano.
+
+  360x664 con barre da 56 (il tuo)   carta di fianco 59 su 59 = 100%
+  360x664 con barre da 72                              55 su 59 =  93%
+  360x800 con barre da 72                              59 su 59 = 100%
+  411x891 con barre da 96                              66 su 66 = 100%
+
+Di fianco quelle due righe non costano niente, perche' con due carte in mano lo spazio di lato
+avanza - ed e' anche il posto piu' sensato per la percentuale, che si guarda insieme alle
+carte.
+
+================================================================================
+LE TRADUZIONI INGLESI
+================================================================================
+
+Rifatte le due che avevano cambiato senso in italiano e non lo avevano fatto in inglese:
+
+  info_app             la finestra generale, tutta nuova: la raccolta, la sicurezza e la
+                       privacy riga per riga, il glossario, il gioco responsabile con i
+                       soldi virtuali e la sospensione fra una partita e l'altra.
+  rules_poker_holdem   i bui (che valgono l'apertura delle impostazioni e la sua meta', non
+                       "10$ e 20$"), il limite fisso che lo scegli tu, via la frase sbagliata
+                       sul pannello delle probabilita' che nel Hold'em non esiste, e dentro il
+                       paragrafo sulla percentuale a schermo - quello che spiega che e' un
+                       numero simulato, giusto a un paio di punti.
+
+Piu' le correzioni piccole che avevi fatto in italiano, dove esistevano anche in inglese.
+
+Le 171 chiavi combaciano una a una fra le due lingue, e i valori sono tutti in regola per
+aapt2 - apostrofi e virgolette protetti, nessuna sequenza di scappamento incompleta.
+
+Quello che NON ho tradotto: niente. Se leggendo l'inglese trovi una frase che suona storta,
+mandamela e la riscrivo - tradurre le regole di un gioco e' il punto dove una parola sbagliata
+cambia una regola.
+
+================================================================================
+COSA PROVARE
+================================================================================
+
+ 1. Hold'em: le carte di W e di E grandi come le tue, e le fiches con la percentuale in
+    colonna a destra delle tue due carte.
+ 2. Con le probabilita' spente, di fianco alle carte deve restare solo la riga delle fiches.
+ 3. Metti l'inglese (pulsante bandiera nel menu): finestra info generale e regole del Hold'em.
+ 4. Il numero di versione: 6.9.
+
+Prove fuori dal telefono: kotlinc pulito, XML e vincoli puliti, stringhe in regola, chiavi
+pari fra italiano e inglese, risorse tutte risolte.
