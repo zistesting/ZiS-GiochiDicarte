@@ -1,84 +1,53 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.2
-                                            la probabilita' di vincere, di fianco alle tue carte
+ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
 
->>> CAMBIA SOLO app1, sei file. <<<
+CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.1 che hai sul computer.
+  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
+                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
+  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
+                         per misurare le euristiche fuori dal telefono
 
-================================================================================
-COSA CARICARE
-================================================================================
+NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
+nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
+del gioco automatico sono state misurate.
 
-  app/src/main/java/com/zis/scopa/HoldemActivity.kt     il numero e quando si calcola
-  app/src/main/java/com/zis/scopa/PokerBotHoldem.kt     equita con i campioni su richiesta
-  app/src/main/res/layout/activity_holdem.xml           il posto del numero, a lato delle carte
-  app/src/main/res/values/strings.xml                   il numero, la voce per TalkBack, le regole
-  app/src/main/res/values-en/strings.xml                le stesse in inglese
-  app/build.gradle                                      versionName: 6.1 -> 6.2
+--- cosa e' cambiato ---
 
-ORDINE: i cinque file dentro app/src/ con [skip ci], poi app/build.gradle senza. Oppure la
-cartella app intera in un colpo.
+  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
+                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
+                           la cornice esterna piu' cupa del campo.
+
+E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
+l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
+stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
+E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
+il lavoro e' peggio di nessuno strumento.
+
+Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
+card_back.py, che resta identico.
+
+--- caricamento ---
+
+Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
+ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
+Commit changes.
+
+Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
+conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
 
 NON caricare questo ISTRUZIONI.txt.
 
-================================================================================
-COM'E' FATTO
-================================================================================
+--- cosa c'e' dentro art/ ---
 
-Con "Probabilita' a schermo" accesa (impostazioni generali), di fianco alle tue due carte
-compare la probabilita' di vincere la mano. A FIANCO e non sopra o sotto perche' e' un numero
-che si guarda insieme alle carte, e nel Hold'em di carte in mano ce ne sono due: lo spazio di
-lato c'e'. Con l'impostazione spenta non compare niente.
-
-SI AGGIORNA A OGNI CARTA COMUNE, e anche quando qualcuno esce dalla mano - con un avversario
-in meno la stessa mano vale di piu'. NON si aggiorna quando qualcuno punta, perche' l'equita'
-non cambia: cambiano le quote, non le carte. E' anche il motivo per cui il conto si fa quattro
-volte per mano e non quaranta - la chiave che decide se rifarlo e' fatta di carte comuni,
-avversari vivi e la tua mano, e di nient'altro.
-
-E' UN NUMERO SIMULATO, e si vede dai numeri che ho misurato prima di scegliere:
-  600 simulazioni:  il numero balla di 3,7 punti fra un calcolo e l'altro sulla stessa mano,
-                    e il conto costa fra 6 e 42 millisecondi (misurato qui, su un telefono
-                    conta 3-4 volte tanto)
-  1500 simulazioni: balla di 2,7 punti, ma costa fino a 72 ms - due o tre decimi di secondo
-                    su un telefono, che si sentirebbero
-Ho preso 600: il numero e' giusto a un paio di punti, non al decimale. Se dice 42%, la verita'
-sta fra 40 e 44 - e questo l'ho scritto anche nelle REGOLE del Hold'em (pulsante info), perche'
-un numero a schermo che non dice di essere una stima viene creduto esatto.
-
-E si calcola FUORI DAL FOTOGRAMMA: al flop compaiono tre carte, e un decimo di secondo di
-conto proprio in quell'istante si vedrebbe come uno scatto. Cosi' il tavolo si disegna e il
-numero arriva un momento dopo.
-
-PER TALKBACK la voce legge la frase intera - "Probabilita' di vincere: 42 per cento" - mentre
-a schermo c'e' solo "42%": una frase la si leggerebbe invece di guardarla, ma "42%" letto da
-una voce sintetica non si capisce.
-
-UNA COSA DA SAPERE: il numero e' calcolato contro avversari con DUE CARTE QUALUNQUE, perche'
-il Banco non legge ancora le puntate. Quindi e' ottimista quando in mano restano in tre e
-pessimista quando l'unico rimasto ha rilanciato due volte. E' la stessa approssimazione con
-cui gioca il Banco, ed e' il pezzo che manca a tutti due: quando arrivera' la lettura delle
-puntate, migliorera' il numero e migliorera' l'avversario.
-
-================================================================================
-COSA PROVARE
-================================================================================
-
- 1. Impostazioni generali -> Probabilita' a schermo, poi Hold'em: il numero di fianco alle
-    tue carte.
- 2. Guardalo cambiare al flop, al turn e al river. Con una coppia servita deve stare alto; con
-    due carte scoordinate, basso.
- 3. Quando un avversario passa, deve salire.
- 4. Spegni l'impostazione: non deve comparire niente.
- 5. Al flop il tavolo non deve scattare: il conto arriva dopo il disegno.
- 6. Il numero di versione: 6.2.
-
-================================================================================
-LE PROVE FATTE FUORI DAL TELEFONO
-================================================================================
-
-  - kotlinc su 25 file: pulito. XML ben formati, vincoli puliti, risorse tutte risolte,
-    stringhe fuori regola nessuna, manifest senza doppioni.
-  - il costo e il ballo del conto misurati su sei situazioni (uno e tre avversari, prima del
-    flop, al flop e al river) e su tre numeri di campioni: e' da quella tabella che escono i
-    600, non da un'impressione.
+  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
+  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
+  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
+  estrai_carta_singola.py      una carta per volta, per i ritocchi
+  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
+  figure/                      le tre immagini da cui vengono J, Q e K francesi
+  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
+    + logo_app.png             cinque icone classiche del lanciatore
+    + icona_app.png
+  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
+  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
+  README.md                    come si usano
