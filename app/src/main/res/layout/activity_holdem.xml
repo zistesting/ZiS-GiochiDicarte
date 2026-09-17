@@ -207,15 +207,22 @@
              CardView non si costruisce da XML. E' da qui che partono le carte quando si
              distribuisce, ed e' il motivo per cui sta in cima - il piatto gli va SOTTO, non
              sopra: prima si vede il mazzo, poi quanto c'e' in mezzo. -->
+        <!--
+          IL MAZZO STA NELL'ANGOLO IN ALTO A DESTRA, e non piu' in mezzo al tavolo sopra le
+          carte comuni. E' la stessa ragione per cui un mazziere vero tiene il mazzo di
+          fianco a se' e non in mezzo al feltro: in mezzo si porta via il posto delle carte.
+          In pratica si portava via 104dp - la carta piu' il suo stacco - e quei 104dp erano
+          esattamente quelli che mancavano ai posti di W e di E per avere le carte grandi
+          come tutte le altre. Le carte in distribuzione partono ancora da qui, perche' il
+          volo guarda dove STA il mazzo, non dove e' scritto nel file.
+        -->
         <FrameLayout
             android:id="@+id/deckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/seatTop"
-            app:layout_constraintBottom_toTopOf="@id/communityRow"
-            app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintVertical_bias="0.74"
-            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="48dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Il piatto, subito sotto il mazzo. A mano finita diventa l'avviso di vincita, ed
@@ -234,10 +241,11 @@
             android:id="@+id/communityRow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
             android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/deckBox"
+            app:layout_constraintTop_toBottomOf="@id/seatTop"
             app:layout_constraintBottom_toTopOf="@id/txtPot"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintVertical_bias="0.62"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

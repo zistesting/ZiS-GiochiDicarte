@@ -246,7 +246,9 @@ class HoldemActivity : AppCompatActivity() {
         // la fascia dei posti di fianco: sta fra il posto di N e le carte comuni. La stima e'
         // prudente di 72 punti (le barre di sistema) e la misura esatta la fa adattaColonne.
         val inAlto = dp(48) + cardH + altoTesto + dp(12)
-        val inBasso = cardH + dp(8) + altoTesto + dp(24) + altoTesto + cardH + dp(64) + dp(12)
+        // le carte comuni, il piatto, la riga del Banco, e sotto il tuo blocco con i
+        // pulsanti. Il mazzo non c'e' piu' in mezzo: sta nell'angolo in alto a destra.
+        val inBasso = cardH + dp(6) + altoTesto + dp(38) + altoTesto + cardH + dp(64) + dp(12)
         val fascia = altezza - inAlto - inBasso - dp(72)
         misuraLaterali(fascia)
     }
@@ -365,28 +367,51 @@ class HoldemActivity : AppCompatActivity() {
      */
     private fun comuniDellaVincente(): Set<Int> {
         if (!game.carteMostrate || game.comuni.size != 5) return emptySet()
-        val vincitore = (0 until giocatori)
-            .filter { game.incasso[it] > 0 && game.inMano(it) }
-            .maxByOrNull { PokerHand.migliore(game.mani[it] + game.comuni) } ?: return emptySet()
-        val sette = game.mani[vincitore] + game.comuni
-        var meglio = 0
-        var scelte = emptySet<Int>()
-        for (a in 0..2) for (b in a + 1..3) for (c in b + 1..4) for (d in c + 1..5) for (e in d + 1..6) {
-            val idx = listOf(a, b, c, d, e)
-            val v = PokerHand.valuta(idx.map { sette[it] })
-            if (v > meglio) {
-                meglio = v
-                // le prime due carte dei sette sono in mano: in tavola sono le altre cinque
-                scelte = idx.filter { it >= 2 }.map { it - 2 }.toSet()
+        // TUTTI i vincitori, non uno: col piatto diviso le mani vincenti sono due, e possono
+        // usare carte diverse della tavola. Lo si e' visto in una mano vera: tavola
+        // 7 8 9 10 J, S con il J in mano e E col J della tavola - la stessa scala, il piatto
+        // diviso, e il mio gesto abbassava il J perche' guardava solo il primo dei due. Una
+        // carta che ha fatto vincere qualcuno non puo' essere mostrata come inutile.
+        val insieme = HashSet<Int>()
+        for (p in 0 until giocatori) {
+            if (game.incasso[p] <= 0 || !game.inMano(p)) continue
+            val sette = game.mani[p] + game.comuni
+            var meglio = 0
+            var scelte = emptySet<Int>()
+            for (a in 0..2) for (b in a + 1..3) for (c in b + 1..4) for (d in c + 1..5) for (e in d + 1..6) {
+                val idx = listOf(a, b, c, d, e)
+                val v = PokerHand.valuta(idx.map { sette[it] })
+                if (v > meglio) {
+                    meglio = v
+                    // le prime due carte dei sette sono in mano: in tavola sono le altre cinque
+                    scelte = idx.filter { it >= 2 }.map { it - 2 }.toSet()
+                }
             }
+            insieme.addAll(scelte)
         }
-        return scelte
+        return insieme
+    }
+
+    /** "S e E", oppure "S, E e W": la congiunzione solo davanti all'ultimo. */
+    private fun elenco(chi: List<Int>): String {
+        val nomi = chi.map { nomeDi(it) }
+        if (nomi.size == 1) return nomi[0]
+        return nomi.dropLast(1).joinToString(", ") + " " + getString(R.string.poker_and) +
+               " " + nomi.last()
     }
 
     private fun aggiornaPiatto() {
         val vincite = (0 until giocatori).filter { game.incasso[it] > 0 }
         if (game.manoFinita && vincite.isNotEmpty()) {
-            b.txtPot.text = vincite.joinToString("   ") {
+            // UNA FRASE SOLA QUANDO IL PIATTO SI DIVIDE. Due mani pari non vincono
+            // ognuna per conto suo: dividono, e "S e E vincono 90$" lo dice in una riga
+            // dove "S vince 90$   E vince 90$" ne prendeva due. Se le somme sono diverse -
+            // succede con i piatti laterali - si torna a scriverle una per una, perche'
+            // allora dire un numero solo sarebbe falso.
+            val pari = vincite.map { game.incasso[it] }.distinct().size == 1
+            b.txtPot.text = if (vincite.size > 1 && pari)
+                getString(R.string.poker_wins_split, elenco(vincite), game.incasso[vincite[0]])
+            else vincite.joinToString("   ") {
                 getString(R.string.poker_wins, nomeDi(it), game.incasso[it])
             }
             b.txtPot.setTextColor(getColor(if (0 in vincite) R.color.gold else R.color.celeste))

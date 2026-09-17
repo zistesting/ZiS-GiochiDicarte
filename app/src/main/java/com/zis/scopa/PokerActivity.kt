@@ -631,6 +631,14 @@ class PokerActivity : AppCompatActivity() {
      * all-in, non diceva a chi andasse, e la somma che conta - quella che vinci davvero -
      * la dice comunque questa riga a mano finita.
      */
+    /** "S e E", oppure "S, E e W": la congiunzione solo davanti all'ultimo. */
+    private fun elenco(chi: List<Int>): String {
+        val nomi = chi.map { nomeDi(it) }
+        if (nomi.size == 1) return nomi[0]
+        return nomi.dropLast(1).joinToString(", ") + " " + getString(R.string.poker_and) +
+               " " + nomi.last()
+    }
+
     private fun aggiornaPiatto() {
         val vincite = (0 until giocatori).filter { game.incasso[it] > 0 }
         if (game.manoFinita && vincite.isNotEmpty()) {
@@ -638,7 +646,15 @@ class PokerActivity : AppCompatActivity() {
             // "N vince 160$". Una frase a parte per te - "Vinci 160$" - serviva quando il
             // tuo posto si chiamava "Tu", perche' "Tu vince" non e' italiano; adesso che i
             // posti sono lettere, S sta in quella frase come N ed E.
-            b.txtPot.text = vincite.joinToString("   ") {
+            // UNA FRASE SOLA QUANDO IL PIATTO SI DIVIDE. Due mani pari non vincono
+            // ognuna per conto suo: dividono, e "S e E vincono 90$" lo dice in una riga
+            // dove "S vince 90$   E vince 90$" ne prendeva due. Se le somme sono diverse -
+            // succede con i piatti laterali - si torna a scriverle una per una, perche'
+            // allora dire un numero solo sarebbe falso.
+            val pari = vincite.map { game.incasso[it] }.distinct().size == 1
+            b.txtPot.text = if (vincite.size > 1 && pari)
+                getString(R.string.poker_wins_split, elenco(vincite), game.incasso[vincite[0]])
+            else vincite.joinToString("   ") {
                 getString(R.string.poker_wins, nomeDi(it), game.incasso[it])
             }
             b.txtPot.setTextColor(getColor(if (0 in vincite) R.color.gold else R.color.celeste))
