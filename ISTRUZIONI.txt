@@ -1,88 +1,73 @@
-ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.4
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.5
 
->>> CAMBIA SOLO app1, otto file. <<<
-    Modo comodo: la cartella app INTERA in un colpo, senza [skip ci].
+>>> CAMBIA SOLO app1, sei file. <<<
 
-QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.3 che hai sul computer.
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.4 che hai sul computer.
 
 ================================================================================
 COSA CARICARE
 ================================================================================
 
-  app/src/main/res/layout/activity_game.xml         l'ingranaggio sotto l'info
-  app/src/main/res/layout/activity_briscola.xml     l'ingranaggio sotto l'info
-  app/src/main/res/layout/activity_tresette.xml     la mano del Banco piu' in basso
-  app/src/main/res/layout/activity_klondike.xml     i due pulsanti non si sovrappongono
-  app/src/main/res/layout/dialog_stats.xml          poker e Hold'em nella tabella
-  app/src/main/java/com/zis/scopa/StatsDialog.kt    li riempie
-  app/build.gradle                                  versionName: 6.3 -> 6.4
+  app/src/main/java/com/zis/scopa/HoldemActivity.kt   le comuni non sono piu' opache
+  app/src/main/res/layout/activity_holdem.xml         22dp di stacco sotto il mazzo
+  app/src/main/res/layout/activity_game.xml           ingranaggio allineato
+  app/src/main/res/layout/activity_briscola.xml       ingranaggio allineato
+  app/src/main/res/layout/activity_klondike.xml       i due pulsanti piu' vicini
+  app/build.gradle                                    versionName: 6.4 -> 6.5
 
 NON caricare questo ISTRUZIONI.txt.
 
 ================================================================================
-I PULSANTI
+LE CINQUE CARTE OPACHE: era un difetto, e grazie per averlo notato
 ================================================================================
 
-SCOPA E BRISCOLA: l'ingranaggio e' passato SOTTO l'info, incolonnato con lui.
+Il gesto del mazziere era scritto senza guardare se la mano fosse finita. La funzione che dice
+quali comuni entrano nella mano vincente, fuori dallo showdown, ritorna un insieme VUOTO -
+giustamente, non c'e' ancora nessuna mano vincente - e la riga che seguiva leggeva quel vuoto
+come "nessuna di queste carte serve": quindi tutte e cinque restavano al 45% di opacita' e
+abbassate di dodici punti per tutta la mano. Il velo che vedevi era quello.
 
-TRESETTE: la mano del Banco ha 52dp di margine in cima e sta sotto i due pulsanti. E' l'unico
-dei tre giochi a prese in cui la mano del Banco parte dal bordo alto - dieci carte a ventaglio
-si prendono tutta la larghezza - quindi finiva proprio sotto l'info e l'ingranaggio. 40 di
-pulsante, 6 di margine, 6 di aria.
-
-KLONDIKE, e qui c'era un difetto mio della 5.6. Il vincolo che mette l'ingranaggio a destra
-dell'info era finito FUORI dall'elemento, dopo il /> che lo chiudeva:
-
-        app:layout_constraintTop_toTopOf="@id/txtStatus" />
-        app:layout_constraintStart_toEndOf="@id/btnInfo" />     <-- fuori
-
-Per l'XML quella riga e' semplicemente del TESTO dentro il contenitore, quindi e' un documento
-legittimo e nessuno si lamenta: aapt2 compila, il vincolo non esiste, e il pulsante si ferma a
-x=0 - cioe' sopra l'info. E' la terza volta in una settimana che un mio ritocco con
-un'espressione regolare passa l'analizzatore XML e sbaglia il livello sopra. Ho aggiunto al
-banco di prova il controllo del TESTO VAGANTE: adesso qualunque attributo finito fuori da un
-elemento di layout viene segnalato, e su tutti e undici i layout dice zero.
+Adesso il gesto si applica SOLO a carte scoperte. Durante il gioco le comuni sono piene e in
+riga, come devono essere.
 
 ================================================================================
-LE STATISTICHE
+IL GESTO, RIFATTO COME LO DESCRIVI TU
 ================================================================================
 
-Nella tabella ci sono anche Poker e Tx Hold'em. Mancavano perche' il poker e' arrivato con la
-4.3 e il Hold'em con la 6.0, tutti due dopo che quella tabella era stata scritta: i contatori
-giravano - "Azzera statistiche" li azzera dalla 5.4 - ma nessuno li vedeva.
+Non si muove piu' niente delle cinque carte buone: restano dove sono sempre state, e scendono
+di venti punti (prima dodici) soltanto quelle che non servono. Era il punto giusto: le buone
+"salivano" solo in apparenza - erano le altre a scendere - ma quello che conta e' che non
+devono avvicinarsi alle carte di W e di E, che stanno appena sopra.
 
-La colonna "Banco" per questi due giochi conta le partite perse, come per gli altri: nel poker
-in quattro il vincitore e' uno solo, quindi una partita persa non dice CHI ha vinto. Se vuoi
-una riga piu' precisa - per esempio "vinte / perse" senza la colonna del Banco - si fa.
+E per la stessa ragione la fila delle comuni ha 22dp di stacco dal mazzo invece di 8: due
+carte in colonna di fianco arrivano fin la', e i corni della fila - la prima e l'ultima carta -
+sono proprio sotto le colonne laterali, perche' cinque carte affiancate prendono tutta la
+larghezza. Quei 14dp in piu' sono il margine che tiene separate due cose che si incrociano.
 
 ================================================================================
-I TESTI DELLE FINESTRE INFO
+I DUE PULSANTI
 ================================================================================
 
-Te li ho estratti in un file a parte, testi-finestre-info.txt: tutte e sei le finestre - Scopa,
-Briscola, Tresette, Klondike, Poker e Hold'em - in chiaro, con i segni di Android tradotti
-(\n\n riga vuota, <b> grassetto, \u00e8 la e accentata, \' l'apostrofo) e mandati a capo a 78
-colonne per leggerli in un editor.
+SCOPA E BRISCOLA: l'ingranaggio era agganciato al BORDO SINISTRO DELL'INFO e poi si prendeva
+anche i suoi 6dp di margine, quindi finiva sei punti piu' a destra. Adesso e' agganciato al
+bordo dello schermo come l'info: stesso vincolo, stesso margine, stessa colonna.
 
-Quel file NON va caricato: e' una copia da leggere. Se vuoi correggere un testo, mandamelo
-riscritto e lo rimetto io nel formato di Android - e' proprio la punteggiatura di quel formato
-il punto in cui questa settimana la build e' fallita due volte (l'apostrofo di "Hold'em").
+KLONDIKE: erano lontani 22 punti - 4 di margine piu' 9+9 di spaziatura interna dentro i due
+pulsanti. Ho tolto il margine e portato la spaziatura da 9 a 6 in tutti due, quindi la
+distanza fra i due disegni e' 12 punti, esattamente come negli altri tre giochi. Effetto
+secondario: i due disegni del Klondike sono un po' piu' grandi di prima, e piu' simili a
+quelli delle altre schermate.
 
 ================================================================================
 COSA PROVARE
 ================================================================================
 
- 1. Scopa e Briscola: info sopra, ingranaggio sotto, incolonnati.
- 2. Tresette: le carte del Banco cominciano sotto i due pulsanti.
- 3. Klondike: i due pulsanti uno accanto all'altro, non uno sopra l'altro.
- 4. Statistiche dal menu: sei righe piu' il totale.
- 5. Il numero di versione: 6.4.
+ 1. Hold'em: durante la mano le cinque carte comuni devono essere piene e allineate.
+ 2. A carte scoperte: solo quelle che non entrano nella mano vincente scendono e si spengono.
+ 3. Le comuni non devono toccare le carte di W e di E in nessun momento.
+ 4. Scopa e Briscola: i due pulsanti incolonnati sul bordo sinistro.
+ 5. Klondike: i due pulsanti vicini come negli altri giochi.
+ 6. Il numero di versione: 6.5.
 
-================================================================================
-LE PROVE FATTE FUORI DAL TELEFONO
-================================================================================
-
-  - kotlinc su 25 file: pulito. XML ben formati, risorse risolte, stringhe in regola,
-    manifest senza doppioni.
-  - il controllo dei vincoli, adesso anche col testo vagante: zero su undici layout. E' quello
-    che avrebbe preso il difetto del Klondike un mese prima.
+Prove fuori dal telefono: kotlinc pulito su 25 file, XML ben formati, vincoli e testi vaganti
+zero su undici layout, risorse risolte, stringhe in regola, manifest senza doppioni.

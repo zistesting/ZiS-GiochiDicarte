@@ -234,7 +234,7 @@
             android:id="@+id/communityRow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="22dp"
             android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/deckBox"
             app:layout_constraintBottom_toTopOf="@id/txtPot"

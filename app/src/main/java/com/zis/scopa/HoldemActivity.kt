@@ -333,15 +333,22 @@ class HoldemActivity : AppCompatActivity() {
             cv.layoutParams = lp
             cv.card = carte[i]
             cv.faceUp = true
-            // IL GESTO DEL MAZZIERE. A carte scoperte, le comuni che NON entrano nella mano
-            // vincente scendono di dodici punti e si spengono un po': e' quello che fa un
-            // mazziere vero quando spinge in avanti le cinque carte che contano e lascia
-            // indietro le altre. Non e' decorazione - e' la sola cosa a schermo che dica
-            // PERCHE' quella mano ha vinto, e chi sta imparando il poker guarda proprio
-            // quelle cinque.
-            val serve = i in comuniDellaVincente()
-            cv.alpha = if (serve) 1f else 0.45f
-            cv.translationY = if (serve) 0f else dp(12).toFloat()
+            // IL GESTO DEL MAZZIERE, e sono due righe con due difetti corretti dentro.
+            //
+            // SI MUOVONO SOLO LE CARTE CHE NON SERVONO, e solo a carte scoperte. Le cinque
+            // buone restano dove sono sempre state: alzarle le porterebbe addosso alle carte
+            // di W e di E, che stanno appena sopra. Scendono di venti punti le altre, quelle
+            // che il mazziere vero lascia indietro quando spinge avanti le cinque che
+            // contano - ed e' la sola cosa a schermo che dica PERCHE' quella mano ha vinto.
+            //
+            // E DURANTE IL GIOCO SONO PIENE. Prima il gesto era scritto senza guardare se la
+            // mano fosse finita: [comuniDellaVincente] fuori dallo showdown ritorna un
+            // insieme vuoto, quindi NESSUNA carta "serviva" e tutte e cinque restavano
+            // spente a mezz'aria per tutta la mano. Era il velo che si vedeva sul tavolo.
+            val gesto = if (game.carteMostrate) comuniDellaVincente() else null
+            val serve = gesto == null || i in gesto
+            cv.alpha = if (serve) 1f else 0.4f
+            cv.translationY = if (serve) 0f else dp(20).toFloat()
         }
     }
 
