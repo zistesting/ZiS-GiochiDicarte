@@ -1,53 +1,104 @@
-ZiS-GiochiDiCarte-app2  -  sorgenti grafici e prove  (28 file)  -  versione 4.5
+ZiS-GiochiDiCarte-app1  -  il programma  -  VERSIONE 6.3
 
-CAMBIA UN FILE SOLO rispetto alla 4.4: art/carte_francesi.py, cioe' la tavolozza del dorso.
+>>> CAMBIANO app1 (dodici file, di cui sei immagini) e app2 (i due sorgenti in art/). <<<
+    Modo comodo: prima art/ di app2, poi la cartella app INTERA senza [skip ci].
 
-  art/         24 file   gli script che producono carte, dorsi, figure, assi e icone,
-                         piu' le immagini sorgente (art/assi/, art/figure/, i due logo)
-  verifica/     4 file   il motore del Klondike riscritto in Python e il solutore, usati
-                         per misurare le euristiche fuori dal telefono
+QUESTA COPIA E' LA VERSIONE DI RIFERIMENTO e sostituisce la 6.2 che hai sul computer.
 
-NON SERVONO ALLA BUILD. Il workflow ignora art/** di proposito, e verifica/ non e' nemmeno
-nel source set di Gradle: sono gli strumenti con cui le carte sono state fatte e le regole
-del gioco automatico sono state misurate.
+================================================================================
+COSA CARICARE
+================================================================================
 
---- cosa e' cambiato ---
+  app/src/main/res/layout/activity_settings.xml   il pannello del poker rifatto
+  app/src/main/res/layout/activity_holdem.xml     le comuni piu' in basso
+  app/src/main/java/com/zis/scopa/SettingsActivity.kt   il pulsante Predefiniti
+  app/src/main/java/com/zis/scopa/HoldemActivity.kt     il gesto del mazziere
+  app/src/main/res/values/strings.xml             + Predefiniti, "2"/"4", "Tx Hold'em"
+  app/src/main/res/values-en/strings.xml          le stesse in inglese
+  app/src/main/res/drawable-nodpi/btn_info.webp        i quattro pulsanti nuovi
+  app/src/main/res/drawable-nodpi/btn_settings.webp
+  app/src/main/res/drawable-nodpi/btn_stats.webp
+  app/src/main/res/drawable-nodpi/btn_lang.webp
+  app/src/main/res/drawable-nodpi/app_logo.webp        logo e icona nuovi
+  app/src/main/res/drawable-nodpi/ic_launcher_fg.webp
+  app/src/main/res/mipmap-*/ic_launcher.png            le cinque densita'
+  app/build.gradle                                     versionName: 6.2 -> 6.3
 
-  art/carte_francesi.py    la tavolozza del dorso francese in genera_dorso: era un bordeaux
-                           con l'ornato d'oro, ora e' un rosso acceso con l'ornato bianco e
-                           la cornice esterna piu' cupa del campo.
-
-E' UN FILE CHE NON ENTRA NELL'APK, e caricarlo serve a una cosa sola: che il sorgente e
-l'immagine dicano la stessa cosa. Il dorso nuovo - fr_back.webp, nel pacchetto francesi - e'
-stato generato proprio con questo file; senza, rilanciare lo script rifarebbe quello scuro.
-E' la stessa trappola che alla 4.4 aveva icona_app.py: uno strumento che, rilanciato, disfa
-il lavoro e' peggio di nessuno strumento.
-
-Il disegno non e' cambiato: la tavolozza e' un dizionario di otto colori passato a
-card_back.py, che resta identico.
-
---- caricamento ---
-
-Pagina principale del repository -> Add file -> Upload files -> APRI la cartella
-ZiS-GiochiDiCarte-app2 e trascina QUELLO CHE C'E' DENTRO (le cartelle art e verifica) ->
-Commit changes.
-
-Questo commit NON fara' partire la build, ed e' voluto: il workflow ignora art/**. Per questo
-conviene farlo PRIMO. L'ordine completo sta nell'ISTRUZIONI di app1.
+  nel pacchetto app2:  art/icona_app.png  e  art/logo_app.png
 
 NON caricare questo ISTRUZIONI.txt.
 
---- cosa c'e' dentro art/ ---
+================================================================================
+IMPOSTAZIONI DEL POKER
+================================================================================
 
-  carte_francesi.py            genera le 52 carte francesi e il dorso, in SVG
-  card_back.py + i .svg        i dorsi dei cinque mazzi: un disegno, sei tavolozze
-  estrai_foglio_*.py           ritagliano le carte dai fogli di scansione
-  estrai_carta_singola.py      una carta per volta, per i ritocchi
-  assi_denari.py + assi/       i quattro assi di denari col marchio ZiS
-  figure/                      le tre immagini da cui vengono J, Q e K francesi
-  icona_app.py                 il logo dell'app, il primo piano dell'icona adattiva e le
-    + logo_app.png             cinque icone classiche del lanciatore
-    + icona_app.png
-  fogli_mazzo.py               un foglio per mazzo, tutte le carte piu' il dorso
-  fogli_seme.py                un foglio per seme, alla risoluzione delle scansioni
-  README.md                    come si usano
+  - il titolo "Poker e Hold'em" e' celeste;
+  - GIOCATORI: due bottoni sulla stessa riga, "2" e "4". La parola "giocatori" sta gia' nel
+    titolo sopra, quindi scriverla due volte nei bottoni serviva solo a occupare il doppio
+    dello spazio;
+  - IMPORTI: ogni comando SOTTO la sua descrizione. Prima etichetta e valore erano sulla
+    stessa riga e la riga era piena - etichetta, meno, numero, piu' - quindi su uno schermo
+    stretto l'etichetta si stringeva fino a spezzarsi. Sopra e sotto si legge anche
+    nell'ordine in cui si capisce: prima cosa e', poi quanto vale;
+  - PREDEFINITI: il pulsante accanto al titolo "Importi" riporta i tre valori a 200$, 10$ e
+    20$. Sta accanto al TITOLO e non a un importo perche' vale per tutti tre: accanto a uno
+    solo sembrerebbe suo. I valori li legge da PokerGame, che e' l'unico posto dove sono
+    scritti, quindi se un giorno cambiano la' il pulsante li segue da se'.
+
+================================================================================
+TEXAS HOLD'EM
+================================================================================
+
+LE COMUNI SCENDONO ANCORA. Il gruppo del centro passa dal 62% al 74% dello spazio, e il
+pavimento della misura delle carte laterali scende da mezza carta a un terzo: con due sole
+carte in colonna la differenza fra le due misure e' di pochi punti, e in cambio le colonne
+ci stanno SEMPRE nella fascia. Accavallarsi sulle carte comuni e' peggio che essere un po'
+piu' piccole.
+
+IL GESTO DEL MAZZIERE, e mi e' piaciuta come idea. A carte scoperte, le carte comuni che NON
+entrano nella mano vincente scendono di dodici punti e si spengono un po'; le cinque che
+contano restano in alto e piene. E' quello che fa un mazziere vero quando spinge avanti le
+cinque carte buone e lascia indietro le altre, ed e' anche la sola cosa a schermo che dica
+PERCHE' quella mano ha vinto - chi sta imparando guarda proprio quelle cinque.
+
+Quali sono le cinque lo decide lo stesso conto del punteggio: fra le ventuno combinazioni di
+cinque carte su sette si prende la migliore, e si guarda quali vengono dal tavolo. L'ho
+verificato su 4000 showdown simulati - il punteggio delle cinque scelte coincide sempre con
+quello della mano migliore, e gli indici non escono mai dal tavolo.
+Se il piatto e' diviso fra due vincitori si mostra la mano di chi ha il punteggio migliore,
+cioe' quella che ha deciso il piatto principale.
+
+================================================================================
+HOME E IMMAGINI
+================================================================================
+
+  - il bottone del Hold'em dice "Tx Hold'em": "Texas Hold'em" andava a capo su due righe;
+  - i quattro pulsanti nuovi - info, impostazioni, statistiche, lingua - sono a 300x300 come
+    quelli di prima, in WebP senza perdita, quindi identici ai PNG che hai mandato. Pesano
+    23-31 KB invece di 13-16: 57 KB in piu' in tutto, su dieci megabyte di immagini;
+  - logo e icona rifatti col generatore. I due numeri dell'icona adattiva tornano ancora:
+    anello al 10,8% del raggio e blu del bordo (58,60,121) contro il (59,61,121) di
+    navy_logo, quindi ic_launcher.xml e colors.xml non si toccano.
+
+================================================================================
+COSA PROVARE
+================================================================================
+
+ 1. Impostazioni del poker: titolo celeste, 2 e 4 sulla stessa riga, i tre importi con
+    l'etichetta sopra, e Predefiniti che li riporta a 200/10/20.
+ 2. Hold'em in quattro: al flop le comuni NON devono avvicinarsi alle carte di W e E.
+ 3. Arriva a carte scoperte e guarda il tavolo: le comuni che non servono devono essere piu'
+    in basso e piu' spente. Con una coppia in mano che vince, per esempio, ne restano in alto
+    tre sole.
+ 4. La home: "Tx Hold'em" su una riga.
+ 5. Le quattro icone nuove in cima alla home e nelle schermate di gioco.
+ 6. Il numero di versione: 6.3.
+
+================================================================================
+LE PROVE FATTE FUORI DAL TELEFONO
+================================================================================
+
+  - kotlinc su 25 file: pulito. XML ben formati, vincoli puliti su tutti e undici i layout,
+    risorse tutte risolte, stringhe fuori regola nessuna, manifest senza doppioni.
+  - il gesto del mazziere verificato su 4000 showdown simulati.
+  - i due .webp del logo identici bit per bit ai sorgenti, e i due numeri dell'icona misurati.

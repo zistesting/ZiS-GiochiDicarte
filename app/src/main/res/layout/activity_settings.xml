@@ -397,7 +397,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="22dp"
                     android:text="@string/poker_section"
-                    android:textColor="@color/gold"
+                    android:textColor="@color/celeste"
                     android:textSize="19sp"
                     android:textStyle="bold" />
 
@@ -415,18 +415,21 @@
                     android:textColor="@color/silver"
                     android:textSize="16sp" />
 
+                <!-- Due scelte, due numeri, una riga: "2" e "4" dicono tutto quello che
+                     c'e' da dire, e in verticale si portavano via il doppio dello spazio per
+                     scrivere due volte la parola "giocatori" che sta gia' nel titolo sopra. -->
                 <RadioGroup
                     android:id="@+id/groupGiocatori"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:orientation="vertical">
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
 
                     <RadioButton
                         android:id="@+id/radioG2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginEnd="28dp"
                         android:buttonTint="@color/celeste"
                         android:text="@string/poker_players_2"
                         android:textColor="@color/silver"
@@ -442,19 +445,18 @@
                         android:textSize="17sp" />
                 </RadioGroup>
 
-                <!-- ===== gli importi: tre righe con meno e piu' ===== -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:text="@string/poker_money"
-                    android:textColor="@color/silver"
-                    android:textSize="16sp" />
-
+                <!-- ===== gli importi =====
+                     OGNI COMANDO SOTTO LA SUA DESCRIZIONE, non di fianco: l'etichetta e il
+                     valore erano sulla stessa riga e la riga era piena - etichetta, meno,
+                     numero, piu' - quindi su uno schermo stretto l'etichetta si stringeva
+                     fino a spezzarsi. Sopra e sotto c'e' posto per tutti due, e si legge
+                     nell'ordine in cui si capisce: prima cosa e', poi quanto vale.
+                     Il RESET sta accanto al titolo perche' vale per tutti tre gli importi:
+                     accanto a uno solo sembrerebbe suo. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="18dp"
                     android:baselineAligned="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
@@ -463,9 +465,33 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/poker_start_label"
+                        android:text="@string/poker_money"
                         android:textColor="@color/silver"
-                        android:textSize="17sp" />
+                        android:textSize="16sp" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/btnImportiReset"
+                        style="@style/PokerButton"
+                        android:layout_width="wrap_content"
+                        android:minWidth="96dp"
+                        android:text="@string/poker_money_reset" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/poker_start_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/btnFichesMeno"
@@ -490,21 +516,21 @@
                         android:text="+" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/poker_ante_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
                     android:baselineAligned="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/poker_ante_label"
-                        android:textColor="@color/silver"
-                        android:textSize="17sp" />
 
                     <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/btnAperturaMeno"
@@ -529,21 +555,21 @@
                         android:text="+" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/poker_raise_label"
+                    android:textColor="@color/silver"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
                     android:baselineAligned="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/poker_raise_label"
-                        android:textColor="@color/silver"
-                        android:textSize="17sp" />
 
                     <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/btnRilancioMeno"
@@ -571,7 +597,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:text="@string/poker_money_desc"
                     android:textColor="@color/silver"
                     android:textSize="13sp" />

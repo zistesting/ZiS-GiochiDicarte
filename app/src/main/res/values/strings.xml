@@ -246,17 +246,18 @@
 
     <!-- Poker -->
     <string name="poker">Poker</string>
-    <string name="holdem">Texas Hold\'em</string>
+    <string name="holdem">Tx Hold\'em</string>
     <string name="poker_section">Poker e Hold\'em</string>
     <string name="poker_players">Giocatori</string>
-    <string name="poker_players_2">2 - tu contro il Banco</string>
-    <string name="poker_players_4">4 - tu contro tre avversari</string>
+    <string name="poker_players_2">2</string>
+    <string name="poker_players_4">4</string>
     <!--
       GLI IMPORTI DEL POKER. Tre righe con meno e piu' invece di tre caselle da scrivere: da
       un campo di testo puo' uscire qualunque cosa - zero, un milione, una lettera - e ogni
       valore assurdo andrebbe intercettato e spiegato. Con meno e piu' i valori impossibili
       non esistono, non serve la tastiera, e si vede subito di quanto si sale.
     -->
+    <string name="poker_money_reset">Predefiniti</string>
     <string name="poker_money">Importi</string>
     <string name="poker_start_label">Fiches di partenza</string>
     <string name="poker_ante_label">Apertura</string>

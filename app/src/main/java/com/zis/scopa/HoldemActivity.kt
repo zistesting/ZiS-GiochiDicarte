@@ -258,8 +258,11 @@ class HoldemActivity : AppCompatActivity() {
      * vantaggio del Hold'em sul Draw, dove le carte in mano sono cinque.
      */
     private fun misuraLaterali(fascia: Int) {
+        // il pavimento e' un terzo di carta e non la meta': con due sole carte in colonna la
+        // differenza fra le due e' di pochi punti, e in cambio le colonne ci stanno SEMPRE
+        // nella fascia - accavallarsi sulle carte comuni e' peggio che essere un po' piccole
         val stanno = (fascia - dp(12) - dp(2)) / 2
-        cardLatW = stanno.coerceIn(cardW / 2, cardW)
+        cardLatW = stanno.coerceIn(cardW / 3, cardW)
         cardLatH = (cardLatW * 1.4f).toInt()
         passoLaterale = cardLatW + dp(2)
         strisciaLaterale = cardLatH + altoTesto
@@ -330,8 +333,47 @@ class HoldemActivity : AppCompatActivity() {
             cv.layoutParams = lp
             cv.card = carte[i]
             cv.faceUp = true
-            cv.alpha = 1f
+            // IL GESTO DEL MAZZIERE. A carte scoperte, le comuni che NON entrano nella mano
+            // vincente scendono di dodici punti e si spengono un po': e' quello che fa un
+            // mazziere vero quando spinge in avanti le cinque carte che contano e lascia
+            // indietro le altre. Non e' decorazione - e' la sola cosa a schermo che dica
+            // PERCHE' quella mano ha vinto, e chi sta imparando il poker guarda proprio
+            // quelle cinque.
+            val serve = i in comuniDellaVincente()
+            cv.alpha = if (serve) 1f else 0.45f
+            cv.translationY = if (serve) 0f else dp(12).toFloat()
         }
+    }
+
+    /**
+     * Quali carte comuni entrano nella mano migliore di chi ha vinto, per indice.
+     *
+     * Si cerca fra le ventuno combinazioni di cinque carte su sette quella col punteggio piu'
+     * alto, e si guarda quali delle cinque vengono dal tavolo. Vuoto se la mano non e' andata
+     * a carte scoperte: se hanno passato tutti tranne uno non c'e' niente da mostrare.
+     *
+     * Il vincitore e' chi ha incassato di piu': con i piatti laterali possono essere in due,
+     * e in quel caso si prende quello col punteggio migliore - e' la mano che ha deciso il
+     * piatto principale.
+     */
+    private fun comuniDellaVincente(): Set<Int> {
+        if (!game.carteMostrate || game.comuni.size != 5) return emptySet()
+        val vincitore = (0 until giocatori)
+            .filter { game.incasso[it] > 0 && game.inMano(it) }
+            .maxByOrNull { PokerHand.migliore(game.mani[it] + game.comuni) } ?: return emptySet()
+        val sette = game.mani[vincitore] + game.comuni
+        var meglio = 0
+        var scelte = emptySet<Int>()
+        for (a in 0..2) for (b in a + 1..3) for (c in b + 1..4) for (d in c + 1..5) for (e in d + 1..6) {
+            val idx = listOf(a, b, c, d, e)
+            val v = PokerHand.valuta(idx.map { sette[it] })
+            if (v > meglio) {
+                meglio = v
+                // le prime due carte dei sette sono in mano: in tavola sono le altre cinque
+                scelte = idx.filter { it >= 2 }.map { it - 2 }.toSet()
+            }
+        }
+        return scelte
     }
 
     private fun aggiornaPiatto() {

@@ -192,6 +192,14 @@ class SettingsActivity : AppCompatActivity() {
         b.btnAperturaPiu.setOnClickListener { cambiaApertura(PASSO_PUNTATA) }
         b.btnRilancioMeno.setOnClickListener { cambiaRilancio(-PASSO_PUNTATA) }
         b.btnRilancioPiu.setOnClickListener { cambiaRilancio(PASSO_PUNTATA) }
+        // I PREDEFINITI vengono da PokerGame, che e' l'unico posto dove sono scritti: se un
+        // giorno cambiano la' , questo pulsante li segue senza che nessuno se ne ricordi.
+        b.btnImportiReset.setOnClickListener {
+            Prefs.setPokerFiches(this, PokerGame.FICHES_INIZIALI)
+            Prefs.setPokerApertura(this, PokerGame.APERTURA)
+            Prefs.setPokerRilancio(this, PokerGame.RILANCIO)
+            scriviImporti()
+        }
         scriviImporti()
     }
 
